@@ -1,16 +1,168 @@
-# React + Vite
+# AIM 공구 마모 진단 프론트엔드
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+MATWI 공구 이미지와 센서 데이터를 확인하고, 마모량 예측 결과에 따라 교체 경고를 표시하는 웹 대시보드입니다.
 
-Currently, two official plugins are available:
+현재는 저장된 이미지·센서 CSV·예측 결과 CSV를 활용하는 프로토타입입니다. 실시간 데이터 수집과 AI 모델 API는 아직 연결하지 않았습니다.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 사용 기술
 
-## React Compiler
+- React, JavaScript, JSX
+- Vite
+- CSS
+- SVG 기반 센서 그래프
+- Papa Parse
+- Oxlint
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 주요 기능
 
-## Expanding the Oxlint configuration
+- Set4~Set11 화면 선택
+- Set별 이미지 폴더 불러오기
+- 이미지 이전·다음 이동 및 2초 간격 자동 재생
+- 센서 CSV 불러오기 및 최근 5초 파형 재생
+- 이미지 파일명과 CSV 결과 연결
+- 실제 마모량·예측 마모량·절대 오차 표시
+- 정답 라벨의 마모 유형 표시
+- 정상·경고·위험 상태 표시
+- 전체 Set 공통 알림창
+- 개별 알림 닫기
+- 데이터 설정 및 재생 영역 접기
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+> 위 목록은 로컬 최신 개발 버전 기준입니다.
+> 저장소에 이전 버전이 남아 있다면 최신 소스도 함께 푸시해야 합니다.
+
+## 화면 구성
+
+| 영역 | 내용 |
+|---|---|
+| 상단 | 서비스 제목과 Set 선택 |
+| 왼쪽 | 공구 이미지와 측정 시간 |
+| 가운데 | 센서 그래프 4개 |
+| 중앙 아래 | 공구 상태와 교체 경고 |
+| 하단 | 진단 이미지와 마모량 결과 |
+| 오른쪽 | 전체 Set 공통 알림 |
+
+## 실행 방법
+
+Node.js와 npm이 설치된 환경에서 실행합니다.
+
+```bash
+git clone https://github.com/Goodee-AIM/cnc-wearpoint-frontend.git
+cd cnc-wearpoint-frontend
+npm install
+npm run dev
+```
+
+터미널에 표시된 주소를 브라우저에서 엽니다.
+
+Windows PowerShell에서 npm 실행이 차단되면 다음 명령을 사용합니다.
+
+```powershell
+npm.cmd install
+npm.cmd run dev
+```
+
+## 테스트 데이터
+
+ZIP 파일은 압축을 해제한 뒤 폴더를 선택합니다.
+
+| 데이터 | 용도 |
+|---|---|
+| 이미지 폴더 | 공구 사진 표시 |
+| rf_test_predictions.csv | 실제·예측 마모량 연결 |
+| labels.csv 또는 labels(2).csv | 실제 마모량과 정답 마모 유형 연결 |
+| 센서 CSV | 센서 그래프 표시 |
+
+사진과 결과는 Set 번호와 확장자를 제외한 전체 파일명으로 연결합니다.
+PNG와 JPG의 확장자가 달라도 나머지 파일명이 같으면 연결할 수 있습니다.
+
+센서 CSV는 헤더 없는 숫자 5열과 시간 1열 형식을 사용합니다.
+각 숫자 열의 센서 의미는 데이터 설명서로 확인해야 합니다.
+
+## 사용 순서
+
+1. 확인할 Set을 선택합니다.
+2. 데이터 설정 및 재생 영역을 펼칩니다.
+3. 해당 Set의 이미지 폴더를 선택합니다.
+4. 예측 결과 CSV를 선택합니다.
+5. 마모 유형이 필요하면 정답 라벨 CSV도 선택합니다.
+6. 사진 자동 재생으로 결과 변화를 확인합니다.
+7. 센서 파형이 필요하면 대응하는 센서 CSV를 선택하고 재생합니다.
+
+현재 사진과 센서는 별도로 재생됩니다.
+사진이 바뀌어도 센서 파일이 자동으로 변경되지는 않습니다.
+
+## 상태 판정 기준
+
+| 상태 | 마모량 | 색상 |
+|---|---|---|
+| 정상 | 50μm 미만 | 초록 |
+| 경고 | 50μm 이상, 90μm 미만 | 노랑 |
+| 위험 | 90μm 이상 | 빨강 |
+| 판정 대기 | 유효한 결과 없음 | 회색 |
+
+기준값은 src/App.jsx에서 설정합니다.
+
+```javascript
+const WARNING = 50;
+const DANGER = 90;
+```
+
+Set10·Set11은 예측 마모량을 기준으로 판정합니다.
+예측값이 없으면 실제값으로 대신 판정하지 않습니다.
+
+다른 Set은 연결된 정답 라벨을 활용할 수 있습니다.
+색상 테스트 모드에서는 사용자가 입력한 값으로 판정합니다.
+
+위 기준은 프로젝트 시연용 설정입니다.
+
+## 공통 알림
+
+선택한 Set과 관계없이 각 Set의 최신 경고·위험 상태를 표시합니다.
+
+- Set 보기 버튼으로 해당 화면 이동
+- × 버튼으로 현재 알림 숨기기
+- 사진이나 마모량이 바뀌면 새로운 알림 표시
+- 중앙 상태 표시는 알림 닫기와 관계없이 유지
+
+현재 알림은 누적 이력이 아닌 최신 상태입니다.
+새로고침하면 파일 선택과 알림 닫기 상태가 초기화됩니다.
+
+## 주요 파일
+
+| 파일 | 역할 |
+|---|---|
+| src/App.jsx | 화면 구성과 데이터 처리 |
+| src/App.css | 대시보드 배치와 스타일 |
+| src/index.css | 전역 스타일 |
+| src/main.jsx | React 실행 시작점 |
+| package.json | 의존성과 실행 명령 |
+| .gitignore | Git 업로드 제외 설정 |
+
+## 빌드와 코드 검사
+
+```bash
+npm run build
+npm run preview
+npm run lint
+```
+
+빌드 결과는 dist 폴더에 생성됩니다.
+
+빌드 성공과 별도로 이미지 연결·센서 재생·알림 동작을 확인해야 합니다.
+
+## 현재 구현 범위
+
+- 저장된 모델 예측 결과를 화면에 표시합니다.
+- 프론트엔드에서 AI 모델을 직접 실행하지 않습니다.
+- 마모 유형은 정답 라벨이며 유형 예측 결과가 아닙니다.
+- 선택한 데이터는 브라우저 메모리에서 관리합니다.
+- 데이터 파일은 별도로 준비해야 합니다.
+
+## 향후 개발
+
+- 사진별 센서 파일 자동 연결
+- 이미지·센서 재생 동기화
+- 백엔드 API 연결
+- 학습 모델 추론 연동
+- 실시간 데이터 수신과 화면 갱신
+- 알림 발생 시간 및 확인 이력 저장
