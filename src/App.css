@@ -502,3 +502,47 @@ summary:focus-visible {
     font-size: 14px;
   }
 }
+/* 대시보드 높이 고정 */
+.dashboard {
+  height: calc(100vh - 48px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  flex-shrink: 0;
+}
+
+.dashboard-body {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* 왼쪽 화면은 내부에서 스크롤 */
+.main-panel {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* 알림 개수와 관계없이 패널 높이 유지 */
+.notification-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.notification-heading,
+.notification-footer {
+  flex-shrink: 0;
+}
+
+/* 알림이 많아지면 목록 안에서 스크롤 */
+.notification-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}

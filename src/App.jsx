@@ -6,6 +6,8 @@ const SETS = [4,5,6,7,8,9,10,11];
 const TITLES = ["음향", "가속도", "X축", "Y축"];
 const WARNING = 50;
 const DANGER = 90;
+const API_BASE =
+  import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
 function fileKey(name) {
   return String(name ?? "")
@@ -252,8 +254,202 @@ export default function App() {
   const [selectedSet, setSelectedSet] = useState(10);
   const [imagesBySet, setImagesBySet] = useState({});
   const [indices, setIndices] = useState({});
-  const [photoPlaying, setPhotoPlaying] = useState(false);
+  const [photoPlayingBySet, setPhotoPlayingBySet] = useState({});
+  const photoPlaying = Boolean(photoPlayingBySet[selectedSet]);
+
+  function stopPhoto(set) {
+    setPhotoPlayingBySet((previous) => ({
+      ...previous,
+      [set]: false,
+    }));
+  }
+
+  function stopAllPhotos() {
+    setPhotoPlayingBySet({});
+  }
+
+  function startPhoto(set) {
+    const list = activeImagesBySet[set] ?? [];
+
+    if (list.length < 2) return;
+
+    setIndices((previous) => ({
+      ...previous,
+      [set]:
+        (previous[set] ?? 0) >= list.length - 1
+          ? 0
+          : previous[set] ?? 0,
+    }));
+
+    setTestValues((previous) => ({
+      ...previous,
+      [set]: "",
+    }));
+
+    setPhotoPlayingBySet((previous) => ({
+      ...previous,
+      [set]: true,
+    }));
+  }
   const [dismissedAlerts, setDismissedAlerts] = useState({});
+  const [useDatabase, setUseDatabase] = useState(false);
+  const [databaseRecords, setDatabaseRecords] = useState({});
+  const [databaseMessage, setDatabaseMessage] =
+    useState("DB 조회 사용을 선택해주세요.");
+  const [databaseReload, setDatabaseReload] = useState(0);  
+
+  const [useServerImages, setUseServerImages] = useState(false);
+  const [serverImagesBySet, setServerImagesBySet] = useState({});
+  const [serverImageMessage, setServerImageMessage] =
+    useState("서버 이미지 사용을 선택해주세요.");
+  const [serverImageReload, setServerImageReload] = useState(0);
+
+  useEffect(() => {
+  if (!useServerImages) return;
+
+  const controller = new AbortController();
+
+  async function loadServerImages() {
+    setServerImageMessage("서버 이미지 목록 조회 중...");
+
+    try {
+      const results = await Promise.all(
+        SETS.map(async (set) => {
+          const response = await fetch(
+            `${API_BASE}/api/images/set${set}`,
+            { signal: controller.signal }
+          );
+
+          if (!response.ok) {
+            throw new Error(
+              `Set${set} 이미지 조회 실패: HTTP ${response.status}`
+            );
+          }
+
+          const data = await response.json();
+
+          if (!Array.isArray(data.items)) {
+            throw new Error(`Set${set} 이미지 응답 형식 오류`);
+          }
+
+          return [
+            set,
+            data.items.map((item) => ({
+              name: item.name,
+              url: new URL(item.url, API_BASE).href,
+            })),
+          ];
+        })
+      );
+
+      if (controller.signal.aborted) return;
+
+      const next = Object.fromEntries(results);
+      const count = results.reduce(
+        (total, [, list]) => total + list.length,
+        0
+      );
+
+      setServerImagesBySet(next);
+      setIndices({});
+      stopAllPhotos();
+      setTestValues({});
+      setServerImageMessage(
+        `서버 이미지 목록 조회 완료 · 전체 ${count}장`
+      );
+    } catch (error) {
+      if (controller.signal.aborted) return;
+
+      setServerImagesBySet({});
+      setServerImageMessage(`서버 이미지 조회 실패: ${error.message}`);
+    }
+  }
+
+  loadServerImages();
+
+  return () => controller.abort();
+}, [useServerImages, serverImageReload]);
+
+useEffect(() => {
+  if (!useDatabase) return;
+
+  const controller = new AbortController();
+
+  async function loadDatabase() {
+    setDatabaseMessage("Set4~11 데이터 조회 중...");
+    setDatabaseRecords({});
+
+    try {
+      const results = await Promise.all(
+        SETS.map(async (set) => {
+          const response = await fetch(
+            `${API_BASE}/api/sets/${set}/measurements?limit=500`,
+            { signal: controller.signal }
+          );
+
+          if (!response.ok) {
+            throw new Error(
+              `Set${set} 조회 실패: HTTP ${response.status}`
+            );
+          }
+
+          const data = await response.json();
+
+          if (!Array.isArray(data.items)) {
+            throw new Error(`Set${set} 응답 형식을 확인해주세요.`);
+          }
+
+          if (data.total > data.items.length) {
+            throw new Error(
+              `Set${set}의 일부 데이터만 조회됐습니다. 페이지 조회가 필요합니다.`
+            );
+          }
+
+          return { set, items: data.items };
+        })
+      );
+
+      const next = {};
+      let count = 0;
+
+      for (const { set, items } of results) {
+        for (const item of items) {
+          // 이미지가 없는 측정은 사진과 연결하지 않습니다.
+          if (!item.image_name) continue;
+
+          const key = recordKey(set, item.image_name);
+
+          if (next[key]) {
+            throw new Error(
+              `이미지 연결 정보 중복: Set${set} ${item.image_name}`
+            );
+          }
+
+          next[key] = item;
+          count += 1;
+        }
+      }
+
+      if (controller.signal.aborted) return;
+
+      setDatabaseRecords(next);
+      setDatabaseMessage(
+        `DB 조회 완료 · 이미지 연결 정보 ${count}건`
+      );
+    } catch (error) {
+      if (controller.signal.aborted) return;
+
+      setDatabaseRecords({});
+      setDatabaseMessage(
+        `DB 조회 실패: ${error.message} · 백엔드 실행과 CORS 설정을 확인해주세요.`
+      );
+    }
+  }
+
+  loadDatabase();
+
+  return () => controller.abort();
+}, [useDatabase, databaseReload]);
 
   const urlsRef = useRef({});
 
@@ -277,16 +473,50 @@ export default function App() {
   const elapsedRef = useRef(0);
   const [columns, setColumns] = useState([0, 1, 2, 3]);
 
-  const images = imagesBySet[selectedSet] ?? [];
+  const activeImagesBySet = useServerImages
+    ? serverImagesBySet
+    : imagesBySet;
+
+  const images = activeImagesBySet[selectedSet] ?? [];
   const imageIndex = indices[selectedSet] ?? 0;
   const currentImage = images[imageIndex] ?? null;
 
   function getRecord(set) {
-    const list = imagesBySet[set] ?? [];
+    const list = activeImagesBySet[set] ?? [];
     const image = list[indices[set] ?? 0] ?? null;
     const key = image ? recordKey(set, image.name) : "";
-    const label = labels[key] ?? null;
-    const prediction = predictions[key] ?? null;
+
+    const dbRecord = useDatabase
+      ? databaseRecords[key] ?? null
+      : null;
+
+    const dbActual = numberOrNull(dbRecord?.actual_wear_um);
+    const dbPredicted = numberOrNull(dbRecord?.predicted_wear_um);
+
+const label = useDatabase
+  ? dbRecord
+    ? {
+        wear: dbActual,
+        type: dbRecord.actual_type,
+        sensorName: dbRecord.sensor_name,
+        imageTime: dbRecord.image_captured_at,
+      }
+    : null
+  : labels[key] ?? null;
+
+const prediction = useDatabase
+  ? dbPredicted !== null
+    ? {
+        predicted: dbPredicted,
+        actual: dbActual,
+        error:
+          dbActual === null
+            ? null
+            : Math.abs(dbActual - dbPredicted),
+        sensorName: dbRecord.sensor_name,
+      }
+    : null
+  : predictions[key] ?? null;
     const testing = Boolean(testModes[set]);
 
     // Set10·11은 예측 마모량으로만 판정하며, 예측값이 없으면 판정 대기로 표시
@@ -337,11 +567,19 @@ export default function App() {
 
   const matchedCount = images.filter((image) => {
     const key = recordKey(selectedSet, image.name);
+
+      if (useDatabase) {
+      const record = databaseRecords[key];
+
+      return selectedSet === 10 || selectedSet === 11
+        ? numberOrNull(record?.predicted_wear_um) !== null
+        : numberOrNull(record?.actual_wear_um) !== null;
+    }
+
     return selectedSet === 10 || selectedSet === 11
       ? Boolean(predictions[key])
       : Boolean(labels[key]);
   }).length;
-
   useEffect(() => {
     return () => {
       Object.values(urlsRef.current)
@@ -351,11 +589,10 @@ export default function App() {
   }, []);
 
   function changeSet(set) {
-    setPhotoPlaying(false);
     setSensorPlaying(false);
     setSelectedSet(set);
     setImageMessage("");
-  }
+}
 
   function handleImages(event) {
     const files = Array.from(event.target.files ?? [])
@@ -384,7 +621,7 @@ export default function App() {
       return;
     }
 
-    setPhotoPlaying(false);
+    stopPhoto(selectedSet);
 
     (urlsRef.current[selectedSet] ?? []).forEach((url) =>
       URL.revokeObjectURL(url)
@@ -499,36 +736,95 @@ export default function App() {
     }
   }
 
-  useEffect(() => {
-    if (!photoPlaying || images.length < 2) return;
+  // 재생 상태나 이미지 목록이 바뀌어도 타이머가 참조할 최신 값
+const playbackRef = useRef(null);
 
+useEffect(() => {
+  playbackRef.current = {
+    playing: photoPlayingBySet,
+    lists: activeImagesBySet,
+  };
+}, [photoPlayingBySet, activeImagesBySet]);
+
+// Set마다 마지막 사진에 도달하면 해당 Set만 정지
+useEffect(() => {
+  const finishedSets = SETS.filter((set) => {
+    if (!photoPlayingBySet[set]) return false;
+
+    const list = activeImagesBySet[set] ?? [];
+
+    return (
+      list.length < 2 ||
+      (indices[set] ?? 0) >= list.length - 1
+    );
+  });
+
+  if (!finishedSets.length) return;
+
+  setPhotoPlayingBySet((previous) => {
+    const next = { ...previous };
+
+    finishedSets.forEach((set) => {
+      next[set] = false;
+    });
+
+    return next;
+  });
+}, [indices, photoPlayingBySet, activeImagesBySet]);
+
+// 재생 중인 모든 Set을 2초마다 진행
+useEffect(() => {
     const timer = window.setInterval(() => {
-      setIndices((previous) => ({
-        ...previous,
-        [selectedSet]: Math.min(
-          (previous[selectedSet] ?? 0) + 1,
-          images.length - 1
-        ),
-      }));
+      const snapshot = playbackRef.current;
+
+      if (!snapshot) return;
+
+      const playingSets = SETS.filter(
+        (set) =>
+          snapshot.playing[set] &&
+          (snapshot.lists[set]?.length ?? 0) >= 2
+      );
+
+      if (!playingSets.length) return;
+
+      setIndices((previous) => {
+        const next = { ...previous };
+        let changed = false;
+
+        playingSets.forEach((set) => {
+          const list = snapshot.lists[set];
+          const currentIndex = previous[set] ?? 0;
+          const nextIndex = Math.min(
+            currentIndex + 1,
+            list.length - 1
+          );
+
+          if (nextIndex !== currentIndex) {
+            next[set] = nextIndex;
+            changed = true;
+          }
+        });
+
+        return changed ? next : previous;
+      });
     }, 2000);
 
     return () => window.clearInterval(timer);
-  }, [photoPlaying, selectedSet, images.length]);
-
-  useEffect(() => {
-    if (images.length && imageIndex === images.length - 1) {
-      setPhotoPlaying(false);
-    }
-  }, [imageIndex, images.length]);
+  }, []);
 
   function movePhoto(index) {
-    setPhotoPlaying(false);
+    stopPhoto(selectedSet);
+
     setIndices((previous) => ({
       ...previous,
       [selectedSet]: index,
     }));
-    setTestValues((previous) => ({ ...previous, [selectedSet]: "" }));
-  }
+
+    setTestValues((previous) => ({
+      ...previous,
+      [selectedSet]: "",
+    }));
+}
 
   const sensorRows = sensor.set === selectedSet ? sensor.rows : [];
   const start = sensorRows[0]?.ms ?? 0;
@@ -622,6 +918,78 @@ export default function App() {
             <details className="data-settings">
               <summary>데이터 설정 및 재생</summary>
               <div className="settings-content">
+              <section style={boxStyle}>
+  <label style={controlsStyle}>
+    <input
+      type="checkbox"
+      checked={useServerImages}
+      onChange={(event) => {
+        stopAllPhotos();
+        setIndices({});
+        setTestValues({});
+        setUseServerImages(event.target.checked);
+        
+      }}
+    />
+    서버 이미지 자동 불러오기
+  </label>
+
+  <p
+    role="status"
+    style={{ marginTop: 10, fontSize: 12 }}
+  >
+    {useServerImages
+      ? serverImageMessage
+      : "직접 선택한 이미지 폴더를 사용합니다."}
+  </p>
+
+  <button
+    type="button"
+    disabled={!useServerImages}
+    onClick={() =>
+      setServerImageReload((previous) => previous + 1)
+    }
+    style={{ marginTop: 10 }}
+  >
+    서버 이미지 다시 조회
+  </button>
+</section>  
+                <section style={boxStyle}>
+  <label style={controlsStyle}>
+    <input
+      type="checkbox"
+      checked={useDatabase}
+      onChange={(event) => {
+        stopAllPhotos();
+        setUseDatabase(event.target.checked);
+      }}
+    />
+    DB 조회 사용
+  </label>
+
+  <p
+    role="status"
+    style={{ marginTop: 10, fontSize: 12 }}
+  >
+    {useDatabase
+      ? databaseMessage
+      : "로컬 CSV의 정답·예측 정보를 사용합니다."}
+  </p>
+
+  <button
+    type="button"
+    disabled={!useDatabase}
+    onClick={() => setDatabaseReload((previous) => previous + 1)}
+    style={{ marginTop: 10 }}
+  >
+    DB 다시 조회
+  </button>
+
+  <p style={{ marginTop: 10, fontSize: 12 }}>
+    DB 사용 시 정답·예측 정보는 서버에서 조회합니다.
+    센서 원본은 아래에서 선택해주세요
+  </p>
+</section>
 
             <section style={boxStyle}>
               <label style={{ display: "block", marginBottom: 14 }}>
@@ -632,6 +1000,7 @@ export default function App() {
                   webkitdirectory=""
                   directory=""
                   multiple
+                  disabled={useServerImages}
                   onChange={handleImages}
                   style={{ display: "block", marginTop: 8 }}
                 />
@@ -647,6 +1016,7 @@ export default function App() {
                 <input
                   type="file"
                   accept=".csv"
+                  disabled={useDatabase}
                   onChange={handlePredictions}
                   style={{ display: "block", marginTop: 8 }}
                 />
@@ -660,6 +1030,7 @@ export default function App() {
                 <input
                   type="file"
                   accept=".csv"
+                  disabled={useDatabase}
                   onChange={handleLabels}
                   style={{ display: "block", marginTop: 8 }}
                 />
@@ -678,30 +1049,30 @@ export default function App() {
 
                 <button
                   disabled={images.length < 2 || photoPlaying}
-                  onClick={() => {
-                    if (imageIndex === images.length - 1) {
-                      setIndices((previous) => ({
-                        ...previous,
-                        [selectedSet]: 0,
-                      }));
-                    }
-                    setTestValues((previous) => ({
-                      ...previous,
-                      [selectedSet]: "",
-                    }));
-                    setPhotoPlaying(true);
-                  }}
+                  onClick={() => startPhoto(selectedSet)}
                 >
                   사진 자동 재생
                 </button>
 
                 <button
                   disabled={!photoPlaying}
-                  onClick={() => setPhotoPlaying(false)}
+                  onClick={() => stopPhoto(selectedSet)}
                 >
                   사진 정지
                 </button>
 
+                <button
+                  disabled={!SETS.some((set) => photoPlayingBySet[set])}
+                  onClick={stopAllPhotos}
+                >
+                  전체 사진 정지
+                </button>
+                <p style={{ marginTop: 10, fontSize: 12 }} role="status">
+                  재생 중:{" "}
+                  {SETS.filter((set) => photoPlayingBySet[set])
+                    .map((set) => `Set${set}`)
+                    .join(", ") || "없음"}
+                </p>
                 <button
                   disabled={!images.length || imageIndex === images.length - 1}
                   onClick={() => movePhoto(imageIndex + 1)}
@@ -753,7 +1124,8 @@ export default function App() {
               )}
 
               <p style={{ marginTop: 12, fontSize: 11, color: "#64748b" }}>
-                정상: 20μm 미만 / 경고: 20~50μm 미만 / 위험: 50μm 이상
+                정상: {WARNING}μm 미만 / 경고: {WARNING}μm 이상 {DANGER}μm 미만
+                / 위험: {DANGER}μm 이상
                 <br />
                 저장된 예측 결과를 재생합니다. 실시간 AI 호출 전입니다.
               </p>
@@ -883,7 +1255,11 @@ export default function App() {
             <section className="diagnosis-layout">
               <div className="diagnosis-image">
                 <ToolImage image={currentImage} />
-                <p className="measurement-time">예측 CSV와 파일명으로 연결</p>
+                <p className="measurement-time">
+                  {useDatabase
+                    ? "DB 측정 정보와 파일명으로 연결"
+                    : "CSV 결과와 파일명으로 연결"}
+                </p>
               </div>
 
               <div className="diagnosis-results">
