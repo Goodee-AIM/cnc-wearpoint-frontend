@@ -250,7 +250,104 @@ function ResultCard({ title, value, note, color }) {
   );
 }
 
+// 각 Set의 센서와 재생 위치를 독립적으로 유지합니다.
+function useSetPlayback(enabled, playing, images, records, indices, setIndices) {
+  const [states, setStates] = useState({});
+  const entries = useRef({});
+  const latest = useRef({ images, indices });
+  latest.current = { images, indices };
+  const signature = JSON.stringify(SETS.map(set => {
+    const image = images[set]?.[indices[set] ?? 0];
+    return [set, image?.name, records[recordKey(set, image?.name ?? "")]?.sensor_name];
+  }));
+  useEffect(() => {
+    if (!enabled) {
+      Object.values(entries.current).forEach(entry => entry.controller?.abort());
+      entries.current = {};
+      setStates({});
+      return;
+    }
+    for (const [set, imageName, sensorName] of JSON.parse(signature)) {
+      const key = JSON.stringify([imageName, sensorName]);
+      if (entries.current[set]?.key === key) continue;
+      entries.current[set]?.controller?.abort();
+      const controller = new AbortController();
+      const entry = { key, controller, rows: [], elapsed: 0, status: "loading", name: sensorName ?? "", message: "센서 조회 중" };
+      entries.current[set] = entry;
+      const publish = () => setStates({ ...entries.current });
+      if (!imageName || !sensorName) {
+        entry.status = imageName ? "image-only" : "finished";
+        entry.duration = 2000;
+        entry.message = !imageName ? "이미지 없음" : "DB 센서 연결 정보 없음 · 사진만 2초 표시 후 다음 사진으로 이동";
+        publish();
+        continue;
+      }
+      publish();
+      (async () => {
+        const timeout = window.setTimeout(() => controller.abort("timeout"), 15000);
+        try {
+          const response = await fetch(`${API_BASE}/api/sensors/set${set}/${encodeURIComponent(sensorName)}`, { signal: controller.signal });
+          if (!response.ok) throw new Error(`센서 조회 실패: HTTP ${response.status}`);
+          const rows = parseSensor(await response.text());
+          if (controller.signal.aborted) return;
+          if (!rows.length) throw new Error("사용 가능한 센서 데이터 없음");
+          entry.rows = rows;
+          entry.duration = rows[rows.length - 1].ms - rows[0].ms;
+          entry.status = "ready";
+          entry.message = `${sensorName} · ${rows.length.toLocaleString()}행`;
+          publish();
+        } catch (error) {
+          if (controller.signal.aborted && controller.signal.reason !== "timeout") return;
+          entry.status = "image-only";
+          entry.duration = 2000;
+          entry.elapsed = 0;
+          entry.rows = [];
+          entry.message = `${controller.signal.reason === "timeout" ? "센서 조회 시간 초과" : error.message} · 사진만 2초 표시 후 다음 사진으로 이동`;
+          publish();
+        } finally {
+          window.clearTimeout(timeout);
+        }
+      })();
+    }
+  }, [enabled, signature]);
+  useEffect(() => () => Object.values(entries.current).forEach(entry => entry.controller?.abort()), []);
+  useEffect(() => {
+    if (!enabled || !playing) return;
+    let previous = performance.now();
+    const timer = window.setInterval(() => {
+      const now = performance.now();
+      const delta = now - previous;
+      previous = now;
+      const advances = {};
+      for (const set of SETS) {
+        const entry = entries.current[set];
+        if (!["ready", "image-only"].includes(entry?.status)) continue;
+        entry.elapsed = Math.min(entry.duration, entry.elapsed + delta);
+        if (entry.elapsed >= entry.duration) {
+          const index = latest.current.indices[set] ?? 0;
+          if (index + 1 < (latest.current.images[set]?.length ?? 0)) {
+            entry.status = "advancing";
+            advances[set] = index + 1;
+          } else entry.status = "finished";
+        }
+      }
+      if (Object.keys(advances).length) setIndices(previous => ({ ...previous, ...advances }));
+      setStates({ ...entries.current });
+    }, 100);
+    return () => window.clearInterval(timer);
+  }, [enabled, playing, setIndices]);
+  return states;
+}
+
 export default function App() {
+  const [unifiedMode, setUnifiedMode] = useState(true);
+  const [unifiedLoading, setUnifiedLoading] = useState(false);
+  const [unifiedReady, setUnifiedReady] = useState(false);
+  const [unifiedPlaying, setUnifiedPlaying] = useState(false);
+  const [unifiedMessage, setUnifiedMessage] = useState("데이터 전체 불러오기를 눌러주세요.");
+  const unifiedController = useRef(null);
+  useEffect(() => () => unifiedController.current?.abort(), []);
+
   const [selectedSet, setSelectedSet] = useState(10);
   const [page, setPage] = useState("monitoring");
   const [alertHistory, setAlertHistory] = useState([]);
@@ -312,7 +409,7 @@ export default function App() {
   const [serverImageReload, setServerImageReload] = useState(0);
 
   useEffect(() => {
-  if (!useServerImages) return;
+  if (unifiedMode || !useServerImages) return;
 
   const controller = new AbortController();
 
@@ -375,10 +472,10 @@ export default function App() {
   loadServerImages();
 
   return () => controller.abort();
-}, [useServerImages, serverImageReload]);
+}, [unifiedMode, useServerImages, serverImageReload]);
 
 useEffect(() => {
-  if (!useDatabase) return;
+  if (unifiedMode || !useDatabase) return;
 
   const controller = new AbortController();
 
@@ -456,7 +553,7 @@ useEffect(() => {
   loadDatabase();
 
   return () => controller.abort();
-}, [useDatabase, databaseReload]);
+}, [unifiedMode, useDatabase, databaseReload]);
 
   const urlsRef = useRef({});
 
@@ -484,6 +581,65 @@ useEffect(() => {
   const activeImagesBySet = useServerImages
     ? serverImagesBySet
     : imagesBySet;
+
+
+  const groupSensors = useSetPlayback(unifiedMode && unifiedReady, unifiedPlaying, activeImagesBySet, databaseRecords, indices, setIndices);
+  const groupSensor = groupSensors[selectedSet];
+  async function loadAllData() {
+    unifiedController.current?.abort();
+    const controller = new AbortController();
+    unifiedController.current = controller;
+    setUnifiedMode(true);
+    setUnifiedReady(false);
+    setUnifiedLoading(true);
+    setUnifiedPlaying(false);
+    stopAllPhotos();
+    setSensorPlaying(false);
+    setUnifiedMessage("Set4~Set11 DB와 이미지 목록 조회 중...");
+    try {
+      const results = await Promise.all(SETS.map(async set => {
+        async function read(url) {
+          const response = await fetch(`${API_BASE}${url}`, { signal: controller.signal });
+          if (!response.ok) throw new Error(`Set${set} 조회 실패: HTTP ${response.status}`);
+          const data = await response.json();
+          if (!Array.isArray(data.items)) throw new Error(`Set${set} 응답 형식 오류`);
+          return data;
+        }
+        const [images, measurements] = await Promise.all([read(`/api/images/set${set}`), read(`/api/sets/${set}/measurements?limit=500`)]);
+        if (measurements.total > measurements.items.length) throw new Error(`Set${set} 측정 데이터가 일부만 조회되었습니다.`);
+        return { set, images: images.items.map(item => ({ name: item.name, url: new URL(item.url, API_BASE).href })), measurements: measurements.items };
+      }));
+      if (controller.signal.aborted) return;
+      const imageMap = {}, recordMap = {};
+      for (const result of results) {
+        imageMap[result.set] = result.images;
+        for (const item of result.measurements) {
+          if (!item.image_name) continue;
+          const key = recordKey(result.set, item.image_name);
+          if (recordMap[key]) throw new Error(`이미지 연결 중복: Set${result.set} ${item.image_name}`);
+          recordMap[key] = item;
+        }
+      }
+      setServerImagesBySet(imageMap);
+      setDatabaseRecords(recordMap);
+      setUseServerImages(true);
+      setUseDatabase(true);
+      setUseServerSensors(true);
+      setIndices({});
+      setTestModes({});
+      setTestValues({});
+      setUnifiedReady(true);
+      setUnifiedMessage(`DB ${Object.keys(recordMap).length}건 · 이미지 ${results.reduce((sum, result) => sum + result.images.length, 0)}장 · 각 Set의 연결 센서 자동 조회`);
+    } catch (error) {
+      if (!controller.signal.aborted) setUnifiedMessage(`전체 불러오기 실패: ${error.message}`);
+    } finally {
+      if (!controller.signal.aborted) setUnifiedLoading(false);
+    }
+  }
+  const groupHasWork = Object.values(groupSensors).some(entry => ["ready", "image-only", "loading", "advancing"].includes(entry.status));
+  useEffect(() => {
+    if (unifiedPlaying && !groupHasWork) setUnifiedPlaying(false);
+  }, [unifiedPlaying, groupHasWork]);
 
   const images = activeImagesBySet[selectedSet] ?? [];
   const imageIndex = indices[selectedSet] ?? 0;
@@ -607,6 +763,7 @@ const prediction = useDatabase
   }
 
   function showAlertSet(record) {
+    setUnifiedPlaying(false);
     const list = activeImagesBySet[record.set] ?? [];
     const index = list.findIndex((image) => image.name === record.image.name);
     stopPhoto(record.set);
@@ -902,7 +1059,7 @@ const sensorSourceKey = JSON.stringify([
 ]);
 
 useEffect(() => {
-  if (!useServerSensors) return;
+  if (unifiedMode || !useServerSensors) return;
 
   const controller = new AbortController();
 
@@ -988,6 +1145,7 @@ useEffect(() => {
   // 사진이나 Set을 바꾸면 이전 요청 결과를 적용하지 않습니다.
   return () => controller.abort();
 }, [
+  unifiedMode,
   useServerSensors,
   useDatabase,
   selectedSet,
@@ -996,7 +1154,7 @@ useEffect(() => {
   sensorSourceKey,
 ]);
 
-const sensorRows =
+const sensorRows = unifiedMode ? (groupSensor?.rows ?? []) :
   sensor.set === selectedSet &&
   (useServerSensors
     ? useDatabase && sensor.sourceKey === sensorSourceKey
@@ -1010,7 +1168,7 @@ const sensorRows =
 
   const visibleRows = sensorRows.filter((row) => {
     const relative = row.ms - start;
-    return relative <= elapsed && relative >= Math.max(0, elapsed - 5000);
+    return relative <= (unifiedMode ? groupSensor?.elapsed ?? 0 : elapsed) && relative >= Math.max(0, (unifiedMode ? groupSensor?.elapsed ?? 0 : elapsed) - 5000);
   });
 
   useEffect(() => {
@@ -1091,7 +1249,20 @@ const sensorRows =
               <span className="demo-badge">저장 결과 재생</span>
             </div>
 
-            <details className="data-settings">
+            <section className="unified-controls" aria-label="전체 Set 데이터 및 재생">
+              <div className="unified-actions">
+                <button disabled={unifiedLoading} onClick={loadAllData}>{unifiedLoading ? "데이터 불러오는 중..." : "데이터 전체 불러오기"}</button>
+                <button disabled={!unifiedReady || unifiedLoading || !groupHasWork || unifiedPlaying} onClick={() => setUnifiedPlaying(true)}>전체 Set 동시 재생</button>
+                <button disabled={!unifiedPlaying} onClick={() => setUnifiedPlaying(false)}>전체 일시정지</button>
+                <button disabled={!unifiedReady || unifiedLoading} onClick={() => { setUnifiedPlaying(false); setUnifiedReady(false); setTimeout(() => { setIndices({}); setUnifiedReady(true); }, 0); }}>전체 처음부터</button>
+              </div>
+              <p role="status">{unifiedMessage}</p>
+              <p>Set4~Set11의 사진과 연결 센서를 함께 재생합니다. 각 센서가 끝나면 해당 Set의 다음 사진으로 이동합니다. 센서가 없거나 오류가 있으면 사진만 2초 표시한 뒤 계속합니다.</p>
+              {unifiedMode && unifiedReady && <div className="set-playback-status">{SETS.map(set => { const entry = groupSensors[set]; return <button key={set} onClick={() => changeSet(set)} aria-pressed={selectedSet === set}>Set{set} · {(indices[set] ?? 0) + 1}/{activeImagesBySet[set]?.length ?? 0} · {entry?.status === "image-only" ? "사진만 재생" : entry?.status === "finished" ? "완료" : entry?.status === "ready" ? unifiedPlaying ? "재생 중" : "준비" : "조회 중"}</button>; })}</div>}
+              {unifiedMode && unifiedReady && <p role="status">Set{selectedSet}: {groupSensor?.message ?? "센서 조회 중"} · {((groupSensor?.elapsed ?? 0) / 1000).toFixed(1)} / {((groupSensor?.duration ?? 0) / 1000).toFixed(1)}초</p>}
+              <button onClick={() => { setUnifiedPlaying(false); setUnifiedMode(value => !value); }}> {unifiedMode ? "개별 수동 설정 열기" : "전체 Set 설정으로 돌아가기"}</button>
+            </section>
+            <details className="data-settings" style={{ display: unifiedMode ? "none" : undefined }}>
               <summary>데이터 설정 및 재생</summary>
               <div className="settings-content">
               <section style={boxStyle}>
@@ -1480,14 +1651,13 @@ const sensorRows =
                   value={formatWear(actualWear)}
                   note="정답값"
                 />
-                <ResultCard
-                  title="예측 마모량"
-                  value={formatWear(current.prediction?.predicted)}
-                  note="저장된 모델 예측 결과"
-                  color={
-                    getStatus(current.prediction?.predicted ?? null).color
-                  }
-                />
+                <div className="alert-wear-summary">
+                  <ResultCard
+                      title="예측 마모량"
+                      value={formatWear(current.prediction?.predicted)}
+                      note="저장된 모델 예측 결과"
+                    />
+                </div>
                 <ResultCard
                   title="절대 오차"
                   value={formatWear(current.prediction?.error)}
@@ -1603,12 +1773,32 @@ const sensorRows =
                   <ToolImage image={selectedAlert.image} />
                 </div>
                 <div className="alert-preview-results">
-                  <ResultCard title="예측 마모량" value={formatWear(selectedAlert.prediction?.predicted)} note="저장된 모델 예측 결과" />
+                  <div className="alert-wear-summary">
+  <ResultCard
+    title="예측 마모량"
+    value={formatWear(selectedAlert?.prediction?.predicted)}
+    note="저장된 모델 예측 결과"
+  />
+
+  <ResultCard
+    title="마모 유형"
+    value={wearType(selectedAlert?.label?.type)}
+    note="정답 라벨 기준"
+  />
+</div>
                   <div className="alert-status-box" style={{ borderColor: selectedAlert.status.color, background: selectedAlert.status.background }}>
                     <strong style={{ color: selectedAlert.status.color }}>{selectedAlert.status.label}</strong>
                     <p>{selectedAlert.source}: {formatWear(selectedAlert.wear)}</p>
                     <small>{selectedAlert.testing ? "테스트 입력값" : "저장 데이터 기준"}</small>
                   </div>
+                  <section className="alert-preview-actions" aria-label="확인 및 이동">
+                    <div className="alert-preview-action-buttons">
+                      <button type="button" disabled={Boolean(selectedAlert.acknowledgedAt)} onClick={() => acknowledgeAlert(selectedAlert.id)}>{selectedAlert.acknowledgedAt ? "확인 완료" : "확인"}</button>
+                      <button type="button" aria-label={`Set${selectedAlert.set} 모니터링으로 이동`} onClick={() => showAlertSet(selectedAlert)}>이동</button>
+                    </div>
+                    <p role="status">{selectedAlert.acknowledgedAt ? `확인 시각: ${alertTime(selectedAlert.acknowledgedAt)}` : "아직 확인하지 않은 알림입니다."}</p>
+                    <small>이동하면 전체 재생을 일시정지하고 Set{selectedAlert.set}의 알림 사진으로 이동합니다.</small>
+                  </section>
                 </div>
               </section>
             ) : <p className="alerts-empty" role="status">조건에 맞는 알림이 없습니다. 전체 모니터링에서 데이터를 불러오고 사진을 확인해주세요.</p>}
@@ -1654,14 +1844,7 @@ const sensorRows =
                 <dt>판정에 사용한 값</dt><dd>{selectedAlert.source}</dd>
               </dl> : <p>알림을 선택해주세요.</p>}
             </section>
-            <section><h3>확인 및 이동</h3>
-              {selectedAlert ? <>
-                <p>{selectedAlert.acknowledgedAt ? `확인 시각: ${alertTime(selectedAlert.acknowledgedAt)}` : "아직 확인하지 않은 알림입니다."}</p>
-                <button type="button" disabled={Boolean(selectedAlert.acknowledgedAt)} onClick={() => acknowledgeAlert(selectedAlert.id)}>확인 처리</button>
-                <button type="button" onClick={() => showAlertSet(selectedAlert)}>Set{selectedAlert.set} 보기</button>
-                <small>해당 Set의 사진 재생을 정지하고 알림 사진으로 이동합니다.</small>
-              </> : <p>선택한 알림이 없습니다.</p>}
-            </section>
+
           </aside>
         </div>
       )}

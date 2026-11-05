@@ -290,7 +290,7 @@ summary:focus-visible {
 .chart-caption {
   text-align: right;
   font-size: 9px;
-  line-height: 1.6;
+  line-height: 3.6;
   color: #94a3b8;
 }
 
@@ -309,7 +309,7 @@ summary:focus-visible {
   align-items: center;
   gap: 12px;
   border: 1px solid #cbd5e1;
-  border-radius: 8px;
+  border-radius: 8px; 
 }
 
 .status-dot {
@@ -355,7 +355,7 @@ summary:focus-visible {
 .result-card {
   display: flex;
   min-width: 0;
-  min-height: 88px;
+  min-height: 123px;
   padding: 12px;
   flex-direction: column;
   justify-content: center;
@@ -546,53 +546,409 @@ summary:focus-visible {
   overflow-y: auto;
   scrollbar-gutter: stable;
 }
-/* 모니터링과 알림 페이지 전환 */
-.header { position: relative; }
-.page-switch { position: absolute; right: 18px; top: 22px; font-size: 12px; }
-.alerts-page { display: grid; grid-template-columns: minmax(0, 1fr) 280px; flex: 1; min-height: 0; overflow: hidden; }
-.alerts-main { padding: 24px 28px; min-width: 0; overflow-y: auto; }
-.alerts-title { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-.alerts-title h2 { font-size: 18px; }
-.alerts-title span, .alerts-session-note { font-size: 12px; color: #64748b; }
-.alerts-session-note { margin: 12px 0 22px; line-height: 1.7; }
-.alert-preview { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, .8fr); gap: 28px; align-items: center; }
-.alert-preview h3 { margin: 0 0 16px; font-size: 15px; }
-.alert-preview-results { display: grid; gap: 14px; }
-.alert-status-box { border: 1px solid; border-radius: 8px; padding: 20px; line-height: 1.8; }
-.alert-status-box p { font-size: 14px; }
-.alert-status-box small { color: #64748b; }
-.alert-list-section { margin-top: 26px; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; }
-.alert-list-section h3 { margin: 0; padding: 14px 16px; font-size: 15px; border-bottom: 1px solid #e2e8f0; }
-.alert-filters { display: flex; flex-wrap: wrap; gap: 12px; padding: 14px; background: #f8fafc; }
-.alert-filters label { display: flex; align-items: center; gap: 6px; font-size: 12px; }
-.alert-filters select { padding: 5px; border: 1px solid #cbd5e1; border-radius: 4px; background: white; }
-.alert-table-scroll { max-height: 310px; overflow: auto; scrollbar-gutter: stable; }
-.alert-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; white-space: nowrap; }
-.alert-table caption { text-align: left; padding: 10px 14px; color: #64748b; }
-.alert-table th { background: #f1f5f9; position: sticky; top: 0; }
-.alert-table th, .alert-table td { padding: 12px 10px; border-bottom: 1px solid #e2e8f0; }
-.alert-table small { display: block; margin-top: 4px; color: #64748b; }
-.alert-table tr.is-selected { background: #eff6ff; }
-.alert-table tr.is-selected td:first-child { box-shadow: inset 3px 0 #2563eb; }
-.alert-details { overflow-y: auto; min-width: 0; padding: 24px 18px; border-left: 1px solid #cbd5e1; background: #fcfdff; }
-.alert-details section { padding: 16px; margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 12px; background: white; }
-.alert-details h3 { font-size: 14px; margin: 0 0 16px; }
-.alert-details dt { font-size: 11px; color: #64748b; margin-top: 14px; }
-.alert-details dd { margin: 5px 0 0; font-size: 12px; line-height: 1.7; overflow-wrap: anywhere; }
-.alert-details p, .alert-details small { font-size: 12px; line-height: 1.8; overflow-wrap: anywhere; }
-.alert-details small { display: block; color: #64748b; margin-top: 12px; }
-.alert-details button { display: block; margin-top: 12px; width: 100%; font-size: 12px; }
-.alerts-empty { padding: 30px 16px; background: #f8fafc; color: #64748b; border-radius: 8px; line-height: 1.8; }
-@media (max-width: 900px) {
-  .alerts-page { grid-template-columns: minmax(0, 1fr) 230px; }
-  .alert-preview { grid-template-columns: 1fr; gap: 16px; }
-  .alerts-main { padding: 20px; }
-  .header { height: auto; min-height: 76px; padding: 12px; }
-  .page-switch { position: static; margin-top: 5px; }
+/* ===== 모니터링 ↔ 알림 페이지 전환 ===== */
+
+/* 페이지 전환 버튼의 위치 기준 */
+.header {
+  position: relative;
 }
+
+/* 헤더 오른쪽의 페이지 전환 버튼 */
+.page-switch {
+  position: absolute;
+  right: 18px;
+  top: 22px;
+  font-size: 12px;
+}
+
+/* 알림 페이지: 왼쪽 본문 + 오른쪽 상세 패널 */
+.alerts-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* 왼쪽 알림 본문: 내용이 길면 내부 스크롤 */
+.alerts-main {
+  padding: 24px 28px;
+  min-width: 0;
+  overflow-y: auto;
+}
+
+/* 제목과 전체·미확인 건수를 양쪽에 배치 */
+.alerts-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.alerts-title h2 {
+  font-size: 18px;
+}
+
+/* 알림 건수와 이력 안내 문구 */
+.alerts-title span,
+.alerts-session-note {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.alerts-session-note {
+  margin: 12px 0 22px;
+  line-height: 1.7;
+}
+
+/* ===== 경고 위험 알림 페이지 ===== */
+
+/* 왼쪽 이미지와 오른쪽 결과 카드를 두 열로 배치 */
+.alert-preview {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, .8fr);
+  gap: 35px;
+  align-items: start;
+}
+
+/* 이미지 위의 Set·경고 단계 제목 */
+.alert-preview h3 {
+  margin: 0 0 16px;
+  font-size: 25px;
+}
+
+/* 예측값·판정·확인 버튼 카드를 세로 배치 */
+.alert-preview-results {
+  display: grid;
+  gap: 14px;
+}
+
+/* 경고·위험 판정 카드 */
+.alert-status-box {
+  border: 1px solid;
+  border-radius: 8px;
+  padding: 20px;
+  line-height: 1.8;
+}
+
+.alert-status-box p {
+  font-size: 14px;
+}
+
+/* 판정 데이터 출처 안내 */
+.alert-status-box small {
+  color: #64748b;
+}
+
+/* ===== 전체 Set 알림 목록 ===== */
+
+/* 알림 목록의 바깥 테두리 */
+.alert-list-section {
+  margin-top: 26px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* 목록 제목 */
+.alert-list-section h3 {
+  margin: 0;
+  padding: 14px 16px;
+  font-size: 15px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+/* Set·단계·확인 상태 필터: 공간이 부족하면 줄바꿈 */
+.alert-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px;
+  background: #f8fafc;
+}
+
+.alert-filters label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.alert-filters select {
+  padding: 5px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background: white;
+}
+
+/* 표 높이를 제한하고 내부 스크롤 표시 */
+/* 스크롤바 공간을 확보해 목록 너비 변화 방지 */
+.alert-table-scroll {
+  max-height: 310px;
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+
+/* 알림 표: 셀 테두리를 합치고 내용 줄바꿈 방지 */
+.alert-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* 표 상단의 알림 건수·조회 안내 */
+.alert-table caption {
+  text-align: left;
+  padding: 10px 14px;
+  color: #64748b;
+}
+
+/* 스크롤할 때 표의 열 제목을 상단에 고정 */
+.alert-table th {
+  background: #f1f5f9;
+  position: sticky;
+  top: 0;
+}
+
+.alert-table th,
+.alert-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+/* 판정 마모량 아래의 데이터 출처 */
+.alert-table small {
+  display: block;
+  margin-top: 4px;
+  color: #64748b;
+}
+
+/* 현재 선택한 알림 행 강조 */
+.alert-table tr.is-selected {
+  background: #eff6ff;
+}
+
+/* 선택한 행 왼쪽에 파란색 표시선 */
+.alert-table tr.is-selected td:first-child {
+  box-shadow: inset 3px 0 #2563eb;
+}
+
+/* ===== 오른쪽 알림 상세 패널 ===== */
+
+.alert-details {
+  overflow-y: auto;
+  min-width: 0;
+  padding: 24px 18px;
+  border-left: 1px solid #cbd5e1;
+  background: #fcfdff;
+}
+
+/* 상세 정보 카드 */
+.alert-details section {
+  padding: 16px;
+  margin-bottom: 20px;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  background: white;
+}
+
+.alert-details h3 {
+  font-size: 14px;
+  margin: 0 0 16px;
+}
+
+/* 상세 항목 이름: Set, 관측 시각, 이미지 등 */
+.alert-details dt {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 14px;
+}
+
+/* 상세 항목 값: 긴 파일명도 줄바꿈 */
+.alert-details dd {
+  margin: 5px 0 0;
+  font-size: 12px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.alert-details p,
+.alert-details small {
+  font-size: 12px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+
+.alert-details small {
+  display: block;
+  color: #64748b;
+  margin-top: 12px;
+}
+
+/* 상세 패널 안에 버튼이 있을 때 적용 */
+.alert-details button {
+  display: block;
+  margin-top: 12px;
+  width: 100%;
+  font-size: 12px;
+}
+
+/* 조회 조건에 맞는 알림이 없을 때 표시 */
+.alerts-empty {
+  padding: 30px 16px;
+  background: #f8fafc;
+  color: #64748b;
+  border-radius: 8px;
+  line-height: 1.8;
+}
+
+/* ===== 태블릿·작은 화면 대응 ===== */
+
+/* 화면 너비 900px 이하 */
+@media (max-width: 900px) {
+  /* 오른쪽 상세 패널 너비 축소 */
+  .alerts-page {
+    grid-template-columns: minmax(0, 1fr) 230px;
+  }
+
+  /* 이미지와 결과 카드를 세로 배치 */
+  .alert-preview {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .alerts-main {
+    padding: 20px;
+  }
+
+  /* 헤더 내용에 맞게 높이 확장 */
+  .header {
+    height: auto;
+    min-height: 76px;
+    padding: 12px;
+  }
+
+  /* 페이지 전환 버튼을 일반 문서 흐름에 배치 */
+  .page-switch {
+    position: static;
+    margin-top: 5px;
+  }
+}
+
+/* 화면 너비 650px 이하 */
 @media (max-width: 650px) {
-  .alerts-page { display: block; overflow-y: auto; }
-  .alerts-main, .alert-details { overflow: visible; }
-  .alerts-title { align-items: flex-start; flex-direction: column; }
-  .alert-details { border-left: 0; border-top: 1px solid #cbd5e1; }
+  /* 본문과 상세 패널을 위아래로 배치 */
+  .alerts-page {
+    display: block;
+    overflow-y: auto;
+  }
+
+  /* 각 패널 대신 알림 페이지 전체에서 스크롤 */
+  .alerts-main,
+  .alert-details {
+    overflow: visible;
+  }
+
+  /* 제목과 알림 건수를 세로 배치 */
+  .alerts-title {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  /* 상세 패널의 구분선을 위쪽으로 변경 */
+  .alert-details {
+    border-left: 0;
+    border-top: 1px solid #cbd5e1;
+  }
+}
+
+/* ===== 전체 데이터 조회·동시 재생 ===== */
+
+/* 통합 제어 영역 */
+.unified-controls {
+  margin-bottom: 24px;
+  padding: 16px;
+  border: 1px solid #dce2ea;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+/* 재생 버튼과 Set 상태 버튼: 가로 배치 후 자동 줄바꿈 */
+.unified-actions,
+.set-playback-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* 조회 결과와 센서 재생 상태 안내 */
+.unified-controls p {
+  margin: 10px 0;
+  font-size: 12px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+/* 데이터 전체 불러오기 버튼 강조 */
+.unified-actions button:first-child {
+  background: #2563eb;
+  color: white;
+}
+
+.set-playback-status button {
+  font-size: 11px;
+}
+
+/* 현재 화면에서 선택한 Set 버튼 강조 */
+.set-playback-status button[aria-pressed="true"] {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+/* ===== 판정 카드 아래 확인·이동 버튼 ===== */
+
+/* 확인·이동 영역의 바깥 카드 */
+.alert-preview-actions {
+  padding: 14px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+}
+
+/* 확인과 이동 버튼을 가운데에 가로 배치 */
+.alert-preview-action-buttons {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+/* 두 버튼의 최소 너비 */
+.alert-preview-action-buttons button {
+  min-width: 96px;
+}
+
+/* 확인 여부·확인 시각 표시 */
+.alert-preview-actions p {
+  margin-top: 10px;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+/* 이동 버튼 동작 안내 */
+.alert-preview-actions small {
+  display: block;
+  margin-top: 6px;
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+/* 알림 페이지에서 예측 마모량, 마모 유형 표시 */
+.alert-preview-results .alert-wear-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
