@@ -252,6 +252,13 @@ function ResultCard({ title, value, note, color }) {
 
 export default function App() {
   const [selectedSet, setSelectedSet] = useState(10);
+  const [page, setPage] = useState("monitoring");
+  const [alertHistory, setAlertHistory] = useState([]);
+  const observedAlerts = useRef(new Set());
+  const [selectedAlertId, setSelectedAlertId] = useState(null);
+  const [alertSetFilter, setAlertSetFilter] = useState("all");
+  const [alertLevelFilter, setAlertLevelFilter] = useState("all");
+  const [alertReadFilter, setAlertReadFilter] = useState("all");
   const [imagesBySet, setImagesBySet] = useState({});
   const [indices, setIndices] = useState({});
   const [photoPlayingBySet, setPhotoPlayingBySet] = useState({});
@@ -547,7 +554,7 @@ const prediction = useDatabase
 
   const current = getRecord(selectedSet);
 
-  const alerts = SETS.map(getRecord)
+  const activeAlerts = SETS.map(getRecord)
   .filter(
     (record) =>
       record.status.level === "warning" ||
@@ -561,10 +568,56 @@ const prediction = useDatabase
       record.source,
       record.status.level,
     ]),
-  }))
-  .filter(
+  }));
+
+  const alerts = activeAlerts.filter(
     (record) => dismissedAlerts[record.set] !== record.alertKey
   );
+
+  // 화면에서 관측한 알림을 중복 없이 보관합니다. DB 이력과는 별개입니다.
+  const alertSnapshot = JSON.stringify(activeAlerts);
+  useEffect(() => {
+    const detected = JSON.parse(alertSnapshot);
+    const additions = [];
+    for (const record of detected) {
+      const id = JSON.stringify([record.set, record.alertKey]);
+      if (observedAlerts.current.has(id)) continue;
+      observedAlerts.current.add(id);
+      additions.push({ ...record, id, observedAt: new Date().toISOString(), acknowledgedAt: null });
+    }
+    if (additions.length) {
+      setAlertHistory((previous) => [...additions, ...previous]);
+    }
+  }, [alertSnapshot]);
+
+  const filteredAlerts = alertHistory.filter((record) =>
+    (alertSetFilter === "all" || record.set === Number(alertSetFilter)) &&
+    (alertLevelFilter === "all" || record.status.level === alertLevelFilter) &&
+    (alertReadFilter === "all" || (alertReadFilter === "unread" ? !record.acknowledgedAt : Boolean(record.acknowledgedAt)))
+  );
+  const selectedAlert = filteredAlerts.find((record) => record.id === selectedAlertId)
+    ?? filteredAlerts[0] ?? null;
+
+  function acknowledgeAlert(id) {
+    setAlertHistory((previous) => previous.map((record) =>
+      record.id === id && !record.acknowledgedAt
+        ? { ...record, acknowledgedAt: new Date().toISOString() }
+        : record
+    ));
+  }
+
+  function showAlertSet(record) {
+    const list = activeImagesBySet[record.set] ?? [];
+    const index = list.findIndex((image) => image.name === record.image.name);
+    stopPhoto(record.set);
+    if (index >= 0) setIndices((previous) => ({ ...previous, [record.set]: index }));
+    changeSet(record.set);
+    setPage("monitoring");
+  }
+
+  function alertTime(value) {
+    return value ? new Date(value).toLocaleString("ko-KR", { hour12: false }) : "—";
+  }
 
   const matchedCount = images.filter((image) => {
     const key = recordKey(selectedSet, image.name);
@@ -999,10 +1052,13 @@ const sensorRows =
     <div className="dashboard">
       <header className="header">
         <h1 translate="no">AIM</h1>
-        <span>공구 마모 진단 대시보드</span>
+        <span>{page === "alerts" ? "경고·위험 알림 대시보드" : "공구 마모 진단 대시보드"}</span>
+        <button type="button" className="page-switch" onClick={() => setPage(page === "alerts" ? "monitoring" : "alerts")}>
+          {page === "alerts" ? "전체 모니터링으로" : `경고·위험 알림 보기 (${alertHistory.filter((record) => !record.acknowledgedAt).length})`}
+        </button>
       </header>
 
-      <div className="dashboard-body">
+      <div className="dashboard-body" style={page === "alerts" ? { display: "none" } : undefined}>
         <main className="main-panel">
           <nav
             className="set-navigation"
@@ -1532,6 +1588,83 @@ const sensorRows =
           </p>
         </aside>
       </div>
+      {page === "alerts" && (
+        <div className="alerts-page">
+          <main className="alerts-main">
+            <div className="alerts-title">
+              <h2>경고·위험 알림</h2>
+              <span>전체 {alertHistory.length}건 · 미확인 {alertHistory.filter((record) => !record.acknowledgedAt).length}건</span>
+            </div>
+            <p className="alerts-session-note">현재 접속 중 관측한 상태입니다. 시각은 화면 관측 시각이며 새로고침하면 이력과 확인 상태가 초기화됩니다.</p>
+            {selectedAlert ? (
+              <section className="alert-preview">
+                <div>
+                  <h3 style={{ color: selectedAlert.status.color }}>[Set{selectedAlert.set}] {selectedAlert.status.label}</h3>
+                  <ToolImage image={selectedAlert.image} />
+                </div>
+                <div className="alert-preview-results">
+                  <ResultCard title="예측 마모량" value={formatWear(selectedAlert.prediction?.predicted)} note="저장된 모델 예측 결과" />
+                  <div className="alert-status-box" style={{ borderColor: selectedAlert.status.color, background: selectedAlert.status.background }}>
+                    <strong style={{ color: selectedAlert.status.color }}>{selectedAlert.status.label}</strong>
+                    <p>{selectedAlert.source}: {formatWear(selectedAlert.wear)}</p>
+                    <small>{selectedAlert.testing ? "테스트 입력값" : "저장 데이터 기준"}</small>
+                  </div>
+                </div>
+              </section>
+            ) : <p className="alerts-empty" role="status">조건에 맞는 알림이 없습니다. 전체 모니터링에서 데이터를 불러오고 사진을 확인해주세요.</p>}
+            <section className="alert-list-section">
+              <h3>전체 Set 알림</h3>
+              <div className="alert-filters">
+                <label>Set <select value={alertSetFilter} onChange={(event) => setAlertSetFilter(event.target.value)}>
+                  <option value="all">전체 Set</option>
+                  {SETS.map((set) => <option key={set} value={set}>Set{set}</option>)}
+                </select></label>
+                <label>단계 <select value={alertLevelFilter} onChange={(event) => setAlertLevelFilter(event.target.value)}>
+                  <option value="all">전체 단계</option><option value="warning">경고</option><option value="danger">위험</option>
+                </select></label>
+                <label>확인 상태 <select value={alertReadFilter} onChange={(event) => setAlertReadFilter(event.target.value)}>
+                  <option value="all">전체</option><option value="unread">미확인</option><option value="read">확인</option>
+                </select></label>
+              </div>
+              <div className="alert-table-scroll">
+                <table className="alert-table">
+                  <caption>알림 {filteredAlerts.length}건 · 선택 버튼으로 상세 조회</caption>
+                  <thead><tr><th scope="col">관측 시각</th><th scope="col">Set</th><th scope="col">단계</th><th scope="col">판정 마모량</th><th scope="col">확인 상태</th><th scope="col">상세</th></tr></thead>
+                  <tbody>{filteredAlerts.map((record) => (
+                    <tr key={record.id} className={selectedAlert?.id === record.id ? "is-selected" : ""}>
+                      <td>{alertTime(record.observedAt)}</td><td>Set{record.set}</td>
+                      <td style={{ color: record.status.color }}>{record.status.level === "danger" ? "위험" : "경고"}</td>
+                      <td>{formatWear(record.wear)}<small>{record.source}</small></td>
+                      <td>{record.acknowledgedAt ? "확인" : "미확인"}</td>
+                      <td><button type="button" aria-pressed={selectedAlert?.id === record.id} onClick={() => setSelectedAlertId(record.id)}>선택</button></td>
+                    </tr>
+                  ))}</tbody>
+                </table>
+              </div>
+            </section>
+          </main>
+          <aside className="alert-details">
+            <section><h3>알림 상세</h3>
+              {selectedAlert ? <dl>
+                <dt>Set</dt><dd>Set{selectedAlert.set}</dd>
+                <dt>관측 시각</dt><dd>{alertTime(selectedAlert.observedAt)}</dd>
+                <dt>이미지</dt><dd>{selectedAlert.image.name}</dd>
+                <dt>센서</dt><dd>{selectedAlert.prediction?.sensorName || selectedAlert.label?.sensorName || "정보 없음"}</dd>
+                <dt>판정 기준</dt><dd>경고 {WARNING}μm 이상 · 위험 {DANGER}μm 이상</dd>
+                <dt>판정에 사용한 값</dt><dd>{selectedAlert.source}</dd>
+              </dl> : <p>알림을 선택해주세요.</p>}
+            </section>
+            <section><h3>확인 및 이동</h3>
+              {selectedAlert ? <>
+                <p>{selectedAlert.acknowledgedAt ? `확인 시각: ${alertTime(selectedAlert.acknowledgedAt)}` : "아직 확인하지 않은 알림입니다."}</p>
+                <button type="button" disabled={Boolean(selectedAlert.acknowledgedAt)} onClick={() => acknowledgeAlert(selectedAlert.id)}>확인 처리</button>
+                <button type="button" onClick={() => showAlertSet(selectedAlert)}>Set{selectedAlert.set} 보기</button>
+                <small>해당 Set의 사진 재생을 정지하고 알림 사진으로 이동합니다.</small>
+              </> : <p>선택한 알림이 없습니다.</p>}
+            </section>
+          </aside>
+        </div>
+      )}
     </div>
   );
 }
