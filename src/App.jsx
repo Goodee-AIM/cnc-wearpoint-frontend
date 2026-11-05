@@ -468,6 +468,7 @@ useEffect(() => {
     rows: [],
   });
   const [sensorMessage, setSensorMessage] = useState("센서 CSV 선택 대기");
+  const [useServerSensors, setUseServerSensors] = useState(false);
   const [sensorPlaying, setSensorPlaying] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const elapsedRef = useRef(0);
@@ -826,7 +827,129 @@ useEffect(() => {
     }));
 }
 
-  const sensorRows = sensor.set === selectedSet ? sensor.rows : [];
+ // DB 사용 시 예측 결과 유무와 관계없이 측정 정보에서 연결 파일을 찾습니다.
+const currentDatabaseRecord =
+  useDatabase && currentImage
+    ? databaseRecords[recordKey(selectedSet, currentImage.name)]
+    : null;
+
+const expectedSensor = String(
+  useDatabase
+    ? currentDatabaseRecord?.sensor_name ?? ""
+    : current.prediction?.sensorName ??
+        current.label?.sensorName ??
+        ""
+).trim();
+
+// 사진이 바뀌면 같은 센서 파일명이어도 재생 위치를 초기화합니다.
+const sensorSourceKey = JSON.stringify([
+  selectedSet,
+  currentImage?.name ?? "",
+  expectedSensor,
+]);
+
+useEffect(() => {
+  if (!useServerSensors) return;
+
+  const controller = new AbortController();
+
+  setSensorPlaying(false);
+  elapsedRef.current = 0;
+  setElapsed(0);
+
+  setSensor({
+    set: selectedSet,
+    name: expectedSensor,
+    sourceKey: sensorSourceKey,
+    rows: [],
+  });
+
+  if (!useDatabase) {
+    setSensorMessage("자동 센서 조회는 DB 조회 사용을 켜주세요.");
+    return () => controller.abort();
+  }
+
+  if (!currentImage) {
+    setSensorMessage("현재 이미지가 없습니다.");
+    return () => controller.abort();
+  }
+
+  if (!expectedSensor) {
+    setSensorMessage("현재 사진에 연결된 센서 정보가 없습니다.");
+    return () => controller.abort();
+  }
+
+  async function loadSensor() {
+    setSensorMessage(`센서 CSV 조회 중: ${expectedSensor}`);
+
+    try {
+      const response = await fetch(
+        `${API_BASE}/api/sensors/set${selectedSet}/${encodeURIComponent(expectedSensor)}`,
+        { signal: controller.signal }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          response.status === 404
+            ? "서버에 대응하는 센서 CSV 파일이 없습니다."
+            : `센서 조회 실패: HTTP ${response.status}`
+        );
+      }
+
+      const text = await response.text();
+
+      if (controller.signal.aborted) return;
+
+      const rows = parseSensor(text);
+
+      if (controller.signal.aborted) return;
+
+      setSensor({
+        set: selectedSet,
+        name: expectedSensor,
+        sourceKey: sensorSourceKey,
+        rows,
+      });
+
+      setSensorMessage(
+        `${expectedSensor} · ${rows.length.toLocaleString()}행 · 자동 연결`
+      );
+
+      setSensorPlaying(true);
+    } catch (error) {
+      if (controller.signal.aborted) return;
+
+      setSensor({
+        set: selectedSet,
+        name: expectedSensor,
+        sourceKey: sensorSourceKey,
+        rows: [],
+      });
+
+      setSensorMessage(error.message);
+    }
+  }
+
+  loadSensor();
+
+  // 사진이나 Set을 바꾸면 이전 요청 결과를 적용하지 않습니다.
+  return () => controller.abort();
+}, [
+  useServerSensors,
+  useDatabase,
+  selectedSet,
+  currentImage?.name,
+  expectedSensor,
+  sensorSourceKey,
+]);
+
+const sensorRows =
+  sensor.set === selectedSet &&
+  (useServerSensors
+    ? useDatabase && sensor.sourceKey === sensorSourceKey
+    : !sensor.sourceKey)
+    ? sensor.rows
+    : [];
   const start = sensorRows[0]?.ms ?? 0;
   const duration = sensorRows.length
     ? sensorRows[sensorRows.length - 1].ms - start
@@ -857,9 +980,6 @@ useEffect(() => {
 
     return () => window.clearInterval(timer);
   }, [sensorPlaying, sensorRows.length, duration, selectedSet]);
-
-  const expectedSensor =
-    current.prediction?.sensorName || current.label?.sensorName;
 
   const sensorMatches =
     sensor.set === selectedSet &&
@@ -987,7 +1107,7 @@ useEffect(() => {
 
   <p style={{ marginTop: 10, fontSize: 12 }}>
     DB 사용 시 정답·예측 정보는 서버에서 조회합니다.
-    센서 원본은 아래에서 선택해주세요
+    센서 자동 연결을 켜면 현재 사진에 대응하는 센서 CSV도 서버에서 불러옵니다.
   </p>
 </section>
 
@@ -1132,12 +1252,46 @@ useEffect(() => {
             </section>
 
             <section style={boxStyle}>
+              <div style={{ marginBottom: 14 }}>
+                <button
+                  type="button"
+                  aria-pressed={useServerSensors}
+                  onClick={() => {
+                    const next = !useServerSensors;
+
+                    setSensorPlaying(false);
+                    elapsedRef.current = 0;
+                    setElapsed(0);
+
+                    setSensor({
+                      set: null,
+                      name: "",
+                      rows: [],
+                    });
+
+                    setSensorMessage(
+                      next ? "센서 자동 연결 준비 중..." : "센서 CSV 선택 대기"
+                    );
+
+                    setUseServerSensors(next);
+                  }}
+                >
+                  {useServerSensors
+                    ? "서버 센서 자동 연결 끄기"
+                    : "서버 센서 자동 연결 켜기"}
+                </button>
+
+                <p style={{ marginTop: 8, fontSize: 12 }} role="status">
+                  자동 연결: {useServerSensors ? "켜짐" : "꺼짐"}
+                </p>
+              </div>
               <label>
                 Set{selectedSet} 센서 CSV — 선택 사항
                 <input
                   key={`sensor-${selectedSet}`}
                   type="file"
                   accept=".csv"
+                  disabled={useServerSensors}
                   onChange={handleSensor}
                   style={{ display: "block", marginTop: 8 }}
                 />
@@ -1188,7 +1342,9 @@ useEffect(() => {
               </div>
 
               <p style={{ marginTop: 10, fontSize: 11, color: "#64748b" }}>
-                최근 5초 표시 · 사진과 별도 재생
+                {useServerSensors
+                  ? "최근 5초 표시 · 사진 변경 시 대응 센서로 전환하고 처음부터 재생"
+                  : "최근 5초 표시 · 사진과 별도 재생"}
               </p>
               <p style={{ marginTop: 8, fontSize: 11, overflowWrap: "anywhere" }}>
                 사진에 대응하는 센서: {expectedSensor || "정보 없음"}
