@@ -654,14 +654,14 @@ useEffect(() => {
       ? databaseRecords[key] ?? null
       : null;
 
-    const dbActual = numberOrNull(dbRecord?.actual_wear_um);
+    const dbActual = numberOrNull(dbRecord?.original_wear_um);
     const dbPredicted = numberOrNull(dbRecord?.predicted_wear_um);
 
 const label = useDatabase
   ? dbRecord
     ? {
         wear: dbActual,
-        type: dbRecord.actual_type,
+        type: dbRecord.original_type,
         sensorName: dbRecord.sensor_name,
         imageTime: dbRecord.image_captured_at,
       }
@@ -784,7 +784,7 @@ const prediction = useDatabase
 
       return selectedSet === 10 || selectedSet === 11
         ? numberOrNull(record?.predicted_wear_um) !== null
-        : numberOrNull(record?.actual_wear_um) !== null;
+        : numberOrNull(record?.original_wear_um) !== null;
     }
 
     return selectedSet === 10 || selectedSet === 11
