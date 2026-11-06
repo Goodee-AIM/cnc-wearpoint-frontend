@@ -672,6 +672,7 @@ const prediction = useDatabase
   ? dbPredicted !== null
     ? {
         predicted: dbPredicted,
+        predictionId: dbRecord.prediction_id,
         actual: dbActual,
         error:
           dbActual === null
@@ -754,14 +755,54 @@ const prediction = useDatabase
   const selectedAlert = filteredAlerts.find((record) => record.id === selectedAlertId)
     ?? filteredAlerts[0] ?? null;
 
-  function acknowledgeAlert(id) {
-    setAlertHistory((previous) => previous.map((record) =>
-      record.id === id && !record.acknowledgedAt
-        ? { ...record, acknowledgedAt: new Date().toISOString() }
-        : record
-    ));
+  async function acknowledgeAlert(id) {
+  const record = alertHistory.find((item) => item.id === id);
+  if (!record || record.acknowledgedAt) return;
+
+  const predictionId = record.prediction?.predictionId;
+  if (!predictionId) {
+    window.alert("연결된 AI 예측 결과가 없어 DB에 확인을 기록할 수 없습니다.");
+    return;
   }
 
+  try {
+    // DB에 알림이 없으면 생성하고, 이미 있으면 기존 알림을 받습니다.
+    const created = await fetch(`${API_BASE}/api/alerts`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prediction_id: predictionId }),
+    });
+    if (!created.ok) {
+      throw new Error(`알림 저장 실패 (HTTP ${created.status})`);
+    }
+    const alert = await created.json();
+
+    const confirmed = await fetch(
+      `${API_BASE}/api/alerts/${alert.id}/acknowledge`,
+      { method: "PATCH" },
+    );
+    if (!confirmed.ok) {
+      throw new Error(`확인 기록 실패 (HTTP ${confirmed.status})`);
+    }
+    const saved = await confirmed.json();
+const confirmedAt = saved.detail_confirmed_at;
+
+if (!confirmedAt) {
+  throw new Error("확인 API 응답에 detail_confirmed_at이 없습니다.");
+}
+
+setAlertHistory((previous) =>
+  previous.map((item) =>
+    item.id === id
+      ? { ...item, acknowledgedAt: confirmedAt }
+      : item,
+  ),
+);
+    
+  } catch (error) {
+    window.alert(error.message);
+  }
+}
   function showAlertSet(record) {
     setUnifiedPlaying(false);
     const list = activeImagesBySet[record.set] ?? [];
@@ -1796,7 +1837,11 @@ const sensorRows = unifiedMode ? (groupSensor?.rows ?? []) :
                       <button type="button" disabled={Boolean(selectedAlert.acknowledgedAt)} onClick={() => acknowledgeAlert(selectedAlert.id)}>{selectedAlert.acknowledgedAt ? "확인 완료" : "확인"}</button>
                       <button type="button" aria-label={`Set${selectedAlert.set} 모니터링으로 이동`} onClick={() => showAlertSet(selectedAlert)}>이동</button>
                     </div>
-                    <p role="status">{selectedAlert.acknowledgedAt ? `확인 시각: ${alertTime(selectedAlert.acknowledgedAt)}` : "아직 확인하지 않은 알림입니다."}</p>
+                    <p role="status">
+  {selectedAlert.acknowledgedAt
+    ? `DB에 확인 기록이 저장되었습니다. 확인 시각 ${alertTime(selectedAlert.acknowledgedAt)}`
+    : "아직 확인하지 않은 알림입니다."}
+</p>
                     <small>이동하면 전체 재생을 일시정지하고 Set{selectedAlert.set}의 알림 사진으로 이동합니다.</small>
                   </section>
                 </div>
