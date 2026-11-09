@@ -4,6 +4,9 @@ import { API_BASE, DANGER, SETS, WARNING } from "../dashboardConfig.js";
 
 import { fileKey, getStatus, numberOrNull } from "../utils/wear.js";
 
+// 알림 이력 조회 시 5초마다 새로고침
+const HISTORY_REFRESH_MS = 5000;
+
 function historyRecord(row, imagesBySet) {
   const set = row.set_number;
   const name = row.image_name;
@@ -137,8 +140,10 @@ export default function useAlerts(getRecord, showHistory, imagesBySet) {
   useEffect(() => {
     if (!showHistory) return;
     const controller = new AbortController();
+    let refreshTimer;
+    setHistoryMessage("DB 알림 이력을 불러오는 중입니다.");
+
     async function loadHistory() {
-      setHistoryMessage("DB 알림 이력을 불러오는 중입니다.");
       try {
         const rows = [];
         const limit = 100;
@@ -154,19 +159,36 @@ export default function useAlerts(getRecord, showHistory, imagesBySet) {
           rows.push(...items);
           if (items.length < limit) break;
         }
+        // DB 알림 이력은 다른 사용자가 확인할 수 있으므로, 5초마다 새로고침
         if (controller.signal.aborted) return;
-        setStoredAlerts([
-          ...new Map(rows.map((row) => [row.id, row])).values(),
-        ]);
+        const uniqueRows = [...new Map(rows.map((row) => [row.id, row])).values()];
+        setStoredAlerts((previous) => {
+          // 조회 도중 확인 요청이 완료되면 이전 조회 결과의 NULL을 덮어쓰지 않습니다.
+          const confirmedAtById = new Map(
+            previous.map((row) => [row.id, row.detail_confirmed_at]),
+          );
+          return uniqueRows.map((row) => ({
+            ...row,
+            detail_confirmed_at:
+              row.detail_confirmed_at ?? confirmedAtById.get(row.id) ?? null,
+          }));
+        });
         setHistoryMessage("");
       } catch (error) {
         if (!controller.signal.aborted) {
           setHistoryMessage(`DB 알림 이력 조회 실패: ${error.message}`);
         }
+      } finally {
+        if (!controller.signal.aborted) {
+          refreshTimer = setTimeout(loadHistory, HISTORY_REFRESH_MS);
+        }
       }
     }
     void loadHistory();
-    return () => controller.abort();
+    return () => {
+      clearTimeout(refreshTimer);
+      controller.abort();
+    };
   }, [showHistory, historyRequest]);
 
   const storedByPrediction = new Map(
@@ -176,15 +198,18 @@ export default function useAlerts(getRecord, showHistory, imagesBySet) {
     ]),
   );
   const alertHistory = [...storedByPrediction.values()];
-  const shownPredictions = new Set(storedByPrediction.keys());
+  const shownPredictions = new Set();
   for (const item of sessionAlerts) {
     const predictionId = item.prediction?.predictionId;
     if (!item.testing && predictionId) {
       const stored = storedByPrediction.get(predictionId);
-      if (stored && item.acknowledgedAt)
-        stored.acknowledgedAt = item.acknowledgedAt;
       if (shownPredictions.has(predictionId)) continue;
       shownPredictions.add(predictionId);
+      if (stored) {
+        stored.id = item.id;
+        stored.acknowledgedAt ??= item.acknowledgedAt;
+        continue;
+      }
     }
     alertHistory.push(item);
   }
