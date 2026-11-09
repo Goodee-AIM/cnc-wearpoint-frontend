@@ -1,3 +1,4 @@
+// 각 Set의 현재 사진에 연결된 센서를 조회, Set별 재생 시간과 다음 사진으로 넘어가는 시점 관리
 import { useEffect, useRef, useState } from "react";
 import { API_BASE, SETS } from "../dashboardConfig.js";
 import { recordKey } from "../utils/wear.js";

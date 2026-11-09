@@ -1,3 +1,4 @@
+// 라벨·예측 CSV를 읽고, 센서 CSV를 검증해 그래프에서 사용할 데이터로 변환
 import Papa from "papaparse";
 
 export function readTable(text, required) {

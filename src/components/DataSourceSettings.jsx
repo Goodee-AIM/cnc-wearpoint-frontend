@@ -1,3 +1,5 @@
+// 데이터 소스 설정 화면 
+
 import { boxStyle, controlsStyle } from "./settingsStyles.js";
 
 export default function DataSourceSettings({

@@ -1,3 +1,5 @@
+// 현재 공구 이미지 & 센서 파형 그래프 배치
+
 import ToolImage from "./ToolImage.jsx";
 import Graph from "./Graph.jsx";
 import { TITLES } from "../dashboardConfig.js";

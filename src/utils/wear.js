@@ -1,3 +1,5 @@
+// Set 번호와 이미지 파일명으로 매칭 키 생성 후
+// 마모 상태를 판정하며, 마모량·유형·알림 시각을 표시 형식 변환
 import { WARNING, DANGER } from "../dashboardConfig.js";
 
 export function fileKey(name) {

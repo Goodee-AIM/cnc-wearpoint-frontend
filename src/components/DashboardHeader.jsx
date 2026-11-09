@@ -1,3 +1,5 @@
+// 서비스 제목을 표시하고 모니터링과 알림 이력 화면 사이를 전환
+
 export default function DashboardHeader({ page, setPage, alertHistory }) {
   return (
     <header className="header">

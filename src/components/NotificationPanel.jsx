@@ -1,3 +1,4 @@
+// Set별 사이드 알림 패널 구성
 import { formatWear } from "../utils/wear.js";
 
 export default function NotificationPanel({

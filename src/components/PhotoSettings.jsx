@@ -1,3 +1,5 @@
+// 사진 설정 화면
+
 import { boxStyle, controlsStyle } from "./settingsStyles.js";
 import { SETS, WARNING, DANGER } from "../dashboardConfig.js";
 

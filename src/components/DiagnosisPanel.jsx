@@ -1,3 +1,4 @@
+// 마모 상태, 예측 마모량, 마모 유형을 표시
 import ToolImage from "./ToolImage.jsx";
 import ResultCard from "./ResultCard.jsx";
 import { formatWear, wearType } from "../utils/wear.js";
@@ -49,11 +50,7 @@ export default function DiagnosisPanel({
         </div>
 
         <div className="diagnosis-results">
-          <ResultCard
-            title="실제 마모량"
-            value={formatWear(actualWear)}
-            note="정답값"
-          />
+              
           <div className="alert-wear-summary">
             <ResultCard
               title="예측 마모량"
@@ -61,11 +58,7 @@ export default function DiagnosisPanel({
               note="저장된 모델 예측 결과"
             />
           </div>
-          <ResultCard
-            title="절대 오차"
-            value={formatWear(current.prediction?.error)}
-            note="|실제 마모량 − 예측 마모량|"
-          />
+          
           <ResultCard
             title="마모 유형"
             value={wearType(current.label?.type)}

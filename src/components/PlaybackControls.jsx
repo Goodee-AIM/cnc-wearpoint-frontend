@@ -1,3 +1,5 @@
+// 전체 Set 데이터 및 재생 제어 컴포넌트
+
 import { SETS } from "../dashboardConfig.js";
 
 export default function PlaybackControls({

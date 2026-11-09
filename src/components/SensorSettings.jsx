@@ -1,3 +1,5 @@
+// 센서 설정 화면
+
 import { boxStyle, controlsStyle } from "./settingsStyles.js";
 
 export default function SensorSettings({

@@ -1,3 +1,4 @@
+// 대시보드 상태를 관리, 서버 이미지와 DB 측정 결과를 연결
 import { useEffect, useRef, useState } from "react";
 import { API_BASE, SETS } from "../dashboardConfig.js";
 import { getStatus, numberOrNull, recordKey } from "../utils/wear.js";

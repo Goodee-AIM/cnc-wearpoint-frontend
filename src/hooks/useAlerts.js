@@ -1,3 +1,4 @@
+// 현재 경고·위험을 감지, 새 알림을 이력에 추가. 알림은 API로 등록, DB 이력 조회·필터링·확인
 import { useEffect, useRef, useState } from "react";
 import { API_BASE, DANGER, SETS, WARNING } from "../dashboardConfig.js";
 

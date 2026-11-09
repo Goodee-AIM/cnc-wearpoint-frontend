@@ -1,3 +1,4 @@
+// Tool 이미지 컴포넌트
 export default function ToolImage({ image }) {
   return (
     <div className="image-placeholder">

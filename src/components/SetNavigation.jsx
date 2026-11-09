@@ -1,3 +1,4 @@
+// Set 선택 네비게이션 컴포넌트
 import { SETS } from "../dashboardConfig.js";
 
 export default function SetNavigation({ selectedSet, changeSet }) {

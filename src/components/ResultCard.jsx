@@ -1,3 +1,5 @@
+// 진단 결과 카드 컴포넌트
+
 export default function ResultCard({ title, value, note, color }) {
   return (
     <div className="result-card">

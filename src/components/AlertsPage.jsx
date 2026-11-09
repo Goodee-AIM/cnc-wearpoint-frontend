@@ -1,3 +1,5 @@
+// 알림 이력 화면
+
 import ToolImage from "./ToolImage.jsx";
 import ResultCard from "./ResultCard.jsx";
 import { SETS, WARNING, DANGER } from "../dashboardConfig.js";

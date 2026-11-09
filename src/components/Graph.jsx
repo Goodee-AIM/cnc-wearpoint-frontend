@@ -1,3 +1,4 @@
+// 센서 데이터 그래프 컴포넌트
 export default function Graph({ title, rows, column }) {
   let min = Infinity;
   let max = -Infinity;

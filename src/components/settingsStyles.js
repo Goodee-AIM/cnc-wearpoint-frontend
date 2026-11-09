@@ -1,3 +1,4 @@
+// 설정 화면 스타일
 export const boxStyle = {
   padding: 16,
   marginBottom: 20,
