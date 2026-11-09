@@ -271,15 +271,6 @@ summary:focus-visible {
   font-weight: 600;
 }
 
-.sensor-heading select {
-  max-width: 100%;
-  padding: 2px;
-  border: 1px solid #cbd5e1;
-  border-radius: 4px;
-  background: #ffffff;
-  font-size: 10px;
-}
-
 .sensor-chart {
   display: block;
   width: 100%;

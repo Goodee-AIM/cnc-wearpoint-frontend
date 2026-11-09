@@ -2,12 +2,7 @@ import ToolImage from "./ToolImage.jsx";
 import Graph from "./Graph.jsx";
 import { TITLES } from "../dashboardConfig.js";
 
-export default function MonitoringView({
-  currentImage,
-  visibleRows,
-  columns,
-  setColumns,
-}) {
+export default function MonitoringView({ currentImage, visibleRows }) {
   return (
     <section className="monitoring-layout">
       <div className="live-image-section">
@@ -23,12 +18,7 @@ export default function MonitoringView({
             key={title}
             title={title}
             rows={visibleRows}
-            column={columns[index]}
-            onChange={(column) =>
-              setColumns((previous) =>
-                previous.map((value, i) => (i === index ? column : value)),
-              )
-            }
+            column={index}
           />
         ))}
       </div>

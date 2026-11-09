@@ -1,4 +1,4 @@
-export default function Graph({ title, rows, column, onChange }) {
+export default function Graph({ title, rows, column }) {
   let min = Infinity;
   let max = -Infinity;
   const samples = [];
@@ -37,17 +37,6 @@ export default function Graph({ title, rows, column, onChange }) {
     <section className="sensor-card">
       <div className="sensor-heading">
         <h2>{title}</h2>
-        <select
-          aria-label={`${title} 센서 열`}
-          value={column}
-          onChange={(event) => onChange(Number(event.target.value))}
-        >
-          {[0, 1, 2, 3, 4].map((i) => (
-            <option key={i} value={i}>
-              숫자 {i + 1}열
-            </option>
-          ))}
-        </select>
       </div>
 
       <svg
@@ -80,7 +69,6 @@ export default function Graph({ title, rows, column, onChange }) {
           ? `최소 ${min.toFixed(3)} / 최대 ${max.toFixed(3)}`
           : "데이터 없음"}
       </div>
-      <div className="chart-caption">열 매핑 확인 필요</div>
     </section>
   );
 }

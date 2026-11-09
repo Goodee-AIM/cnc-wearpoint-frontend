@@ -228,7 +228,6 @@ export default function useDashboard() {
   const [sensorPlaying, setSensorPlaying] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const elapsedRef = useRef(0);
-  const [columns, setColumns] = useState([0, 1, 2, 3]);
 
   const activeImagesBySet = useServerImages ? serverImagesBySet : imagesBySet;
 
@@ -943,8 +942,6 @@ export default function useDashboard() {
     monitoring: {
       currentImage,
       visibleRows,
-      columns,
-      setColumns,
     },
     diagnosis: {
       current,
