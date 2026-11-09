@@ -1,0 +1,6 @@
+export const SETS = [4, 5, 6, 7, 8, 9, 10, 11];
+export const TITLES = ["음향", "가속도", "X축", "Y축"];
+export const WARNING = 50;
+export const DANGER = 90;
+export const API_BASE =
+  import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
