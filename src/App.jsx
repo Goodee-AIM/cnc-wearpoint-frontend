@@ -17,12 +17,13 @@ export default function App() {
 
   return (
     <div className="dashboard">
-      <DashboardHeader {...dashboard.header} />
+      <DashboardHeader {...dashboard.header}>
+        {page !== "alerts" && (
+          <NotificationPanel {...dashboard.notifications} />
+        )}
+      </DashboardHeader>
 
-      <div
-        className="dashboard-body"
-        style={page === "alerts" ? { display: "none" } : undefined}
-      >
+      <div className="dashboard-body" hidden={page === "alerts"}>
         <main className="main-panel">
           <SetNavigation {...dashboard.navigation} />
 
@@ -49,8 +50,6 @@ export default function App() {
             <DiagnosisPanel {...dashboard.diagnosis} />
           </div>
         </main>
-
-        <NotificationPanel {...dashboard.notifications} />
       </div>
 
       {page === "alerts" && <AlertsPage {...dashboard.alertPage} />}

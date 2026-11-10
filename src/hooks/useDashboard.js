@@ -849,7 +849,6 @@ export default function useDashboard() {
     expectedSensor &&
     sensor.name === expectedSensor;
 
-  const actualWear = current.prediction?.actual ?? current.label?.wear ?? null;
 
   return {
     page,
@@ -944,13 +943,7 @@ export default function useDashboard() {
       currentImage,
       visibleRows,
     },
-    diagnosis: {
-      current,
-      selectedSet,
-      currentImage,
-      useDatabase,
-      actualWear,
-    },
+    diagnosis: { current, selectedSet },
     notifications: {
       alerts,
       setDismissedAlerts,
