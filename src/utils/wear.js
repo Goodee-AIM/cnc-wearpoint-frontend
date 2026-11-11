@@ -2,6 +2,7 @@
 // 마모 상태를 판정하며, 마모량·유형·알림 시각을 표시 형식 변환
 import { WARNING, DANGER } from "../dashboardConfig.js";
 
+// 경로와 JPG/PNG 확장자를 제외해 같은 이미지의 파일명 기반 연결 키를 만듭니다.
 export function fileKey(name) {
   return String(name ?? "")
     .split(/[\\/]/)
@@ -13,12 +14,14 @@ export function recordKey(set, name) {
   return `${set}:${fileKey(name)}`;
 }
 
+// 누락·빈 문자열·음수·NaN은 0으로 판정하지 않고 결과 없음(null)으로 구분합니다.
 export function numberOrNull(value) {
   if (value == null || String(value).trim() === "") return null;
   const result = Number(value);
   return Number.isFinite(result) && result >= 0 ? result : null;
 }
 
+// 화면의 기본 판정은 위험 기준을 먼저 비교합니다. 알림 상세 임계값은 발생 당시 서버 기록을 따로 표시합니다.
 export function getStatus(wear) {
   if (wear === null) {
     return {

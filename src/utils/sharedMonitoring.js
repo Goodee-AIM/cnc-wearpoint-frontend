@@ -9,6 +9,7 @@ export async function readMonitoringJson(apiBase, path, signal) {
   return response.json();
 }
 
+// 잘못된 서버 상태를 로컬 재생으로 대체하지 않고 오류로 처리해 자동 재연결 대상으로 만듭니다.
 export function validateMonitoringState(state) {
   if (
     !["idle", "running", "paused", "completed"].includes(state?.status) ||
@@ -31,6 +32,7 @@ export function validateMonitoringState(state) {
   return state;
 }
 
+// 수신 후 흐른 시간을 현재 측정에만 더합니다. 경계를 넘는 사진/회차 이동은 서버의 다음 응답을 기다립니다.
 export function projectMonitoringSets(state, receivedAt, now) {
   if (!state) return {};
   const delta = state.status === "running" ? Math.max(0, now - receivedAt) : 0;
@@ -45,6 +47,7 @@ export function projectMonitoringSets(state, receivedAt, now) {
   ]));
 }
 
+// Set별 이미지·측정 메타데이터를 병렬 조회합니다. 측정은 페이지를 끝까지 읽고 중간 누락은 오류로 처리합니다.
 export async function loadDashboardData(apiBase, sets, signal) {
   return Promise.all(sets.map(async (set) => {
     const images = await readMonitoringJson(apiBase, `/api/images/set${set}`, signal);

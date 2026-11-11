@@ -1,3 +1,4 @@
+// 이전 브라우저별 재생 방식으로 남겨둔 hook입니다. 현재 useDashboard의 자동 모드는 useSharedMonitoring을 사용합니다.
 // 각 Set의 현재 사진에 연결된 센서를 조회, Set별 재생 시간과 다음 사진으로 넘어가는 시점 관리
 import { useEffect, useRef, useState } from "react";
 import { API_BASE, SETS } from "../dashboardConfig.js";
@@ -17,6 +18,7 @@ export default function useSetPlayback(
   const entries = useRef({});
   const latest = useRef({ images, indices });
   latest.current = { images, indices };
+  // 사진/연결 센서가 바뀐 Set만 다시 로드하도록 각 Set의 연결 정보를 문자열 키로 만듭니다.
   const signature = JSON.stringify(
     SETS.map((set) => {
       const image = images[set]?.[indices[set] ?? 0];
@@ -100,6 +102,7 @@ export default function useSetPlayback(
       })();
     }
   }, [enabled, signature]);
+  // 화면 종료 시 Set별 미완료 센서 요청을 모두 취소합니다.
   useEffect(
     () => () =>
       Object.values(entries.current).forEach((entry) =>
@@ -107,6 +110,7 @@ export default function useSetPlayback(
       ),
     [],
   );
+  // 이 hook의 시간 진행은 브라우저 로컬 기준입니다. 서버 공통 회차를 제어하는 타이머가 아닙니다.
   useEffect(() => {
     if (!enabled || !playing) return;
     let previous = performance.now();

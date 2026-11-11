@@ -15,6 +15,7 @@ export default function MonitoringView({ currentImage, visibleRows }) {
       </div>
 
       <div className="sensor-grid">
+        {/* visibleRows에는 현재 재생 위치 기준 최근 5초 데이터가 들어오며, 열 번호는 고정 순서입니다. */}
         {TITLES.map((title, index) => (
           <Graph
             key={title}

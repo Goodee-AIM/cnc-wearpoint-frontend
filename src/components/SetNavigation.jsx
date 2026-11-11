@@ -1,3 +1,4 @@
+// Set 탭 선택은 현재 브라우저의 보기만 바꿉니다. 서버의 공통 재생 위치는 바꾸지 않습니다.
 // Set 선택 네비게이션 컴포넌트
 import { SETS } from "../dashboardConfig.js";
 

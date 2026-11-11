@@ -1,6 +1,7 @@
 // 라벨·예측 CSV를 읽고, 센서 CSV를 검증해 그래프에서 사용할 데이터로 변환
 import Papa from "papaparse";
 
+// 라벨/예측 CSV는 헤더 이름으로 읽습니다. BOM과 헤더 주변 공백을 정리한 뒤 필수 열을 확인합니다.
 export function readTable(text, required) {
   const result = Papa.parse(text.replace(/^\uFEFF/, ""), {
     header: true,
@@ -18,6 +19,7 @@ export function readTable(text, required) {
   return result.data;
 }
 
+// 센서는 헤더 없는 숫자 5열+시간 1열입니다. 밀리초까지만 읽고 이전 행보다 시간이 뒤로 가면 거부합니다.
 export function parseSensor(text) {
   const result = Papa.parse(text.replace(/^\uFEFF/, ""), {
     skipEmptyLines: "greedy",

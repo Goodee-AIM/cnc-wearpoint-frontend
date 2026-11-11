@@ -1,3 +1,4 @@
+/* 공통 글꼴과 기본 요소 스타일입니다. 화면별 배치와 후속 덮어쓰기 규칙은 App.css에 있습니다. */
 @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap");
 
 :root {

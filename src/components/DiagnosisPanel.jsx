@@ -18,6 +18,7 @@ export default function DiagnosisPanel({ current, selectedSet }) {
           style={{ background: current.status.color }}
         />
         <div>
+          {/* Set10·11은 예측값이 없으면 판정 결과 대신 예측 결과 없음으로 표시합니다. */}
           <h2 style={{ color: current.status.color }}>
             {current.wear === null &&
             (selectedSet === 10 || selectedSet === 11)

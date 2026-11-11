@@ -1,3 +1,4 @@
+/* 화면별 레이아웃과 팝업 스타일. 같은 우선순위의 선택자가 반복되면 아래쪽 규칙이 최종 적용됩니다. */
 /* 기본 화면 설정 */
 :root {
   font-family: "맑은 고딕", "Malgun Gothic", Arial, sans-serif;
@@ -194,6 +195,7 @@ summary:focus-visible {
 }
 
 /* 위쪽 이미지와 센서 그래프 */
+/* 공구 이미지와 고정 채널 센서 그래프의 배치입니다. */
 .monitoring-layout {
   display: grid;
   grid-template-columns: minmax(200px, 0.9fr) minmax(0, 1.5fr);
@@ -521,6 +523,7 @@ summary:focus-visible {
 }
 
 /* 알림 페이지: 왼쪽 본문 + 오른쪽 상세 패널 */
+/* 전체 알림 페이지의 목록/미리보기 영역과 상세 정보 영역을 배치합니다. */
 .alerts-page {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 280px;
@@ -826,6 +829,7 @@ summary:focus-visible {
 /* ===== 전체 데이터 조회·동시 재생 ===== */
 
 /* 통합 제어 영역 */
+/* 기존 재생 제어 패널의 스타일입니다. 자동 모드에서는 App이 해당 컴포넌트를 숨깁니다. */
 .unified-controls {
   margin-bottom: 24px;
   padding: 16px;
@@ -1046,6 +1050,7 @@ summary:focus-visible {
   grid-template-columns: minmax(0, 1fr);
 }
 
+/* 상단 알림 내역 버튼의 팝업 기준점입니다. 문서 흐름의 고정 사이드 공간을 차지하지 않습니다. */
 .alert-history-popover {
   position: relative;
 }
@@ -1082,6 +1087,7 @@ summary:focus-visible {
   box-shadow: 0 8px 24px rgb(15 23 42 / 15%);
 }
 
+/* details가 닫힌 상태에서는 팝업을 표시하지 않습니다. 열림 상태는 브라우저가 관리합니다. */
 .alert-history-popover:not([open]) > .notification-panel {
   display: none;
 }

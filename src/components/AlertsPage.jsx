@@ -1,3 +1,4 @@
+// DB 공통 알림의 목록·선택 상세·회차를 표시합니다. 조회와 확인 API 처리는 useAlerts에 위임합니다.
 // 알림 이력 화면
 
 import ToolImage from "./ToolImage.jsx";
@@ -83,6 +84,7 @@ export default function AlertsPage({
                 aria-label="확인 및 이동"
               >
                 <div className="alert-preview-action-buttons">
+                  {/* 서버가 확인 가능한 예측 알림이며 미확인 상태일 때만 확인 버튼을 활성화합니다. */}
                   <button
                     type="button"
                     disabled={

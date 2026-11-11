@@ -1,3 +1,4 @@
+// 현재 Set별 경고·위험을 보여주는 팝업. X는 이 브라우저의 카드를 숨기며 DB 알림 확인 처리와는 별개입니다.
 import { formatWear } from "../utils/wear.js";
 
 export default function NotificationPanel({
@@ -41,6 +42,7 @@ export default function NotificationPanel({
                   aria-label={`Set${record.set} 알림 닫기`}
                   title="알림 닫기"
                   onClick={() =>
+                    // 회차를 포함한 alertKey만 숨겨 다음 회차의 같은 측정은 다시 표시할 수 있습니다.
                     setDismissedAlerts((previous) => ({
                       ...previous,
                       [record.set]: record.alertKey,

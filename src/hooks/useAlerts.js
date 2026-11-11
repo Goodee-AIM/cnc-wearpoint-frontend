@@ -8,6 +8,7 @@ import { loadSharedAlertHistory, retainKnownAcknowledgments } from "../utils/ale
 // 알림 이력 조회 시 5초마다 새로고침
 const HISTORY_REFRESH_MS = 5000;
 
+// DB 응답의 필드명·숫자·이미지 URL을 화면 레코드로 변환합니다. 회차와 확인 시각은 서버 값을 유지합니다.
 function historyRecord(row, imagesBySet) {
   const set = row.set_number;
   const name = row.image_name;
@@ -55,6 +56,7 @@ export default function useAlerts(getRecord, imagesBySet) {
   const [alertReadFilter, setAlertReadFilter] = useState("all");
   const [dismissedAlerts, setDismissedAlerts] = useState({});
 
+  // 팝업은 각 Set의 현재 판정을 보여줍니다. 영구 이력은 서버 worker가 저장하고 아래 조회로 가져옵니다.
   const activeAlerts = SETS.map(getRecord)
     .filter(
       (record) =>
@@ -76,6 +78,8 @@ export default function useAlerts(getRecord, imagesBySet) {
     (record) => dismissedAlerts[record.set] !== record.alertKey,
   );
 
+  // 화면 진입 시 즉시 조회하고 응답 완료 5초 후 다시 조회합니다. 페이지 전환과 관계없이 hook이 유지되는 동안 동작합니다.
+  // 수동 새로고침 시 이전 effect를 정리하며, 언마운트 시에도 요청과 타이머를 취소합니다.
   useEffect(() => {
     let disposed = false;
     let timer;
@@ -120,11 +124,13 @@ export default function useAlerts(getRecord, imagesBySet) {
           ? !record.acknowledgedAt
           : Boolean(record.acknowledgedAt))),
   );
+  // 필터 변경으로 기존 선택이 사라지면 첫 번째 결과를 선택하고, 결과가 없으면 빈 상세를 표시합니다.
   const selectedAlert =
     filteredAlerts.find((record) => record.id === selectedAlertId) ??
     filteredAlerts[0] ??
     null;
 
+  // 확인은 PATCH 성공 후 서버가 반환한 시각으로 반영합니다. 중복 클릭을 막고 실패하면 미확인 상태를 유지합니다.
   async function acknowledgeAlert(id) {
     const record = alertHistory.find((item) => item.id === id);
     if (!record || record.acknowledgedAt) return;

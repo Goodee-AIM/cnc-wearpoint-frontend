@@ -1,3 +1,4 @@
+# 백엔드 알림 라우터의 참고 사본입니다. React/Vite 실행에는 연결되지 않으며 실제 API는 백엔드 app/api/routers/alerts.py에서 제공합니다.
 # 알림 관련 API
 from contextlib import contextmanager
 from typing import Literal
