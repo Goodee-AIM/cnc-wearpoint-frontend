@@ -3,6 +3,7 @@ export default function Graph({ title, rows, column }) {
   let min = Infinity;
   let max = -Infinity;
   const samples = [];
+  // 약 250개 구간의 최솟값·최댓값을 시간순으로 뽑아, 그리는 점 수를 줄이면서 순간 피크를 보존합니다.
   const step = Math.max(1, Math.ceil(rows.length / 250));
 
   for (let start = 0; start < rows.length; start += step) {
@@ -23,6 +24,7 @@ export default function Graph({ title, rows, column }) {
       .forEach((i) => samples.push(i));
   }
 
+  // 선택한 채널의 값 범위를 SVG 좌표로 변환합니다. 모든 값이 같으면 중앙 높이에 표시합니다.
   const points = samples
     .map((i) => {
       const x = 8 + (i / Math.max(1, rows.length - 1)) * 284;

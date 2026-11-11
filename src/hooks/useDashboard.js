@@ -7,6 +7,7 @@ import useAlerts from "./useAlerts.js";
 import useSharedMonitoring from "./useSharedMonitoring.js";
 import { loadDashboardData } from "../utils/sharedMonitoring.js";
 
+// 자동 공통 모드와 수동 확인 모드의 상태를 조합합니다. 서버 시간 동기화는 useSharedMonitoring에 위임합니다.
 export default function useDashboard() {
   const [unifiedMode, setUnifiedMode] = useState(true);
   const [unifiedLoading, setUnifiedLoading] = useState(false);
@@ -14,9 +15,11 @@ export default function useDashboard() {
   const [unifiedMessage, setUnifiedMessage] = useState(
     "서버 데이터를 자동으로 불러오는 중...",
   );
+  // 전체 메타데이터 조회의 취소 핸들입니다. 화면 종료 시 미완료 응답이 상태를 갱신하지 않도록 취소합니다.
   const unifiedController = useRef(null);
   useEffect(() => () => unifiedController.current?.abort(), []);
 
+  // 테스트값·사진 인덱스·페이지 선택은 브라우저 내부 상태입니다. 서버 DB의 측정/예측을 덮어쓰지 않습니다.
   const [testValues, setTestValues] = useState({});
   const [testModes, setTestModes] = useState({});
   const [selectedSet, setSelectedSet] = useState(10);
@@ -40,6 +43,7 @@ export default function useDashboard() {
     setPhotoPlayingBySet({});
   }
 
+  // 수동 사진 재생만 제어합니다. 서버의 start/pause/reset API를 호출하지 않습니다.
   function startPhoto(set) {
     const list = activeImagesBySet[set] ?? [];
 
@@ -73,6 +77,7 @@ export default function useDashboard() {
     useState("서버 이미지 사용을 선택해주세요.");
   const [serverImageReload, setServerImageReload] = useState(0);
 
+  // 수동 모드의 서버 이미지 목록 조회. 출처 변경·재조회·화면 종료 시 이전 요청을 취소합니다.
   useEffect(() => {
     if (unifiedMode || !useServerImages) return;
 
@@ -141,6 +146,7 @@ export default function useDashboard() {
     return () => controller.abort();
   }, [unifiedMode, useServerImages, serverImageReload]);
 
+  // 수동 모드의 DB 연결 정보 조회. 자동 모드는 아래 loadAllData가 페이지를 끝까지 읽습니다.
   useEffect(() => {
     if (unifiedMode || !useDatabase) return;
 
@@ -243,6 +249,8 @@ export default function useDashboard() {
 
   const groupSensors = shared.entries;
   const groupSensor = groupSensors[selectedSet];
+  // 자동 모드의 초기 자료 조회: Set별 이미지 목록과 모든 측정을 읽고 파일명 매칭용 맵을 구성합니다.
+  // 이전 요청을 취소하고 로컬 재생을 멈춘 뒤 서버 이미지·DB·센서 출처를 함께 사용하도록 맞춥니다.
   const loadAllData = useCallback(async () => {
     unifiedController.current?.abort();
     const controller = new AbortController();
@@ -298,6 +306,8 @@ export default function useDashboard() {
     setTestModes, setTestValues,
   ]);
 
+  // 서버 세션을 처음 받거나 세션이 바뀌면 메타데이터를 준비합니다. 실패 시 재시도하고 정리 시 취소합니다.
+  // 반복 회차는 같은 세션을 유지하므로 매 회차마다 전체 이미지 목록을 다시 받지 않습니다.
   const sharedSessionId = shared.state?.session_id;
   useEffect(() => {
     if (!unifiedMode || sharedSessionId === undefined) return;
@@ -315,6 +325,7 @@ export default function useDashboard() {
     };
   }, [unifiedMode, sharedSessionId, loadAllData]);
 
+  // 자동 모드에서는 파일명뿐 아니라 서버가 지정한 measurement_id로 정확한 측정 결과를 찾습니다.
   const databaseRecordsById = useMemo(() => Object.fromEntries(
     Object.values(databaseRecords).map((item) => [item.measurement_id, item]),
   ), [databaseRecords]);
@@ -329,6 +340,7 @@ export default function useDashboard() {
   const imageIndex = indices[selectedSet] ?? 0;
   const currentImage = unifiedMode ? sharedImage(selectedSet) : (images[imageIndex] ?? null);
 
+  // 이미지·라벨·예측을 한 화면 레코드로 조합합니다. Set4~9의 판정은 라벨, Set10·11은 예측 마모량을 사용합니다.
   function getRecord(set) {
     const list = activeImagesBySet[set] ?? [];
     const image = unifiedMode ? sharedImage(set) : (list[indices[set] ?? 0] ?? null);
@@ -415,6 +427,7 @@ export default function useDashboard() {
     setSelectedAlertId,
   } = useAlerts(getRecord, activeImagesBySet);
 
+  // 과거 알림 이동은 이 브라우저만 수동 미리보기로 전환합니다. 다른 접속자의 공통 재생은 계속됩니다.
   function showAlertSet(record) {
     alertPreview.current = { set: record.set, name: record.image?.name };
     setUnifiedMode(false);
@@ -461,6 +474,7 @@ export default function useDashboard() {
     setImageMessage("");
   }
 
+  // 로컬 선택 이미지는 Object URL로 표시합니다. 폴더 교체·언마운트 시 URL을 해제해 메모리를 반환합니다.
   function handleImages(event) {
     const files = Array.from(event.target.files ?? [])
       .filter((file) => /\.(png|jpe?g)$/i.test(file.name))
@@ -510,6 +524,7 @@ export default function useDashboard() {
     setImageMessage(`${loaded.length}장 로드 완료`);
   }
 
+  // 수동 라벨 CSV를 Set+이미지 키로 변환합니다. DB 모드의 CSV 선택 제한은 설정 컴포넌트에서 처리합니다.
   async function handleLabels(event) {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -546,6 +561,7 @@ export default function useDashboard() {
     }
   }
 
+  // 수동 예측 CSV의 중복 측정과 비정상 수치를 검사하고, 값이 있는 경우에만 오차를 계산합니다.
   async function handlePredictions(event) {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -590,6 +606,7 @@ export default function useDashboard() {
     }
   }
 
+  // 로컬 센서 교체 시 재생 시간을 0으로 돌린 뒤 공통 파서로 6열·숫자·시간순 조건을 검사합니다.
   async function handleSensor(event) {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -711,6 +728,7 @@ export default function useDashboard() {
     expectedSensor,
   ]);
 
+  // 수동 모드에서 사진에 연결된 센서를 자동 조회합니다. 사진/Set 변경 시 이전 요청을 취소합니다.
   useEffect(() => {
     if (unifiedMode || !useServerSensors) return;
 
@@ -807,6 +825,7 @@ export default function useDashboard() {
     sensorSourceKey,
   ]);
 
+  // 자동 모드는 서버 위치에 연결된 센서를, 수동 모드는 현재 Set과 연결 키가 맞는 센서만 표시합니다.
   const sensorRows = unifiedMode
     ? (groupSensor?.rows ?? [])
     : sensor.set === selectedSet &&
@@ -820,6 +839,7 @@ export default function useDashboard() {
     ? sensorRows[sensorRows.length - 1].ms - start
     : 0;
 
+  // 현재 위치까지의 최근 5초만 그립니다. 자동 모드의 시간은 서버 기준, 수동 모드는 로컬 재생 시간입니다.
   const visibleRows = sensorRows.filter((row) => {
     const relative = row.ms - start;
     return (
@@ -832,6 +852,7 @@ export default function useDashboard() {
     );
   });
 
+  // 수동 센서 재생 타이머. 일시정지 시 시간을 보관하고 종료·의존성 변경 시 타이머를 해제합니다.
   useEffect(() => {
     if (!sensorPlaying || !sensorRows.length) return;
 
@@ -856,6 +877,7 @@ export default function useDashboard() {
     sensor.name === expectedSensor;
 
 
+  // App이 처리 로직에 직접 접근하지 않도록 각 화면 컴포넌트별 props 묶음으로 반환합니다.
   return {
     page,
     selectedSet,

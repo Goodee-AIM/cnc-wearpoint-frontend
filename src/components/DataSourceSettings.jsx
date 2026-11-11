@@ -1,3 +1,4 @@
+// 수동 확인용 데이터 출처 설정. 이미지 출처를 바꿀 때 기존 재생 위치와 테스트 입력을 초기화합니다.
 // 데이터 소스 설정 화면 
 
 import { boxStyle, controlsStyle } from "./settingsStyles.js";

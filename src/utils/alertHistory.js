@@ -1,3 +1,4 @@
+// 공통 알림의 페이지 조회와 확인 응답/조회 응답 사이의 경합을 처리하는 유틸리티입니다.
 import { readMonitoringJson } from "./sharedMonitoring.js";
 
 // 첫 페이지에서 고정한 ID 상한으로 후속 페이지를 읽어 새 알림 삽입에 의한 누락을 막습니다.
@@ -25,6 +26,8 @@ export async function loadSharedAlertHistory(apiBase, signal) {
   return unique;
 }
 
+// 확인 PATCH보다 먼저 시작한 조회 응답이 늦게 도착해도 같은 발생 건의 확인 상태를 되돌리지 않습니다.
+// DB 초기화로 ID가 재사용된 경우를 구분하려고 세션·측정·발생 시각도 비교합니다.
 export function retainKnownAcknowledgments(rows, previous) {
   const known = new Map(previous.map((row) => [row.id, row]));
   return rows.map((row) => {

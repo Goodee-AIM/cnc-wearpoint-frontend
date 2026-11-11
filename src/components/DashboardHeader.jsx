@@ -1,3 +1,4 @@
+// 상단 제목과 페이지 이동 버튼. 미확인 건수는 서버에서 조회한 공통 알림 이력으로 계산합니다.
 export default function DashboardHeader({
   page,
   setPage,

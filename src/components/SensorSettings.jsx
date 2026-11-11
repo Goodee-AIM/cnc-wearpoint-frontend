@@ -1,3 +1,4 @@
+// 수동 센서 파일 선택과 재생 제어 UI. 서버 자동 연결을 켜면 해당 사진의 연결 CSV를 사용합니다.
 // 센서 설정 화면
 
 import { boxStyle, controlsStyle } from "./settingsStyles.js";

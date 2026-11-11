@@ -1,3 +1,4 @@
+// 이미지가 있으면 파일명과 함께 표시하고, 없으면 선택 안내를 표시하는 공통 뷰어입니다.
 // Tool 이미지 컴포넌트
 export default function ToolImage({ image }) {
   return (
