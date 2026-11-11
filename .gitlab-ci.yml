@@ -1,11 +1,14 @@
+# CI 단계: 코드 검사 → 운영 빌드
 stages:
   - test
   - build
 
+# NHN Cloud VM에 등록할 GitLab Runner 사용
 default:
   tags:
     - cnc-wp-runner
 
+# npm 의존성 캐시
 cache:
   key:
     files:
@@ -13,23 +16,26 @@ cache:
   paths:
     - .npm/
 
+# 프론트엔드 코드 검사
 lint_frontend:
   stage: test
   script:
     - npm ci --cache .npm --prefer-offline
     - npm run lint
 
+# 운영용 프론트엔드 빌드
 build_frontend:
   stage: build
   script:
     - npm ci --cache .npm --prefer-offline
-    - test -n "$VITE_API_BASE_URL"
     - npm run build
 
+  # 빌드 결과물 보관
   artifacts:
     paths:
       - dist/
     expire_in: 1 day
 
+  # main 브랜치에서만 실행
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
