@@ -4,5 +4,4 @@ export const TITLES = ["음향", "가속도", "X축", "Y축"];
 export const WARNING = 50;
 export const DANGER = 90;
 export const API_BASE =
-  import.meta.env.VITE_API_BASE_URL?.trim() ||
-  (import.meta.env.DEV ? "http://127.0.0.1:8000" : window.location.origin);
+  import.meta.env.VITE_API_BASE_URL || window.location.origin;
