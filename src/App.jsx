@@ -33,7 +33,7 @@ export default function App() {
               <span className="demo-badge">저장 결과 재생</span>
             </div>
 
-            <PlaybackControls {...dashboard.playback} />
+            {!unifiedMode && <PlaybackControls {...dashboard.playback} />}
             <details
               className="data-settings"
               style={{ display: unifiedMode ? "none" : undefined }}
