@@ -271,15 +271,6 @@ summary:focus-visible {
   font-weight: 600;
 }
 
-.sensor-heading select {
-  max-width: 100%;
-  padding: 2px;
-  border: 1px solid #cbd5e1;
-  border-radius: 4px;
-  background: #ffffff;
-  font-size: 10px;
-}
-
 .sensor-chart {
   display: block;
   width: 100%;
@@ -294,22 +285,23 @@ summary:focus-visible {
   color: #94a3b8;
 }
 
-/* 중앙 교체 알림 */
-.replacement-section {
-  display: flex;
-  justify-content: center;
-  margin: 30px 0;
+/* 모니터링 하단 진단 결과 */
+.diagnosis-layout {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 12px;
+  margin-top: 24px;
 }
 
-.replacement-card {
+.diagnosis-layout .replacement-card {
   display: flex;
-  min-width: 230px;
-  max-width: 100%;
-  padding: 15px 22px;
+  min-width: 0;
+  padding: 12px;
   align-items: center;
   gap: 12px;
   border: 1px solid #cbd5e1;
-  border-radius: 8px; 
+  border-radius: 8px;
 }
 
 .status-dot {
@@ -320,36 +312,13 @@ summary:focus-visible {
 }
 
 .replacement-card h2 {
-  font-size: 14px;
+  font-size: 30px;
 }
 
 .replacement-card p {
   margin-top: 5px;
-  font-size: 11px;
+  font-size: 25px;
   color: #64748b;
-}
-
-/* 하단 진단 이미지와 결과 */
-.diagnosis-layout {
-  display: grid;
-  grid-template-columns: 260px 300px;
-  align-items: center;
-  justify-content: center;
-  gap: 24px;
-}
-
-.diagnosis-image {
-  min-width: 0;
-}
-
-.diagnosis-image .image-placeholder {
-  min-height: 200px;
-}
-
-.diagnosis-results {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
 }
 
 .result-card {
@@ -365,18 +334,18 @@ summary:focus-visible {
 }
 
 .result-card > span {
-  font-size: 11px;
+  font-size: 30px;
   color: #64748b;
 }
 
 .result-card strong {
-  font-size: 18px;
+  font-size: 50px;
   line-height: 1.4;
   overflow-wrap: anywhere;
 }
 
 .result-card small {
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1.6;
   color: #94a3b8;
 }
@@ -448,11 +417,6 @@ summary:focus-visible {
   .monitoring-layout {
     gap: 18px;
   }
-
-  .diagnosis-layout {
-    grid-template-columns: minmax(180px, 240px) minmax(220px, 280px);
-    gap: 18px;
-  }
 }
 
 @media (max-width: 900px) {
@@ -462,15 +426,6 @@ summary:focus-visible {
 
   .live-image-section {
     width: min(100%, 320px);
-    margin: 0 auto;
-  }
-
-  .diagnosis-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .diagnosis-image {
-    width: min(100%, 280px);
     margin: 0 auto;
   }
 }
@@ -496,6 +451,10 @@ summary:focus-visible {
 
   .sensor-grid {
     gap: 8px;
+  }
+
+  .diagnosis-layout {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .section-heading h2 {
@@ -951,4 +910,198 @@ summary:focus-visible {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+}
+
+.notification-heading {
+  gap: 8px;
+}
+
+.notification-heading > span {
+  margin-left: auto;
+}
+
+.notification-heading .notification-toggle {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  flex-shrink: 0;
+  place-items: center;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.dashboard-body.dashboard-body--notifications-collapsed {
+  grid-template-columns: minmax(0, 1fr) 44px;
+}
+
+.dashboard-body--notifications-collapsed .notification-heading {
+  justify-content: center;
+  padding: 0;
+}
+
+.dashboard-body--notifications-collapsed .notification-heading > :is(h2, span) {
+  display: none;
+}
+
+@media (max-width: 650px) {
+  .dashboard-body.dashboard-body--notifications-collapsed {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+}
+
+.dashboard {
+  width: 100%;
+  height: 100dvh;
+  margin: 0;
+}
+
+.dashboard-body[hidden] {
+  display: none;
+}
+
+.dashboard {
+  width: 100%;
+  height: 100dvh;
+  margin: 0;
+}
+
+.dashboard-body {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.dashboard-body[hidden],
+.notification-panel[hidden] {
+  display: none;
+}
+
+.header-actions {
+  position: absolute;
+  top: 22px;
+  right: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.header-actions .page-switch {
+  position: static;
+  margin: 0;
+}
+
+.notification-popover {
+  position: relative;
+}
+
+.notification-popover .notification-panel {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(320px, calc(100vw - 24px));
+  max-height: min(600px, calc(100dvh - 150px));
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgb(15 23 42 / 15%);
+}
+
+@media (max-width: 900px) {
+  .header-actions {
+    position: static;
+    margin-top: 5px;
+  }
+
+  .notification-popover {
+    position: static;
+  }
+
+  .notification-popover .notification-panel {
+    right: 12px;
+  }
+}
+
+.header {
+  position: relative;
+}
+
+.header-actions {
+  position: absolute;
+  top: 22px;
+  right: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.header-actions > .page-switch {
+  position: static;
+  margin: 0;
+}
+
+.dashboard-body {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.alert-history-popover {
+  position: relative;
+}
+
+.alert-history-toggle {
+  display: block;
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  color: #334155;
+  list-style: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.alert-history-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.alert-history-popover > .notification-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  width: min(320px, calc(100vw - 32px));
+  max-height: min(600px, calc(100dvh - 150px));
+  overflow: hidden;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgb(15 23 42 / 15%);
+}
+
+.alert-history-popover:not([open]) > .notification-panel {
+  display: none;
+}
+
+.alert-history-popover .notification-content {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+@media (max-width: 900px) {
+  .header-actions {
+    position: static;
+    margin-top: 5px;
+  }
+
+  .alert-history-popover {
+    position: static;
+  }
+
+  .alert-history-popover > .notification-panel {
+    right: 10px;
+  }
 }
