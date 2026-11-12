@@ -17,6 +17,10 @@ export async function loadSharedAlertHistory(apiBase, signal) {
     if (total === undefined) {
       total = page.total;
       caps = `&event_max_id=${page.event_max_id}&legacy_max_id=${page.legacy_max_id}`;
+      // 페이지 조회 도중 초기화되면 서버가 409를 반환하므로 이전·새 세션 이력이 섞이지 않습니다.
+      if (typeof page.session_id === "string") {
+        caps += `&session_id=${encodeURIComponent(page.session_id)}`;
+      }
     }
     if (!page.items.length && rows.length < total) throw new Error("공통 알림이 일부만 조회되었습니다.");
     rows.push(...page.items);

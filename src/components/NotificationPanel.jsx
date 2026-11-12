@@ -1,4 +1,5 @@
-// 현재 Set별 경고·위험을 보여주는 팝업. X는 이 브라우저의 카드를 숨기며 DB 알림 확인 처리와는 별개입니다.
+// 현재 Set별 경고·위험을 보여주는 팝업. 
+// X를 누르면 숨겨짐. DB 알림 확인은 AlertsPage
 import { formatWear } from "../utils/wear.js";
 
 export default function NotificationPanel({

@@ -29,12 +29,12 @@ export default function AlertsPage({
         <div className="alerts-title">
           <h2>경고·위험 알림</h2>
           <span>
-            전체 {alertHistory.length}건 · 미확인{" "}
+            현재 세션 전체 {alertHistory.length}건 · 미확인{" "}
             {alertHistory.filter((record) => !record.acknowledgedAt).length}건
           </span>
         </div>
         <p className="alerts-session-note">
-          서버에서 기록한 공통 알림과 기존 DB 알림 이력을 표시합니다.
+          현재 재생 세션의 알림을 표시합니다. 세션 초기화 시 전체·확인·미확인 건수도 새로 집계합니다.
         </p>
         {historyMessage && <p role="status">{historyMessage}</p>}
         <button type="button" onClick={reloadHistory}>

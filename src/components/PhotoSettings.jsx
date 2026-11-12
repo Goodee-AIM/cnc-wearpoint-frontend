@@ -1,4 +1,5 @@
-// 수동 이미지 선택·라벨/예측 CSV·사진 이동·판정 테스트 UI. 실제 처리는 전달받은 이벤트 함수가 담당합니다.
+// 수동 이미지 선택·라벨/예측 CSV·사진 이동·판정 테스트 UI
+// 실제 처리는 전달받은 이벤트 함수가 담당
 // 사진 설정 화면
 
 import { boxStyle, controlsStyle } from "./settingsStyles.js";

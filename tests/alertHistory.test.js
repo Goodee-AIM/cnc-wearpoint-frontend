@@ -15,9 +15,10 @@ test("new insertions cannot shift the second alert page", async (context) => {
     if (offset === 100) {
       assert.equal(url.searchParams.get("event_max_id"), "100");
       assert.equal(url.searchParams.get("legacy_max_id"), "50");
+      assert.equal(url.searchParams.get("session_id"), "session-a");
     }
     return { ok: true, json: async () => ({
-      total: 101, event_max_id: 100, legacy_max_id: 50,
+      total: 101, event_max_id: 100, legacy_max_id: 50, session_id: "session-a",
       items: Array.from({ length: offset === 0 ? 100 : 1 }, (_, i) => record(`monitoring:${offset + i}`)),
     }) };
   });
@@ -55,4 +56,24 @@ test("reused ids after a DB reset do not inherit old acknowledgments", () => {
     record("monitoring:1", { session_id: "new-session" }),
   ], [confirmed]);
   assert.equal(merged.detail_confirmed_at, null);
+});
+
+
+test("reset between pages rejects the old session and the next refresh starts clean", async (context) => {
+  let reset = false;
+  context.mock.method(globalThis, "fetch", async (url) => {
+    if (url.searchParams.get("offset") === "100") {
+      assert.equal(url.searchParams.get("session_id"), "session-a");
+      reset = true;
+      return { ok: false, status: 409 };
+    }
+    return { ok: true, json: async () => reset ? {
+      total: 0, event_max_id: 0, legacy_max_id: 0, session_id: "session-b", items: [],
+    } : {
+      total: 101, event_max_id: 101, legacy_max_id: 0, session_id: "session-a",
+      items: Array.from({ length: 100 }, (_, i) => record(`monitoring:${i}`)),
+    } };
+  });
+  await assert.rejects(loadSharedAlertHistory("http://localhost:8001"), /409/);
+  assert.deepEqual(await loadSharedAlertHistory("http://localhost:8001"), []);
 });
