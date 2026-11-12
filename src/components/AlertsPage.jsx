@@ -12,7 +12,6 @@ export default function AlertsPage({
   acknowledgeAlert,
   confirmingId,
   historyMessage,
-  reloadHistory,
   showAlertSet,
   alertSetFilter,
   setAlertSetFilter,
@@ -37,16 +36,13 @@ export default function AlertsPage({
           서버에서 기록한 공통 알림과 기존 DB 알림 이력을 표시합니다.
         </p>
         {historyMessage && <p role="status">{historyMessage}</p>}
-        <button type="button" onClick={reloadHistory}>
-          DB 이력 새로고침
-        </button>
         {selectedAlert ? (
           <section className="alert-preview">
-            <div>
-              <h3 style={{ color: selectedAlert.status.color }}>
-                [Set{selectedAlert.set}] {selectedAlert.status.label}
-              </h3>
-              <ToolImage image={selectedAlert.image} />
+            <h3 style={{ color: selectedAlert.status.color }}>
+              [Set{selectedAlert.set}] {selectedAlert.status.label}
+            </h3>
+            <div className="alert-preview-image">
+              <ToolImage image={selectedAlert.image} maxHeight="none" fit="cover" />
             </div>
             <div className="alert-preview-results">
               <div className="alert-wear-summary">
@@ -98,6 +94,7 @@ export default function AlertsPage({
                   </button>
                   <button
                     type="button"
+                    className="alert-move-button"
                     aria-label={`Set${selectedAlert.set} 모니터링으로 이동`}
                     onClick={() => showAlertSet(selectedAlert)}
                   >
@@ -105,9 +102,14 @@ export default function AlertsPage({
                   </button>
                 </div>
                 <p role="status">
-                  {selectedAlert.acknowledgedAt
-                    ? `DB에 확인 기록이 저장되었습니다. 확인 시각 ${alertTime(selectedAlert.acknowledgedAt)}`
-                    : !selectedAlert.canAcknowledge
+                  {selectedAlert.acknowledgedAt ? (
+                    <>
+                      DB에 확인 기록이 저장되었습니다.{" "}
+                      <span className="alert-confirmation-time">
+                        확인 시각 {alertTime(selectedAlert.acknowledgedAt)}
+                      </span>
+                    </>
+                  ) : !selectedAlert.canAcknowledge
                       ? "예측 결과가 없어 확인 시각을 저장할 수 없습니다."
                       : "아직 확인하지 않은 알림입니다."}
                 </p>

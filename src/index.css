@@ -2,6 +2,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap");
 
 :root {
+  font-size: 16px;
   font-family: "Noto Sans KR", sans-serif;
   color: #1f2937;
   background: #f3f5f8;
@@ -25,6 +26,7 @@ body {
 
 button {
   font: inherit;
+  font-size: 15px;
 }
 
 #root {
@@ -63,14 +65,14 @@ p {
 
 .header h1 {
   margin: 0;
-  font-size: 25px;
+  font-size: 26px;
   line-height: 1.2;
   letter-spacing: 5px;
   color: #1d4ed8;
 }
 
 .header > span {
-  font-size: 12px;
+  font-size: 14px;
   color: #64748b;
 }
 
@@ -132,12 +134,12 @@ p {
 }
 
 .section-heading h2 {
-  font-size: 18px;
+  font-size: 22px;
 }
 
 .demo-badge {
   white-space: nowrap;
-  font-size: 11px;
+  font-size: 14px;
   padding: 5px 10px;
   border-radius: 20px;
   background: #f1f5f9;
@@ -173,19 +175,19 @@ p {
 }
 
 .image-placeholder strong {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
 }
 
 .image-placeholder > span:last-child {
-  font-size: 11px;
+  font-size: 14px;
   color: #94a3b8;
 }
 
 .measurement-time {
   margin-top: 12px;
   text-align: center;
-  font-size: 12px;
+  font-size: 14px;
   color: #64748b;
 }
 
@@ -212,12 +214,12 @@ p {
 }
 
 .sensor-heading h2 {
-  font-size: 12px;
+  font-size: 18px;
   font-weight: 600;
 }
 
 .sensor-heading span {
-  font-size: 9px;
+  font-size: 13px;
   color: #94a3b8;
 }
 
@@ -230,7 +232,7 @@ p {
 
 .chart-caption {
   text-align: right;
-  font-size: 9px;
+  font-size: 13px;
   color: #94a3b8;
 }
 
@@ -260,12 +262,12 @@ p {
 }
 
 .replacement-card h2 {
-  font-size: 14px;
+  font-size: 22px;
 }
 
 .replacement-card p {
   margin-top: 5px;
-  font-size: 11px;
+  font-size: 16px;
   color: #64748b;
 }
 
@@ -296,22 +298,22 @@ p {
 }
 
 .result-card > span {
-  font-size: 12px;
+  font-size: 18px;
   color: #64748b;
 }
 
 .result-card strong {
-  font-size: 23px;
+  font-size: 22px;
   color: #1e293b;
 }
 
 .result-card small {
-  font-size: 10px;
+  font-size: 14px;
   color: #94a3b8;
 }
 
 .result-card strong small {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 400;
 }
 
@@ -332,7 +334,7 @@ p {
 }
 
 .notification-heading h2 {
-  font-size: 14px;
+  font-size: 20px;
   font-weight: 600;
 }
 
@@ -344,7 +346,7 @@ p {
   border-radius: 50%;
   background: #e2e8f0;
   color: #64748b;
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .notification-content {
@@ -367,13 +369,13 @@ p {
 }
 
 .notification-empty strong {
-  font-size: 12px;
+  font-size: 16px;
   font-weight: 500;
   color: #64748b;
 }
 
 .notification-empty p {
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.8;
   color: #94a3b8;
 }
@@ -382,7 +384,7 @@ p {
   padding: 16px;
   text-align: center;
   border-top: 1px solid #e2e8f0;
-  font-size: 11px;
+  font-size: 14px;
   color: #94a3b8;
 }
 

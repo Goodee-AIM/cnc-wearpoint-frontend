@@ -33,7 +33,7 @@ export default function DataSourceSettings({
           서버 이미지 자동 불러오기
         </label>
 
-        <p role="status" style={{ marginTop: 10, fontSize: 12 }}>
+        <p role="status" style={{ marginTop: 10, fontSize: 14 }}>
           {useServerImages
             ? serverImageMessage
             : "직접 선택한 이미지 폴더를 사용합니다."}
@@ -61,7 +61,7 @@ export default function DataSourceSettings({
           DB 조회 사용
         </label>
 
-        <p role="status" style={{ marginTop: 10, fontSize: 12 }}>
+        <p role="status" style={{ marginTop: 10, fontSize: 14 }}>
           {useDatabase
             ? databaseMessage
             : "로컬 CSV의 정답·예측 정보를 사용합니다."}
@@ -76,7 +76,7 @@ export default function DataSourceSettings({
           DB 다시 조회
         </button>
 
-        <p style={{ marginTop: 10, fontSize: 12 }}>
+        <p style={{ marginTop: 10, fontSize: 14 }}>
           DB 사용 시 정답·예측 정보는 서버에서 조회합니다. 센서 자동 연결을 켜면
           현재 사진에 대응하는 센서 CSV도 서버에서 불러옵니다.
         </p>

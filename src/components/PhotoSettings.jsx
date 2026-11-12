@@ -45,7 +45,7 @@ export default function PhotoSettings({
         />
       </label>
 
-      <p style={{ fontSize: 12, marginBottom: 14 }} role="status">
+      <p style={{ fontSize: 14, marginBottom: 14 }} role="status">
         {imageMessage}
         {" · "}사진 {images.length}장 / 결과 매칭 {matchedCount}장
       </p>
@@ -60,7 +60,7 @@ export default function PhotoSettings({
           style={{ display: "block", marginTop: 8 }}
         />
       </label>
-      <p style={{ fontSize: 12, marginBottom: 14 }} role="status">
+      <p style={{ fontSize: 14, marginBottom: 14 }} role="status">
         {predictionMessage}
       </p>
 
@@ -74,7 +74,7 @@ export default function PhotoSettings({
           style={{ display: "block", marginTop: 8 }}
         />
       </label>
-      <p style={{ fontSize: 12, marginBottom: 14 }} role="status">
+      <p style={{ fontSize: 14, marginBottom: 14 }} role="status">
         {labelMessage}
       </p>
 
@@ -103,7 +103,7 @@ export default function PhotoSettings({
         >
           전체 사진 정지
         </button>
-        <p style={{ marginTop: 10, fontSize: 12 }} role="status">
+        <p style={{ marginTop: 10, fontSize: 14 }} role="status">
           재생 중:{" "}
           {SETS.filter((set) => photoPlayingBySet[set])
             .map((set) => `Set${set}`)
@@ -117,11 +117,11 @@ export default function PhotoSettings({
         </button>
       </div>
 
-      <p style={{ marginTop: 10, fontSize: 12 }}>
+      <p style={{ marginTop: 10, fontSize: 14 }}>
         {images.length ? imageIndex + 1 : 0} / {images.length}장{" · "}2초 간격
       </p>
 
-      <label style={{ display: "block", marginTop: 16, fontSize: 13 }}>
+      <label style={{ display: "block", marginTop: 16, fontSize: 16 }}>
         <input
           type="checkbox"
           checked={Boolean(testModes[selectedSet])}
@@ -158,7 +158,7 @@ export default function PhotoSettings({
         />
       )}
 
-      <p style={{ marginTop: 12, fontSize: 11, color: "#64748b" }}>
+      <p style={{ marginTop: 12, fontSize: 14, color: "#64748b" }}>
         정상: {WARNING}μm 미만 / 경고: {WARNING}μm 이상 {DANGER}μm 미만 / 위험:{" "}
         {DANGER}μm 이상
         <br />

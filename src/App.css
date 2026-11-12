@@ -1,6 +1,7 @@
 /* 화면별 레이아웃과 팝업 스타일. 같은 우선순위의 선택자가 반복되면 아래쪽 규칙이 최종 적용됩니다. */
 /* 기본 화면 설정 */
 :root {
+  font-size: 16px;
   font-family: "맑은 고딕", "Malgun Gothic", Arial, sans-serif;
   color: #1f2937;
   background: #f3f5f8;
@@ -40,6 +41,7 @@ button,
 input,
 select {
   font: inherit;
+  font-size: 15px;
 }
 
 button {
@@ -91,14 +93,14 @@ summary:focus-visible {
 }
 
 .header h1 {
-  font-size: 24px;
+  font-size: 26px;
   line-height: 1.2;
   letter-spacing: 4px;
   color: #2563eb;
 }
 
 .header > span {
-  font-size: 12px;
+  font-size: 14px;
   color: #64748b;
 }
 
@@ -127,7 +129,7 @@ summary:focus-visible {
   border-radius: 0;
   background: #ffffff;
   color: #64748b;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .set-navigation .set-button.active {
@@ -151,7 +153,7 @@ summary:focus-visible {
 }
 
 .section-heading h2 {
-  font-size: 16px;
+  font-size: 22px;
 }
 
 .demo-badge {
@@ -159,7 +161,7 @@ summary:focus-visible {
   border-radius: 20px;
   background: #f1f5f9;
   color: #64748b;
-  font-size: 11px;
+  font-size: 14px;
   white-space: nowrap;
 }
 
@@ -173,7 +175,7 @@ summary:focus-visible {
 .data-settings > summary {
   padding: 10px 14px;
   color: #475569;
-  font-size: 12px;
+  font-size: 20px;
   cursor: pointer;
 }
 
@@ -187,11 +189,11 @@ summary:focus-visible {
 
 .settings-content input[type="file"] {
   max-width: 100%;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .settings-content button {
-  font-size: 12px;
+  font-size: 15px;
 }
 
 /* 위쪽 이미지와 센서 그래프 */
@@ -230,7 +232,7 @@ summary:focus-visible {
 
 .image-placeholder > span {
   max-width: 100%;
-  font-size: 10px;
+  font-size: 14px;
   line-height: 1.6;
   color: #64748b;
   overflow-wrap: anywhere;
@@ -239,7 +241,7 @@ summary:focus-visible {
 .measurement-time {
   margin-top: 10px;
   text-align: center;
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.7;
   color: #64748b;
   overflow-wrap: anywhere;
@@ -269,7 +271,7 @@ summary:focus-visible {
 }
 
 .sensor-heading h2 {
-  font-size: 12px;
+  font-size: 18px;
   font-weight: 600;
 }
 
@@ -282,8 +284,8 @@ summary:focus-visible {
 
 .chart-caption {
   text-align: right;
-  font-size: 9px;
-  line-height: 3.6;
+  font-size: 13px;
+  line-height: 32.4px;
   color: #94a3b8;
 }
 
@@ -314,12 +316,12 @@ summary:focus-visible {
 }
 
 .replacement-card h2 {
-  font-size: 30px;
+  font-size: 22px;
 }
 
 .replacement-card p {
   margin-top: 5px;
-  font-size: 25px;
+  font-size: 16px;
   color: #64748b;
 }
 
@@ -336,18 +338,18 @@ summary:focus-visible {
 }
 
 .result-card > span {
-  font-size: 30px;
+  font-size: 18px;
   color: #64748b;
 }
 
 .result-card strong {
-  font-size: 50px;
+  font-size: 22px;
   line-height: 1.4;
   overflow-wrap: anywhere;
 }
 
 .result-card small {
-  font-size: 10px;
+  font-size: 14px;
   line-height: 1.6;
   color: #94a3b8;
 }
@@ -372,7 +374,7 @@ summary:focus-visible {
 }
 
 .notification-heading h2 {
-  font-size: 14px;
+  font-size: 20px;
 }
 
 .notification-heading > span {
@@ -384,7 +386,7 @@ summary:focus-visible {
   border-radius: 20px;
   background: #e2e8f0;
   color: #64748b;
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .notification-content {
@@ -394,14 +396,14 @@ summary:focus-visible {
 }
 
 .notification-content button {
-  font-size: 11px;
+  font-size: 15px;
 }
 
 .notification-footer {
   padding: 14px;
   border-top: 1px solid #e2e8f0;
   text-align: center;
-  font-size: 10px;
+  font-size: 14px;
   line-height: 1.7;
   color: #94a3b8;
 }
@@ -460,7 +462,7 @@ summary:focus-visible {
   }
 
   .section-heading h2 {
-    font-size: 14px;
+    font-size: 22px;
   }
 }
 /* 대시보드 높이 고정 */
@@ -519,7 +521,7 @@ summary:focus-visible {
   position: absolute;
   right: 18px;
   top: 22px;
-  font-size: 12px;
+  font-size: 15px;
 }
 
 /* 알림 페이지: 왼쪽 본문 + 오른쪽 상세 패널 */
@@ -548,13 +550,13 @@ summary:focus-visible {
 }
 
 .alerts-title h2 {
-  font-size: 18px;
+  font-size: 22px;
 }
 
 /* 알림 건수와 이력 안내 문구 */
 .alerts-title span,
 .alerts-session-note {
-  font-size: 12px;
+  font-size: 14px;
   color: #64748b;
 }
 
@@ -568,37 +570,81 @@ summary:focus-visible {
 /* 왼쪽 이미지와 오른쪽 결과 카드를 두 열로 배치 */
 .alert-preview {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(220px, .8fr);
-  gap: 35px;
-  align-items: start;
+  grid-template-columns: minmax(0, 1.25fr) minmax(320px, 1fr);
+  gap: 20px;
+  align-items: stretch;
 }
 
 /* 이미지 위의 Set·경고 단계 제목 */
 .alert-preview h3 {
-  margin: 0 0 16px;
-  font-size: 25px;
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 22px;
+  overflow-wrap: anywhere;
+}
+
+.alert-preview-image {
+  display: flex;
+  min-width: 0;
+}
+
+.alert-preview-image .image-placeholder {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-height: 440px;
+  padding: 16px;
+  gap: 12px;
+  border: 1px solid #dce2ea;
+  border-radius: 16px;
+  background: #f8fafc;
+}
+
+.alert-preview-image .image-placeholder img {
+  min-height: 0;
+  height: 100%;
+}
+
+.alert-preview-image .image-placeholder > span:only-child {
+  grid-row: 1 / -1;
 }
 
 /* 예측값·판정·확인 버튼 카드를 세로 배치 */
 .alert-preview-results {
   display: grid;
-  gap: 14px;
+  grid-template-rows: auto auto 1fr;
+  min-width: 0;
+  gap: 16px;
+}
+
+.alert-preview-results .result-card {
+  padding: 20px;
+  gap: 10px;
+  border-color: #dce2ea;
+  border-radius: 14px;
+  background: #fff;
+  word-break: keep-all;
 }
 
 /* 경고·위험 판정 카드 */
 .alert-status-box {
+  display: grid;
+  align-content: center;
+  gap: 8px;
+  font-size: 22px;
   border: 1px solid;
-  border-radius: 8px;
+  border-radius: 14px;
   padding: 20px;
-  line-height: 1.8;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 
 .alert-status-box p {
-  font-size: 14px;
+  font-size: 16px;
 }
 
 /* 판정 데이터 출처 안내 */
 .alert-status-box small {
+  font-size: 14px;
   color: #64748b;
 }
 
@@ -616,7 +662,7 @@ summary:focus-visible {
 .alert-list-section h3 {
   margin: 0;
   padding: 14px 16px;
-  font-size: 15px;
+  font-size: 20px;
   border-bottom: 1px solid #e2e8f0;
 }
 
@@ -633,7 +679,7 @@ summary:focus-visible {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 15px;
 }
 
 .alert-filters select {
@@ -656,12 +702,13 @@ summary:focus-visible {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  font-size: 12px;
+  font-size: 15px;
   white-space: nowrap;
 }
 
 /* 표 상단의 알림 건수·조회 안내 */
 .alert-table caption {
+  font-size: 14px;
   text-align: left;
   padding: 10px 14px;
   color: #64748b;
@@ -682,6 +729,7 @@ summary:focus-visible {
 
 /* 판정 마모량 아래의 데이터 출처 */
 .alert-table small {
+  font-size: 13px;
   display: block;
   margin-top: 4px;
   color: #64748b;
@@ -689,12 +737,12 @@ summary:focus-visible {
 
 /* 현재 선택한 알림 행 강조 */
 .alert-table tr.is-selected {
-  background: #eff6ff;
+  background: #fff7ed;
 }
 
-/* 선택한 행 왼쪽에 파란색 표시선 */
+/* 선택한 행 왼쪽에 강조 표시선 */
 .alert-table tr.is-selected td:first-child {
-  box-shadow: inset 3px 0 #2563eb;
+  box-shadow: inset 3px 0 #9a4c00;
 }
 
 /* ===== 오른쪽 알림 상세 패널 ===== */
@@ -717,13 +765,13 @@ summary:focus-visible {
 }
 
 .alert-details h3 {
-  font-size: 14px;
+  font-size: 18px;
   margin: 0 0 16px;
 }
 
 /* 상세 항목 이름: Set, 관측 시각, 이미지 등 */
 .alert-details dt {
-  font-size: 11px;
+  font-size: 14px;
   color: #64748b;
   margin-top: 14px;
 }
@@ -731,14 +779,14 @@ summary:focus-visible {
 /* 상세 항목 값: 긴 파일명도 줄바꿈 */
 .alert-details dd {
   margin: 5px 0 0;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.7;
   overflow-wrap: anywhere;
 }
 
 .alert-details p,
 .alert-details small {
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.8;
   overflow-wrap: anywhere;
 }
@@ -754,7 +802,7 @@ summary:focus-visible {
   display: block;
   margin-top: 12px;
   width: 100%;
-  font-size: 12px;
+  font-size: 15px;
 }
 
 /* 조회 조건에 맞는 알림이 없을 때 표시 */
@@ -768,17 +816,26 @@ summary:focus-visible {
 
 /* ===== 태블릿·작은 화면 대응 ===== */
 
+@media (max-width: 1100px) {
+  .alert-preview {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .alert-preview-image .image-placeholder {
+    min-height: 320px;
+  }
+
+  .alert-preview-image .image-placeholder img {
+    height: auto;
+  }
+}
+
 /* 화면 너비 900px 이하 */
 @media (max-width: 900px) {
   /* 오른쪽 상세 패널 너비 축소 */
   .alerts-page {
     grid-template-columns: minmax(0, 1fr) 230px;
-  }
-
-  /* 이미지와 결과 카드를 세로 배치 */
-  .alert-preview {
-    grid-template-columns: 1fr;
-    gap: 16px;
   }
 
   .alerts-main {
@@ -849,7 +906,7 @@ summary:focus-visible {
 /* 조회 결과와 센서 재생 상태 안내 */
 .unified-controls p {
   margin: 10px 0;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.7;
   overflow-wrap: anywhere;
 }
@@ -861,7 +918,7 @@ summary:focus-visible {
 }
 
 .set-playback-status button {
-  font-size: 11px;
+  font-size: 15px;
 }
 
 /* 현재 화면에서 선택한 Set 버튼 강조 */
@@ -874,9 +931,12 @@ summary:focus-visible {
 
 /* 확인·이동 영역의 바깥 카드 */
 .alert-preview-actions {
-  padding: 14px 16px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 20px;
+  border: 1px solid #dce2ea;
+  border-radius: 14px;
   background: #fff;
 }
 
@@ -885,19 +945,37 @@ summary:focus-visible {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 12px;
 }
 
 /* 두 버튼의 최소 너비 */
 .alert-preview-action-buttons button {
-  min-width: 96px;
+  min-width: 112px;
+  min-height: 40px;
+  border-radius: 8px;
+}
+
+.alert-preview-action-buttons .alert-move-button {
+  border-color: #9a4c00;
+  background: #9a4c00;
+  color: #fff;
+}
+
+.alert-preview-action-buttons .alert-move-button:hover:not(:disabled) {
+  border-color: #7c3d00;
+  background: #7c3d00;
 }
 
 /* 확인 여부·확인 시각 표시 */
 .alert-preview-actions p {
-  margin-top: 10px;
-  font-size: 12px;
+  margin-top: 16px;
+  font-size: 14px;
   line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.alert-confirmation-time {
+  display: block;
 }
 
 /* 이동 버튼 동작 안내 */
@@ -905,15 +983,16 @@ summary:focus-visible {
   display: block;
   margin-top: 6px;
   color: #64748b;
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.7;
+  overflow-wrap: anywhere;
 }
 
 /* 알림 페이지에서 예측 마모량, 마모 유형 표시 */
 .alert-preview-results .alert-wear-summary {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 16px;
 }
 
 .notification-heading {
@@ -987,7 +1066,7 @@ summary:focus-visible {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: 15px;
 }
 
 .header-actions .page-switch {
@@ -1038,7 +1117,7 @@ summary:focus-visible {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: 15px;
 }
 
 .header-actions > .page-switch {
