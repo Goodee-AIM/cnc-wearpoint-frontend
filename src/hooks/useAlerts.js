@@ -1,9 +1,9 @@
 // 현재 Set 알림 표시와 서버 DB의 공통 알림 이력 조회·필터·확인
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { API_BASE, DANGER, SETS, WARNING } from "../dashboardConfig.js";
 
 import { fileKey, getStatus, numberOrNull } from "../utils/wear.js";
-import { loadSharedAlertHistory, retainKnownAcknowledgments } from "../utils/alertHistory.js";
+import { ALERT_PAGE_SIZE, loadSharedAlertPage, retainKnownAcknowledgments } from "../utils/alertHistory.js";
 
 // 알림 이력 조회 시 5초마다 새로고침
 const HISTORY_REFRESH_MS = 5000;
@@ -46,8 +46,11 @@ function historyRecord(row, imagesBySet) {
 }
 
 export default function useAlerts(getRecord, imagesBySet) {
-  const [storedAlerts, setStoredAlerts] = useState([]);
-  const [historyMessage, setHistoryMessage] = useState("DB 공통 알림 이력을 불러오는 중입니다.");
+  const [history, setHistory] = useState(null);
+  const [historyError, setHistoryError] = useState(null);
+  const [pageRequest, setPageRequest] = useState({ key: "", index: 0 });
+  const snapshot = useRef(null);
+  const acknowledgmentRevision = useRef(0);
   const [historyRequest, setHistoryRequest] = useState(0);
   const [confirmingId, setConfirmingId] = useState(null);
   const [selectedAlertId, setSelectedAlertId] = useState(null);
@@ -78,23 +81,51 @@ export default function useAlerts(getRecord, imagesBySet) {
     (record) => dismissedAlerts[record.set] !== record.alertKey,
   );
 
-  // 화면 진입 시 즉시 조회하고 응답 완료 5초 후 다시 조회합니다. 페이지 전환과 관계없이 hook이 유지되는 동안 동작합니다.
-  // 수동 새로고침 시 이전 effect를 정리하며, 언마운트 시에도 요청과 타이머를 취소합니다.
+  const filterKey = JSON.stringify([alertSetFilter, alertLevelFilter, alertReadFilter]);
+  const pageIndex = pageRequest.key === filterKey ? pageRequest.index : 0;
+  const requestKey = `${filterKey}:${pageIndex}`;
+  const currentPage = history?.requestKey === requestKey ? history : null;
+  const historyLoading = currentPage === null;
+  const currentError = historyError?.requestKey === requestKey ? historyError.message : "";
+  const historyMessage = currentError || (historyLoading ? "알림 목록을 불러오는 중입니다." : "");
+  const historyCounts = history ? { total: history.current_total, unread: history.current_unread } : null;
+
+  // 매번 전체 이력을 순회하지 않고 현재 조건의 50건만 읽습니다.
+  // 후속 페이지는 ID 상한을 유지해 새 알림 삽입이 페이지를 밀어내지 않게 합니다.
   useEffect(() => {
     let disposed = false;
     let timer;
     let controller;
-
     async function loadHistory() {
       controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 30000);
+      const revision = acknowledgmentRevision.current;
       try {
-        const rows = await loadSharedAlertHistory(API_BASE, controller.signal);
-        if (disposed) return;
-        setStoredAlerts((previous) => retainKnownAcknowledgments(rows, previous));
-        setHistoryMessage("");
+        const pinned = snapshot.current?.key === filterKey ? snapshot.current : null;
+        const result = await loadSharedAlertPage(API_BASE, {
+          page: pageIndex, set: alertSetFilter, level: alertLevelFilter,
+          read: alertReadFilter, snapshot: pinned,
+        }, controller.signal);
+        if (disposed || revision !== acknowledgmentRevision.current) return;
+        if (pageIndex > 0 && pageIndex * ALERT_PAGE_SIZE >= result.filtered_total) {
+          setPageRequest({ key: filterKey, index: 0 });
+          return;
+        }
+        snapshot.current = { key: filterKey, session_id: result.session_id, event_max_id: result.event_max_id };
+        setHistory((previous) => ({
+          ...result, requestKey,
+          items: retainKnownAcknowledgments(result.items, previous?.items ?? []),
+        }));
+        setHistoryError(null);
       } catch (error) {
-        if (!disposed) setHistoryMessage(`DB 공통 알림 조회 실패: ${error.message} · 자동 재시도 중`);
+        if (disposed) return;
+        if (error.status === 409) {
+          snapshot.current = null;
+          setHistory(null);
+          setPageRequest({ key: filterKey, index: 0 });
+        } else {
+          setHistoryError({ requestKey, message: `알림 조회 실패: ${error.message} · 자동 재시도 중` });
+        }
       } finally {
         clearTimeout(timeout);
         if (!disposed) timer = setTimeout(loadHistory, HISTORY_REFRESH_MS);
@@ -106,24 +137,12 @@ export default function useAlerts(getRecord, imagesBySet) {
       clearTimeout(timer);
       controller?.abort();
     };
-  }, [historyRequest]);
+  }, [filterKey, requestKey, pageIndex, alertSetFilter, alertLevelFilter, alertReadFilter, historyRequest]);
 
-  // 화면의 전체 건수와 미확인 건수는 이 DB 목록에서만 계산합니다.
-  const alertHistory = useMemo(() => storedAlerts
-    .map((row) => historyRecord(row, imagesBySet))
-    .sort((a, b) => new Date(b.observedAt) - new Date(a.observedAt)),
-  [storedAlerts, imagesBySet]);
-
-  const filteredAlerts = alertHistory.filter(
-    (record) =>
-      (alertSetFilter === "all" || record.set === Number(alertSetFilter)) &&
-      (alertLevelFilter === "all" ||
-        record.status.level === alertLevelFilter) &&
-      (alertReadFilter === "all" ||
-        (alertReadFilter === "unread"
-          ? !record.acknowledgedAt
-          : Boolean(record.acknowledgedAt))),
-  );
+  const alertHistory = useMemo(() => (currentPage?.items ?? [])
+    .map((row) => historyRecord(row, imagesBySet)), [currentPage, imagesBySet]);
+  // 서버에서 Set/단계/확인 상태 필터를 적용했으므로 현재 페이지를 그대로 표시합니다.
+  const filteredAlerts = alertHistory;
   // 필터 변경으로 기존 선택이 사라지면 첫 번째 결과를 선택하고, 결과가 없으면 빈 상세를 표시합니다.
   const selectedAlert =
     filteredAlerts.find((record) => record.id === selectedAlertId) ??
@@ -153,13 +172,20 @@ export default function useAlerts(getRecord, imagesBySet) {
         throw new Error("확인 API 응답에 detail_confirmed_at이 없습니다.");
       }
 
-      setStoredAlerts((previous) =>
-        previous.map((row) =>
-          row.id === record.dbAlertId
-            ? { ...row, detail_confirmed_at: confirmedAt }
-            : row,
-        ),
-      );
+      acknowledgmentRevision.current += 1;
+      setHistory((previous) => {
+        if (!previous) return previous;
+        const stillUnread = previous.items.some((row) => row.id === record.dbAlertId && !row.detail_confirmed_at);
+        if (!stillUnread) return previous;
+        return {
+          ...previous,
+          unread: Math.max(0, previous.unread - 1),
+          current_unread: Math.max(0, previous.current_unread - 1),
+          items: previous.items.map((row) => row.id === record.dbAlertId
+            ? { ...row, detail_confirmed_at: confirmedAt } : row),
+        };
+      });
+      setHistoryRequest((value) => value + 1);
     } catch (error) {
       window.alert(error.message);
     } finally {
@@ -174,16 +200,28 @@ export default function useAlerts(getRecord, imagesBySet) {
     acknowledgeAlert,
     confirmingId,
     historyMessage,
-    reloadHistory: () => {
-      setHistoryMessage("DB 공통 알림 이력을 불러오는 중입니다.");
-      setHistoryRequest((value) => value + 1);
-    },
+    historyCounts,
+    historyLoading,
+    historyPageNumber: pageIndex + 1,
+    historyPageSize: ALERT_PAGE_SIZE,
+    historyFilteredTotal: currentPage?.filtered_total ?? null,
+    changeHistoryPage: (index) => setPageRequest({ key: filterKey, index: Math.max(0, index) }),
+    reloadHistory: () => setHistoryRequest((value) => value + 1),
     alertSetFilter,
-    setAlertSetFilter,
+    setAlertSetFilter: (value) => {
+      setAlertSetFilter(value);
+      setPageRequest({ key: "", index: 0 });
+    },
     alertLevelFilter,
-    setAlertLevelFilter,
+    setAlertLevelFilter: (value) => {
+      setAlertLevelFilter(value);
+      setPageRequest({ key: "", index: 0 });
+    },
     alertReadFilter,
-    setAlertReadFilter,
+    setAlertReadFilter: (value) => {
+      setAlertReadFilter(value);
+      setPageRequest({ key: "", index: 0 });
+    },
     filteredAlerts,
     setSelectedAlertId,
   };

@@ -1438,3 +1438,14 @@ summary:focus-visible {
 .alerts-page {
   grid-template-columns: minmax(0, 1fr);
 }
+
+/* 필요한 알림 페이지만 서버에서 조회합니다. */
+.alert-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 16px;
+  border-top: 1px solid #e2e8f0;
+}

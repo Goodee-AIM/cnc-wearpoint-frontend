@@ -5,7 +5,11 @@ export async function readMonitoringJson(apiBase, path, signal) {
     signal,
     cache: "no-store",
   });
-  if (!response.ok) throw new Error(`조회 실패: HTTP ${response.status}`);
+  if (!response.ok) {
+    const error = new Error(`조회 실패: HTTP ${response.status}`);
+    error.status = response.status;
+    throw error;
+  }
   return response.json();
 }
 

@@ -4,6 +4,7 @@ import { API_BASE, SETS } from "../dashboardConfig.js";
 import { getStatus, numberOrNull, recordKey } from "../utils/wear.js";
 import { parseSensor, readTable } from "../utils/csv.js";
 import useAlerts from "./useAlerts.js";
+import usePageLocation from "./usePageLocation.js";
 import useSharedMonitoring from "./useSharedMonitoring.js";
 import { loadDashboardData } from "../utils/sharedMonitoring.js";
 
@@ -23,7 +24,7 @@ export default function useDashboard() {
   const [testValues, setTestValues] = useState({});
   const [testModes, setTestModes] = useState({});
   const [selectedSet, setSelectedSet] = useState(10);
-  const [page, setPage] = useState("monitoring");
+  const [page, setPage] = usePageLocation();
   const shared = useSharedMonitoring(unifiedMode, selectedSet);
   const unifiedPlaying = unifiedMode && shared.connected && shared.state?.status === "running";
   const alertPreview = useRef(null);
@@ -416,6 +417,12 @@ export default function useDashboard() {
     acknowledgeAlert,
     confirmingId,
     historyMessage,
+    historyCounts,
+    historyLoading,
+    historyPageNumber,
+    historyPageSize,
+    historyFilteredTotal,
+    changeHistoryPage,
     reloadHistory,
     alertSetFilter,
     setAlertSetFilter,
@@ -430,6 +437,12 @@ export default function useDashboard() {
   // 과거 알림 이동은 이 브라우저만 수동 미리보기로 전환합니다. 다른 접속자의 공통 재생은 계속됩니다.
   function showAlertSet(record) {
     alertPreview.current = { set: record.set, name: record.image?.name };
+    // 자동 화면이 직접 URL로 표시되는 동안 수동 조회용 데이터 출처는 아직 준비되지 않았을 수 있습니다.
+    // 알림 이동 시 서버 이미지·DB·센서 조회를 켜고, 이미 수동 모드여도 대상 사진을 다시 찾습니다.
+    setUseServerImages(true);
+    setUseDatabase(true);
+    setUseServerSensors(true);
+    setServerImageReload((value) => value + 1);
     setUnifiedMode(false);
     const list = activeImagesBySet[record.set] ?? [];
     const index = list.findIndex(
@@ -885,7 +898,7 @@ export default function useDashboard() {
     header: {
       page,
       setPage,
-      alertHistory,
+      historyCounts,
     },
     navigation: {
       selectedSet,
@@ -983,6 +996,12 @@ export default function useDashboard() {
       acknowledgeAlert,
       confirmingId,
       historyMessage,
+      historyCounts,
+      historyLoading,
+      historyPageNumber,
+      historyPageSize,
+      historyFilteredTotal,
+      changeHistoryPage,
       reloadHistory,
       showAlertSet,
       alertSetFilter,

@@ -45,3 +45,33 @@ export function retainKnownAcknowledgments(rows, previous) {
     };
   });
 }
+
+
+export const ALERT_PAGE_SIZE = 50;
+
+// 한 번에 한 페이지만 조회합니다. 필터는 서버에서 전체 세션 이력에 적용합니다.
+export async function loadSharedAlertPage(apiBase, {
+  page = 0, set = "all", level = "all", read = "all", snapshot = null,
+} = {}, signal) {
+  const params = new URLSearchParams({
+    limit: String(ALERT_PAGE_SIZE), offset: String(page * ALERT_PAGE_SIZE), read_status: read,
+  });
+  if (set !== "all") params.set("set_number", String(set));
+  if (level !== "all") params.set("level", level);
+  if (page > 0 && snapshot) {
+    params.set("event_max_id", String(snapshot.event_max_id));
+    if (snapshot.session_id) params.set("session_id", snapshot.session_id);
+  }
+  const result = await readMonitoringJson(apiBase, `/api/monitoring/alerts?${params}`, signal);
+  const integers = [result.total, result.unread, result.current_total, result.current_unread,
+    result.filtered_total, result.event_max_id];
+  if (!Array.isArray(result.items) || integers.some((n) => !Number.isInteger(n) || n < 0) ||
+      result.unread > result.total || result.current_unread > result.current_total ||
+      result.filtered_total > result.total || result.items.length > ALERT_PAGE_SIZE ||
+      result.items.length > result.filtered_total ||
+      new Set(result.items.map((row) => row.id)).size !== result.items.length ||
+      result.items.some((row) => row.session_id !== result.session_id)) {
+    throw new Error("알림 페이지 응답 형식 오류: 백엔드와 프론트 버전을 확인하세요.");
+  }
+  return result;
+}

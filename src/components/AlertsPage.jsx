@@ -3,15 +3,20 @@
 
 import ToolImage from "./ToolImage.jsx";
 import ResultCard from "./ResultCard.jsx";
-import { SETS, WARNING, DANGER } from "../dashboardConfig.js";
+import { SETS } from "../dashboardConfig.js";
 import { alertTime, formatWear, wearType } from "../utils/wear.js";
 
 export default function AlertsPage({
-  alertHistory,
   selectedAlert,
   acknowledgeAlert,
   confirmingId,
   historyMessage,
+  historyCounts,
+  historyLoading,
+  historyPageNumber,
+  historyPageSize,
+  historyFilteredTotal,
+  changeHistoryPage,
   showAlertSet,
   alertSetFilter,
   setAlertSetFilter,
@@ -28,8 +33,9 @@ export default function AlertsPage({
         <div className="alerts-title">
           <h2>경고·위험 알림</h2>
           <span>
-            현재 세션 전체 {alertHistory.length}건 · 미확인{" "}
-            {alertHistory.filter((record) => !record.acknowledgedAt).length}건
+            {historyCounts
+              ? `현재 세션 전체 ${historyCounts.total.toLocaleString()}건 · 미확인 ${historyCounts.unread.toLocaleString()}건`
+              : "알림 건수 조회 중"}
           </span>
         </div>
         {historyMessage && <p role="status">{historyMessage}</p>}
@@ -119,7 +125,9 @@ export default function AlertsPage({
           </section>
         ) : (
           <p className="alerts-empty" role="status">
-            조건에 맞는 DB 알림이 없습니다. 서버 재생 중 발생한 알림은 자동으로 기록됩니다.
+            {historyLoading
+              ? "알림 조회가 완료되면 목록을 표시합니다."
+              : "조건에 맞는 DB 알림이 없습니다. 서버 재생 중 발생한 알림은 자동으로 기록됩니다."}
           </p>
         )}
         <section className="alert-list-section">
@@ -165,7 +173,9 @@ export default function AlertsPage({
           <div className="alert-table-scroll">
             <table className="alert-table">
               <caption>
-                알림 {filteredAlerts.length}건 · 선택 버튼으로 상세 조회
+                {historyFilteredTotal == null
+                  ? "알림 목록 조회 중"
+                  : `조건에 맞는 알림 ${historyFilteredTotal.toLocaleString()}건 · 현재 ${filteredAlerts.length}건 표시`}
               </caption>
               <thead>
                 <tr>
@@ -209,6 +219,17 @@ export default function AlertsPage({
               </tbody>
             </table>
           </div>
+          <nav aria-label="알림 목록 페이지" className="alert-pagination">
+            <button type="button" disabled={historyLoading || historyPageNumber <= 1}
+              onClick={() => changeHistoryPage(historyPageNumber - 2)}>이전</button>
+            <span aria-live="polite">
+              {historyFilteredTotal == null ? "조회 중" : `${historyPageNumber} / ${Math.max(1, Math.ceil(historyFilteredTotal / historyPageSize))} 페이지`}
+            </span>
+            <button type="button" disabled={historyLoading || historyFilteredTotal == null || historyPageNumber * historyPageSize >= historyFilteredTotal}
+              onClick={() => changeHistoryPage(historyPageNumber)}>다음</button>
+            <button type="button" disabled={historyLoading || historyPageNumber === 1}
+              onClick={() => changeHistoryPage(0)}>최신 알림</button>
+          </nav>
         </section>
       </main>
 

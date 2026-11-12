@@ -1,14 +1,12 @@
-// 상단 제목과 페이지 이동 버튼. 미확인 건수는 alertHistory를 통해 계산
+// 상단 제목과 페이지 이동 버튼. 미확인 건수는 서버 세션 전체 집계를 사용합니다.
 export default function DashboardHeader({
   page,
   setPage,
-  alertHistory,
+  historyCounts,
   children,
 }) {
   const isAlertsPage = page === "alerts";
-  const unreadCount = alertHistory.filter(
-    (record) => !record.acknowledgedAt,
-  ).length;
+  const unreadCount = historyCounts?.unread ?? "조회 중";
 
   return (
     <header className="header">
