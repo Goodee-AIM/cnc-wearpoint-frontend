@@ -547,22 +547,17 @@ summary:focus-visible {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
+  margin-bottom: 22px;
 }
 
 .alerts-title h2 {
   font-size: 22px;
 }
 
-/* 알림 건수와 이력 안내 문구 */
-.alerts-title span,
-.alerts-session-note {
+/* 현재 세션의 알림 건수 */
+.alerts-title span {
   font-size: 14px;
   color: #64748b;
-}
-
-.alerts-session-note {
-  margin: 12px 0 22px;
-  line-height: 1.7;
 }
 
 /* ===== 경고 위험 알림 페이지 ===== */
@@ -737,12 +732,12 @@ summary:focus-visible {
 
 /* 현재 선택한 알림 행 강조 */
 .alert-table tr.is-selected {
-  background: #fff7ed;
+  background: #eff6ff;
 }
 
 /* 선택한 행 왼쪽에 강조 표시선 */
 .alert-table tr.is-selected td:first-child {
-  box-shadow: inset 3px 0 #9a4c00;
+  box-shadow: inset 3px 0 #2563eb;
 }
 
 /* ===== 오른쪽 알림 상세 패널 ===== */
@@ -956,14 +951,14 @@ summary:focus-visible {
 }
 
 .alert-preview-action-buttons .alert-move-button {
-  border-color: #9a4c00;
-  background: #9a4c00;
+  border-color: #2563eb;
+  background: #2563eb;
   color: #fff;
 }
 
 .alert-preview-action-buttons .alert-move-button:hover:not(:disabled) {
-  border-color: #7c3d00;
-  background: #7c3d00;
+  border-color: #1d4ed8;
+  background: #1d4ed8;
 }
 
 /* 확인 여부·확인 시각 표시 */
@@ -1189,4 +1184,257 @@ summary:focus-visible {
   .alert-history-popover > .notification-panel {
     right: 10px;
   }
+}
+
+/* 자동 모니터링: 남은 화면 높이를 이미지와 그래프에 배분합니다. */
+.main-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.main-panel > .set-navigation {
+  flex-shrink: 0;
+}
+
+.main-content--automatic {
+  display: grid;
+  flex: 1;
+  min-height: 580px;
+  grid-template-rows: auto minmax(320px, 1fr) auto;
+  gap: 22px;
+  padding-bottom: 24px;
+}
+
+.main-content--automatic > .section-heading {
+  margin-bottom: 0;
+}
+
+.main-content--automatic > .monitoring-layout {
+  min-height: 0;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.45fr);
+  align-items: stretch;
+  gap: 26px;
+}
+
+.main-content--automatic .live-image-section {
+  display: grid;
+  min-height: 0;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 12px;
+}
+
+.main-content--automatic .live-image-section > .image-placeholder {
+  display: grid;
+  min-height: 0;
+  grid-template-rows: minmax(0, 1fr) auto;
+  padding: 16px;
+  gap: 12px;
+}
+
+.main-content--automatic .live-image-section .image-placeholder img {
+  min-height: 0;
+  height: 100%;
+  object-fit: contain;
+}
+
+.main-content--automatic .live-image-section .image-placeholder > span:only-child {
+  grid-row: 1 / -1;
+  align-self: center;
+}
+
+.main-content--automatic .measurement-time {
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* 점선 파형 영역에 맞춰 박스를 줄이고 이미지 옆 중앙에 배치합니다. */
+.main-content--automatic .sensor-grid {
+  min-height: 0;
+  height: 100%;
+  max-height: 520px;
+  align-self: center;
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.main-content--automatic .sensor-card {
+  display: grid;
+  min-height: 0;
+  grid-template-rows: auto minmax(0, 1fr);
+  padding: 12px 14px;
+  gap: 6px;
+}
+
+.main-content--automatic .sensor-chart {
+  min-height: 0;
+  height: 100%;
+  margin: 0;
+}
+
+.main-content--automatic > .diagnosis-layout {
+  margin-top: 0;
+  gap: 18px;
+}
+
+.main-content--automatic .diagnosis-layout > .replacement-card,
+.main-content--automatic .diagnosis-layout > .result-card {
+  min-height: 116px;
+  padding: 20px;
+}
+
+/* 작은 화면은 자연스러운 높이로 쌓고 본문 안에서 스크롤합니다. */
+@media (max-width: 1000px) {
+  .main-content--automatic {
+    flex: 0 0 auto;
+    min-height: 0;
+    grid-template-rows: auto auto auto;
+    gap: 20px;
+  }
+
+  .main-content--automatic > .monitoring-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+
+  .main-content--automatic .live-image-section > .image-placeholder {
+    height: clamp(280px, 45vw, 460px);
+  }
+
+  .main-content--automatic .sensor-grid {
+    height: auto;
+    max-height: none;
+    grid-auto-rows: minmax(180px, auto);
+    grid-template-rows: repeat(2, minmax(180px, auto));
+  }
+}
+
+@media (max-width: 600px) {
+  .main-content--automatic {
+    padding: 18px 14px;
+  }
+
+  .main-content--automatic .sensor-grid,
+  .main-content--automatic > .diagnosis-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+
+/* 고정 사진과 소폭 축소한 그래프: 파일 크기가 달라도 배치는 유지합니다. */
+.main-content {
+  --monitor-photo-height: 520px;
+  --monitor-graph-height: 244px;
+}
+
+.main-content.main-content--automatic {
+  grid-template-rows: auto auto auto;
+  align-content: start;
+}
+
+.main-content > .monitoring-layout {
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.45fr);
+  align-items: start;
+  gap: 26px;
+}
+
+.main-content .monitoring-layout > .live-image-section {
+  display: grid;
+  min-height: 0;
+  grid-template-rows: var(--monitor-photo-height) auto;
+  align-self: start;
+  gap: 12px;
+}
+
+.main-content .live-image-section > .image-placeholder {
+  display: grid;
+  height: var(--monitor-photo-height);
+  min-height: 0;
+  grid-template-rows: minmax(0, 1fr) auto;
+  padding: 16px;
+  gap: 12px;
+}
+
+.main-content .live-image-section .image-placeholder img {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  max-height: 100% !important;
+  object-fit: contain;
+}
+
+.main-content .live-image-section .image-placeholder > span:only-child {
+  grid-row: 1 / -1;
+  align-self: center;
+}
+
+.main-content .measurement-time {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.main-content .monitoring-layout > .sensor-grid {
+  height: auto;
+  max-height: none;
+  min-height: 0;
+  align-self: start;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, var(--monitor-graph-height));
+  gap: 16px;
+}
+
+.main-content .sensor-grid > .sensor-card {
+  display: grid;
+  min-height: 0;
+  grid-template-rows: auto minmax(0, 1fr);
+  padding: 14px;
+  gap: 8px;
+}
+
+.main-content .sensor-card > .sensor-chart {
+  min-height: 0;
+  height: 100%;
+  margin: 0;
+}
+
+/* 삭제한 설명의 자리에도 빈 공간이 남지 않게 합니다. */
+.main-content .sensor-card > .chart-caption {
+  display: none;
+}
+
+.main-content > .diagnosis-layout {
+  margin-top: 24px;
+}
+
+.main-content.main-content--automatic > .diagnosis-layout {
+  margin-top: 0;
+}
+
+@media (max-width: 1000px) {
+  .main-content {
+    --monitor-photo-height: 380px;
+    --monitor-graph-height: 190px;
+  }
+
+  .main-content > .monitoring-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (max-width: 600px) {
+  .main-content {
+    --monitor-photo-height: 300px;
+    --monitor-graph-height: 180px;
+  }
+
+  .main-content .monitoring-layout > .sensor-grid {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: repeat(4, var(--monitor-graph-height));
+  }
+}
+
+/* 상세 패널 제거 후 알림 본문을 전체 너비로 표시 */
+.alerts-page {
+  grid-template-columns: minmax(0, 1fr);
 }

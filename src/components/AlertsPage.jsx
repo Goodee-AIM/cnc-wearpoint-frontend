@@ -32,9 +32,6 @@ export default function AlertsPage({
             {alertHistory.filter((record) => !record.acknowledgedAt).length}건
           </span>
         </div>
-        <p className="alerts-session-note">
-          현재 재생 세션의 알림을 표시합니다. 세션 초기화 시 전체·확인·미확인 건수도 새로 집계합니다.
-        </p>
         {historyMessage && <p role="status">{historyMessage}</p>}
         {selectedAlert ? (
           <section className="alert-preview">
@@ -214,41 +211,7 @@ export default function AlertsPage({
           </div>
         </section>
       </main>
-      <aside className="alert-details">
-        <section>
-          <h3>알림 상세</h3>
-          {selectedAlert ? (
-            <dl>
-              <dt>Set</dt>
-              <dd>Set{selectedAlert.set}</dd>
-              {selectedAlert.cycleNumber != null && (
-                <>
-                  <dt>재생 회차</dt>
-                  <dd>{selectedAlert.cycleNumber}회차</dd>
-                </>
-              )}
-              <dt>알림 시각</dt>
-              <dd>{alertTime(selectedAlert.observedAt)}</dd>
-              <dt>이미지</dt>
-              <dd>{selectedAlert.image?.name ?? "정보 없음"}</dd>
-              <dt>센서</dt>
-              <dd>
-                {selectedAlert.prediction?.sensorName ||
-                  selectedAlert.label?.sensorName ||
-                  "정보 없음"}
-              </dd>
-              <dt>판정 기준</dt>
-              <dd>
-                경고 {selectedAlert.warningThreshold ?? WARNING}μm 이상 · 위험 {selectedAlert.dangerThreshold ?? DANGER}μm 이상
-              </dd>
-              <dt>판정에 사용한 값</dt>
-              <dd>{selectedAlert.source}</dd>
-            </dl>
-          ) : (
-            <p>알림을 선택해주세요.</p>
-          )}
-        </section>
-      </aside>
+
     </div>
   );
 }

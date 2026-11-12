@@ -4,11 +4,11 @@ import ToolImage from "./ToolImage.jsx";
 import Graph from "./Graph.jsx";
 import { TITLES } from "../dashboardConfig.js";
 
-export default function MonitoringView({ currentImage, visibleRows }) {
+export default function MonitoringView({ currentImage, visibleRows, expanded = false }) {
   return (
     <section className="monitoring-layout">
       <div className="live-image-section">
-        <ToolImage image={currentImage} />
+        <ToolImage image={currentImage} maxHeight={expanded ? "none" : 220} />
         <p className="measurement-time">
           현재 센서 시간: {visibleRows[visibleRows.length - 1]?.time ?? "—"}
         </p>

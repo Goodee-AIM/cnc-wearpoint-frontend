@@ -45,6 +45,7 @@ export default function Graph({ title, rows, column }) {
       <svg
         className="sensor-chart"
         viewBox="0 0 300 100"
+        preserveAspectRatio="none"
         role="img"
         aria-label={`${title} 그래프`}
       >
@@ -56,6 +57,7 @@ export default function Graph({ title, rows, column }) {
             y1={y}
             y2={y}
             stroke="#e5e7eb"
+            vectorEffect="non-scaling-stroke"
             strokeDasharray="4 4"
           />
         ))}
@@ -64,14 +66,10 @@ export default function Graph({ title, rows, column }) {
           fill="none"
           stroke="#2563eb"
           strokeWidth="1"
+          vectorEffect="non-scaling-stroke"
         />
       </svg>
 
-      <div className="chart-caption">
-        {rows.length
-          ? `최소 ${min.toFixed(3)} / 최대 ${max.toFixed(3)}`
-          : "데이터 없음"}
-      </div>
     </section>
   );
 }

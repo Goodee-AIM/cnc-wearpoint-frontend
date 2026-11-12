@@ -32,7 +32,7 @@ export default function App() {
           <div className="main-content">
             <div className="section-heading">
               <h2>Set{selectedSet} 모니터링</h2>
-              <span className="demo-badge">저장 결과 재생</span>
+
             </div>
 
             {/* 자동 모드에서는 공통 제어 패널을 숨깁니다. 서버 상태 자동 조회는 useDashboard에서 계속됩니다. */}
