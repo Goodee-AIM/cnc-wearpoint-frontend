@@ -1,4 +1,4 @@
-// 현재 Set별 경고·위험을 보여주는 팝업. 
+// 현재 Set별 경고·위험을 보여주는 팝업.
 // X를 누르면 숨겨짐. DB 알림 확인은 AlertsPage
 import { formatWear } from "../utils/wear.js";
 
