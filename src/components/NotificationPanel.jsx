@@ -19,7 +19,7 @@ export default function NotificationPanel({
 
         <div className="notification-content">
           {alerts.length === 0 ? (
-            <p style={{ fontSize: 12, color: "#64748b" }}>
+            <p style={{ fontSize: 14, color: "#64748b" }}>
               현재 경고·위험 알림이 없습니다.
             </p>
           ) : (
@@ -34,7 +34,7 @@ export default function NotificationPanel({
                   border: `1px solid ${record.status.color}`,
                   borderRadius: 10,
                   background: record.status.background,
-                  fontSize: 12,
+                  fontSize: 14,
                   lineHeight: 1.9,
                 }}
               >

@@ -53,7 +53,7 @@ export default function SensorSettings({
             : "서버 센서 자동 연결 켜기"}
         </button>
 
-        <p style={{ marginTop: 8, fontSize: 12 }} role="status">
+        <p style={{ marginTop: 8, fontSize: 14 }} role="status">
           자동 연결: {useServerSensors ? "켜짐" : "꺼짐"}
         </p>
       </div>
@@ -70,7 +70,7 @@ export default function SensorSettings({
       </label>
 
       <p
-        style={{ margin: "10px 0", fontSize: 12, overflowWrap: "anywhere" }}
+        style={{ margin: "10px 0", fontSize: 14, overflowWrap: "anywhere" }}
         role="status"
       >
         {sensor.set === selectedSet
@@ -107,18 +107,18 @@ export default function SensorSettings({
         >
           처음부터
         </button>
-        <span style={{ fontSize: 12 }}>
+        <span style={{ fontSize: 14 }}>
           {(sensorRows.length ? elapsed / 1000 : 0).toFixed(1)}초 /{" "}
           {(duration / 1000).toFixed(1)}초
         </span>
       </div>
 
-      <p style={{ marginTop: 10, fontSize: 11, color: "#64748b" }}>
+      <p style={{ marginTop: 10, fontSize: 14, color: "#64748b" }}>
         {useServerSensors
           ? "최근 5초 표시 · 사진 변경 시 대응 센서로 전환하고 처음부터 재생"
           : "최근 5초 표시 · 사진과 별도 재생"}
       </p>
-      <p style={{ marginTop: 8, fontSize: 11, overflowWrap: "anywhere" }}>
+      <p style={{ marginTop: 8, fontSize: 14, overflowWrap: "anywhere" }}>
         사진에 대응하는 센서: {expectedSensor || "정보 없음"}
         <br />
         {sensorRows.length && expectedSensor

@@ -1,9 +1,12 @@
 name: Sync to GitLab
 
+# main 브랜치 또는 v* 형식의 Git tag가 push되면 실행
 on:
   push:
     branches:
       - main
+    tags:
+      - 'v*'
 
 permissions:
   contents: read
@@ -13,11 +16,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # GitHub 저장소 전체 이력과 tag 정보를 가져옴
       - name: Checkout repository
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
-      - name: Push main branch to GitLab
+      # main은 GitLab main으로, version tag는 동일한 tag로 동기화
+      - name: Sync branch or tag to GitLab
         run: |
-          git push "https://oauth2:${{ secrets.GITLAB_SYNC_TOKEN }}@gitlab.com/cnc-wearpoint/cnc-wearpoint-frontend.git" HEAD:main
+          GITLAB_URL="https://oauth2:${{ secrets.GITLAB_SYNC_TOKEN }}@gitlab.com/cnc-wearpoint/cnc-wearpoint-frontend.git"
+
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            # 예: GitHub v0.1.0 → GitLab v0.1.0
+            git push "$GITLAB_URL" "refs/tags/$GITHUB_REF_NAME:refs/tags/$GITHUB_REF_NAME"
+          else
+            # GitHub main → GitLab main
+            git push "$GITLAB_URL" HEAD:main
+          fi
