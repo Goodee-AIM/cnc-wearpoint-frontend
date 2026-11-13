@@ -2,7 +2,7 @@
 // Set 선택 네비게이션 컴포넌트
 import { SETS } from "../dashboardConfig.js";
 
-export default function SetNavigation({ selectedSet, changeSet }) {
+export default function SetNavigation({ selectedSet, changeSet, locked = false }) {
   return (
     <nav
       className="set-navigation"
@@ -15,6 +15,9 @@ export default function SetNavigation({ selectedSet, changeSet }) {
       {SETS.map((set) => (
         <button
           key={set}
+          type="button"
+          disabled={locked}
+          title={locked ? "과거 알림 조회 중에는 Set을 변경할 수 없습니다." : undefined}
           className={selectedSet === set ? "set-button active" : "set-button"}
           style={{ flex: "1 0 70px" }}
           onClick={() => changeSet(set)}

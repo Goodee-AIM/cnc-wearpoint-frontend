@@ -117,8 +117,8 @@ export default function AlertsPage({
                       : "아직 확인하지 않은 알림입니다."}
                 </p>
                 <small>
-                  이동하면 이 화면을 수동 확인 모드로 전환하고 Set{selectedAlert.set}의
-                  알림 사진으로 이동합니다.
+                  이동하면 Set{selectedAlert.set}의
+                  알림 사진과 연결 센서를 조회합니다.
                 </small>
               </section>
             </div>
