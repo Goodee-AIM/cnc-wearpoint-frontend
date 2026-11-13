@@ -3,10 +3,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { API_BASE, DANGER, SETS, WARNING } from "../dashboardConfig.js";
 
 import { fileKey, getStatus, numberOrNull } from "../utils/wear.js";
-import { ALERT_PAGE_SIZE, loadSharedAlertPage, retainKnownAcknowledgments } from "../utils/alertHistory.js";
+import { loadSharedAlertPage, retainKnownAcknowledgments } from "../utils/alertHistory.js";
 
 // 알림 이력 조회 시 5초마다 새로고침
 const HISTORY_REFRESH_MS = 5000;
+const HISTORY_PAGE_SIZE = 10;
 
 // DB 응답의 필드명·숫자·이미지 URL을 화면 레코드로 변환합니다. 회차와 확인 시각은 서버 값을 유지합니다.
 function historyRecord(row, imagesBySet) {
@@ -83,14 +84,15 @@ export default function useAlerts(getRecord, imagesBySet) {
 
   const filterKey = JSON.stringify([alertSetFilter, alertLevelFilter, alertReadFilter]);
   const pageIndex = pageRequest.key === filterKey ? pageRequest.index : 0;
-  const requestKey = `${filterKey}:${pageIndex}`;
+  // 페이지 크기를 변경하면 개발 서버의 기존 조회 상태도 새로 불러옵니다.
+  const requestKey = `${filterKey}:${pageIndex}:${HISTORY_PAGE_SIZE}`;
   const currentPage = history?.requestKey === requestKey ? history : null;
   const historyLoading = currentPage === null;
   const currentError = historyError?.requestKey === requestKey ? historyError.message : "";
   const historyMessage = currentError || (historyLoading ? "알림 목록을 불러오는 중입니다." : "");
   const historyCounts = history ? { total: history.current_total, unread: history.current_unread } : null;
 
-  // 매번 전체 이력을 순회하지 않고 현재 조건의 50건만 읽습니다.
+  // 매번 전체 이력을 순회하지 않고 현재 조건의 10건만 읽습니다.
   // 후속 페이지는 ID 상한을 유지해 새 알림 삽입이 페이지를 밀어내지 않게 합니다.
   useEffect(() => {
     let disposed = false;
@@ -104,10 +106,10 @@ export default function useAlerts(getRecord, imagesBySet) {
         const pinned = snapshot.current?.key === filterKey ? snapshot.current : null;
         const result = await loadSharedAlertPage(API_BASE, {
           page: pageIndex, set: alertSetFilter, level: alertLevelFilter,
-          read: alertReadFilter, snapshot: pinned,
+          read: alertReadFilter, snapshot: pinned, pageSize: HISTORY_PAGE_SIZE,
         }, controller.signal);
         if (disposed || revision !== acknowledgmentRevision.current) return;
-        if (pageIndex > 0 && pageIndex * ALERT_PAGE_SIZE >= result.filtered_total) {
+        if (pageIndex > 0 && pageIndex * HISTORY_PAGE_SIZE >= result.filtered_total) {
           setPageRequest({ key: filterKey, index: 0 });
           return;
         }
@@ -203,7 +205,7 @@ export default function useAlerts(getRecord, imagesBySet) {
     historyCounts,
     historyLoading,
     historyPageNumber: pageIndex + 1,
-    historyPageSize: ALERT_PAGE_SIZE,
+    historyPageSize: HISTORY_PAGE_SIZE,
     historyFilteredTotal: currentPage?.filtered_total ?? null,
     changeHistoryPage: (index) => setPageRequest({ key: filterKey, index: Math.max(0, index) }),
     reloadHistory: () => setHistoryRequest((value) => value + 1),

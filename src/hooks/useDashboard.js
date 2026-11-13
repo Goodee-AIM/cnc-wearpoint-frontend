@@ -460,11 +460,12 @@ export default function useDashboard() {
   }
 
   // 과거 알림 조회는 이 브라우저에만 적용하고, 복귀 시 서버의 현재 위치를 다시 따릅니다.
-  function returnToMonitoring() {
+  function returnToMonitoring(setNumber) {
     alertPreview.current = null;
     stopAllPhotos();
     setSensorPlaying(false);
     setUnifiedMode(true);
+    if (SETS.includes(setNumber)) setSelectedSet(setNumber);
     setPage("monitoring");
   }
 
@@ -1002,6 +1003,10 @@ export default function useDashboard() {
     monitoring: {
       currentImage,
       visibleRows,
+      sensorStartMs: start,
+      elapsedMs: unifiedMode ? (groupSensor?.elapsed ?? 0) : elapsed,
+      dataMessage: unifiedMode ? (shared.message || (groupSensor?.status === "loading" || groupSensor?.status === "error" ? groupSensor.message : "")) : sensorMessage,
+      setStatus: unifiedMode ? shared.sets[selectedSet]?.status : "history",
     },
     diagnosis: { current, selectedSet },
     notifications: {

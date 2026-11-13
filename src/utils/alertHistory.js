@@ -51,10 +51,13 @@ export const ALERT_PAGE_SIZE = 50;
 
 // 한 번에 한 페이지만 조회합니다. 필터는 서버에서 전체 세션 이력에 적용합니다.
 export async function loadSharedAlertPage(apiBase, {
-  page = 0, set = "all", level = "all", read = "all", snapshot = null,
+  page = 0, set = "all", level = "all", read = "all", snapshot = null, pageSize = ALERT_PAGE_SIZE,
 } = {}, signal) {
+  if (!Number.isInteger(pageSize) || pageSize < 1 || pageSize > 500) {
+    throw new Error("알림 페이지 크기는 1~500의 정수여야 합니다.");
+  }
   const params = new URLSearchParams({
-    limit: String(ALERT_PAGE_SIZE), offset: String(page * ALERT_PAGE_SIZE), read_status: read,
+    limit: String(pageSize), offset: String(page * pageSize), read_status: read,
   });
   if (set !== "all") params.set("set_number", String(set));
   if (level !== "all") params.set("level", level);
@@ -67,7 +70,7 @@ export async function loadSharedAlertPage(apiBase, {
     result.filtered_total, result.event_max_id];
   if (!Array.isArray(result.items) || integers.some((n) => !Number.isInteger(n) || n < 0) ||
       result.unread > result.total || result.current_unread > result.current_total ||
-      result.filtered_total > result.total || result.items.length > ALERT_PAGE_SIZE ||
+      result.filtered_total > result.total || result.items.length > pageSize ||
       result.items.length > result.filtered_total ||
       new Set(result.items.map((row) => row.id)).size !== result.items.length ||
       result.items.some((row) => row.session_id !== result.session_id)) {

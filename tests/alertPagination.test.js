@@ -58,3 +58,23 @@ test('old backend and mixed-session pages fail explicitly', async (context) => {
   context.mock.method(globalThis, 'fetch', async () => ({ ok: true, json: async () => page({ items: [{ id: 'monitoring:1', session_id: 'other' }] }) }));
   await assert.rejects(loadSharedAlertPage('http://localhost:8001'), /응답 형식/);
 });
+
+test('ten-row history pages keep global counts and use ten-row offsets', async (context) => {
+  context.mock.method(globalThis, 'fetch', async (url) => {
+    assert.equal(url.searchParams.get('limit'), '10');
+    assert.equal(url.searchParams.get('offset'), '10');
+    assert.equal(url.searchParams.get('event_max_id'), '6000');
+    return { ok: true, json: async () => page({items: page().items.slice(0,10)}) };
+  });
+  const result = await loadSharedAlertPage('http://localhost:8001', {
+    page: 1, pageSize: 10, snapshot: { session_id: 'session-a', event_max_id: 6000 },
+  });
+  assert.equal(result.items.length,10);
+  assert.equal(result.current_total,1441);
+});
+
+test('invalid page sizes are rejected before fetching', async () => {
+  for (const pageSize of [0,501,1.5]) {
+    await assert.rejects(loadSharedAlertPage('http://localhost:8001',{pageSize}), /페이지 크기/);
+  }
+});

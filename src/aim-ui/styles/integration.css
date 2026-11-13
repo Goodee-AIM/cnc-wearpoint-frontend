@@ -1,0 +1,264 @@
+/* 실제 API 연결 화면의 로딩·과거 조회 상태. 전달받은 레이아웃 위에 필요한 규칙만 추가합니다. */
+main, article, .sensor-grid, .workspace > *, .insight-metrics > * { min-width: 0; }
+.view-context { display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end; align-items: center; color: #69788d; font-size: 12px; }
+.request-message { color: #62728b; font-size: 13px; margin: 0 0 14px; overflow-wrap: anywhere; }
+.image-wrap img { object-fit: cover; object-position: 58% center; }
+.alert-image-wrap img { object-fit: contain; }
+.image-info > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.metric-value .missing-value { font-size: 20px; font-weight: 600; color: #69788d; }
+button:disabled { cursor: default; opacity: .5; }
+.chart { overflow: hidden; }
+.alert-count { white-space: normal; }
+.timestamp time { overflow-wrap: anywhere; text-align: right; }
+@media (max-width: 720px) {
+  .view-context { justify-content: flex-start; }
+  .page-heading { gap: 12px; flex-wrap: wrap; }
+  .detail-actions { flex-wrap: wrap; }
+  .pagination { gap: 12px; flex-wrap: wrap; }
+}
+
+/* 알림 이력 화면 가독성: 본문 14~16px, 보조 정보 12~14px로 통일합니다. */
+.alerts-main .alert-count, .alerts-main .detail-set { font-size: 14px; }
+.alerts-main .metric-title { font-size: 15px; }
+.alerts-main .metric p, .alerts-main .insight-metrics .wear-value > span { font-size: 13px; }
+.alerts-main .image-info { font-size: 12px; }
+.alerts-main .risk-top { font-size: 15px; flex-wrap: wrap; }
+.alerts-main .severity-tag, .alerts-main .detail-status { font-size: 13px; }
+.alerts-main .risk-card h2 { font-size: 22px; margin: 8px 0; }
+.alerts-main .risk-card p { font-size: 15px; }
+.alerts-main .risk-card p b { font-size: 17px; }
+.alerts-main .risk-bottom { justify-content: flex-start; font-size: 14px; color: #795652; gap: 12px; flex-wrap: wrap; }
+.alerts-main .warning .risk-bottom { color: #7a602d; }
+.alerts-main .action-card h2 { font-size: 17px; }
+.alerts-main .action-card p { font-size: 16px; color: #65748a; }
+.alerts-main .detail-actions button { font-size: 16px; min-width: 112px; padding: 12px 18px; }
+.alerts-main .list-heading h2 { font-size: 17px; }
+.alerts-main .list-heading h2 span, .alerts-main .list-heading button { font-size: 13px; }
+.alerts-main .filters label, .alerts-main .filters select, .alerts-main .filter-result { font-size: 14px; }
+.alerts-main th { font-size: 13px; }
+.alerts-main td { font-size: 14px; padding-top: 16px; padding-bottom: 16px; }
+.alerts-main .row-time b, .alerts-main .table-set, .alerts-main .value-cell b { font-size: 14px; }
+.alerts-main .value-cell small, .alerts-main .value-cell > span { font-size: 12px; }
+.alerts-main .level-badge, .alerts-main .read-state, .alerts-main .row-select { font-size: 13px; }
+.alerts-main .pagination, .alerts-main .pagination button { font-size: 14px; }
+@media (max-width: 720px) {
+  .alerts-main .action-card { align-items: stretch; }
+  .alerts-main .detail-actions { align-self: stretch; }
+  .alerts-main .detail-actions button { flex: 1; }
+}
+
+/* 선택한 과거 알림은 사진 위 제목으로 식별합니다. */
+.alerts-main .selected-alert-heading { margin: 0 0 20px; font-size: 22px; line-height: 1.5; overflow-wrap: anywhere; }
+.alerts-main .selected-alert-heading.danger { color: #bd5b57; }
+.alerts-main .selected-alert-heading.warning { color: #a96c12; }
+.alerts-main .risk-bottom time { font-variant-numeric: tabular-nums; }
+
+/* 알림 상세 사진을 넓히고 오른쪽 정보와 같은 행에 배치합니다. */
+.alerts-main .alert-detail { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); }
+.alerts-main .alert-image-wrap { height: clamp(340px, 30vw, 490px); padding: 12px 0; box-sizing: border-box; }
+.alerts-main .alert-insight { grid-template-rows: minmax(min-content, 1fr) minmax(min-content, 1fr) minmax(min-content, 1.2fr); }
+.alerts-main .risk-card { padding: 18px 22px; }
+@media (max-width: 720px) {
+  .alerts-main .alert-detail { grid-template-columns: 1fr; }
+  .alerts-main .alert-insight { grid-template-rows: auto auto auto; }
+  .alerts-main .alert-image-wrap { height: auto; aspect-ratio: 3 / 2; }
+}
+
+/* 확인·이동 버튼을 오른쪽 끝 대신 안내문 옆 중앙 영역에 배치합니다. */
+.alerts-main .action-card { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 20px; }
+.alerts-main .detail-actions { justify-self: center; gap: 16px; }
+@media (max-width: 1100px) {
+  .alerts-main .action-card { grid-template-columns: 1fr; gap: 16px; }
+  .alerts-main .detail-actions { justify-self: center; align-self: auto; }
+}
+@media (max-width: 720px) {
+  .alerts-main .detail-actions { width: 100%; }
+}
+
+/* 알림 상세 사진: 바깥 카드 안에 여백을 둔 이미지 + 아래 중앙 파일명 */
+.alerts-main .alert-detail > .image-card {
+  padding: 12px 24px 18px;
+}
+.alerts-main .alert-image-wrap {
+  height: clamp(340px, 30vw, 490px);
+  padding: 12px 0;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #fff;
+  border-radius: 6px;
+}
+.alerts-main .alert-image-wrap img {
+  display: block;
+  width: 82%;
+  max-width: 82%;
+  height: 100%;
+  object-fit: contain;
+}
+.alerts-main .alert-detail .image-info {
+  min-height: 45px;
+  padding: 16px 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 12px;
+}
+.alerts-main .alert-detail .image-info > span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 720px) {
+  .alerts-main .alert-detail > .image-card {
+    padding: 10px 14px 12px;
+  }
+  .alerts-main .alert-image-wrap {
+    height: auto;
+    aspect-ratio: 3 / 2;
+  }
+  .alerts-main .alert-image-wrap img {
+    width: 90%;
+    max-width: 90%;
+  }
+}
+
+
+/* 알림 상세 상단 두 카드: 강조 영역의 수치/마모 유형 글씨 확대 */
+.alerts-main .insight-metrics > .metric {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  padding: 22px 26px;
+}
+.alerts-main .insight-metrics .metric-title {
+  font-size: 15px;
+  margin-bottom: 15px;
+}
+.alerts-main .insight-metrics .metric-value {
+  font-size: clamp(32px, 2.5vw, 44px);
+  font-weight: 650;
+  line-height: 1.15;
+  margin-top: 0;
+  letter-spacing: -0.7px;
+}
+.alerts-main .insight-metrics .metric-value > span:not(.missing-value) {
+  font-size: 15px;
+  margin-left: 5px;
+  letter-spacing: 0;
+}
+.alerts-main .insight-metrics .metric-value .missing-value {
+  font-size: clamp(22px, 1.9vw, 30px);
+}
+.alerts-main .insight-metrics .wear-value {
+  font-size: clamp(27px, 2.1vw, 36px);
+  line-height: 1.2;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.alerts-main .insight-metrics .wear-value > span {
+  display: block;
+  font-size: 13px;
+  margin: 8px 0 0;
+  line-height: 1.4;
+}
+@media (max-width: 720px) {
+  .alerts-main .insight-metrics > .metric { padding: 18px; }
+  .alerts-main .insight-metrics .metric-value { font-size: 30px; }
+  .alerts-main .insight-metrics .wear-value { font-size: 26px; }
+}
+
+/* 알림 상세 사진: 클릭하면 메인과 동일한 확대/드래그 팝업을 엽니다. */
+.alerts-main .alert-image-wrap { position: relative; }
+.alerts-main .alert-image-expand {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+  z-index: 1;
+}
+.alerts-main .alert-image-expand:focus-visible {
+  outline: 3px solid #507cf5;
+  outline-offset: -3px;
+}
+.alerts-main .alert-image-expand-icon {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 30px;
+  height: 30px;
+  padding: 7px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  color: #536987;
+  background: rgba(255,255,255,.9);
+  box-shadow: 0 1px 4px rgba(0,0,0,.12);
+}
+.alerts-main .alert-image-expand-icon svg { width: 100%; height: 100%; }
+
+/* 알림 상세 공구 이미지: 메인 모니터링과 같은 제목/우측 확대 버튼/전체 폭 사진 레이아웃 */
+.alerts-main .alert-detail > .image-card {
+  padding: 0 24px 20px;
+}
+.alerts-main .alert-detail .card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 68px;
+  height: auto;
+}
+.alerts-main .alert-detail .card-heading h2 {
+  font-size: 20px;
+}
+.alerts-main .alert-detail .card-heading .icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+}
+.alerts-main .alert-image-wrap {
+  height: auto;
+  aspect-ratio: 1.61;
+  padding: 0;
+  box-sizing: border-box;
+  display: block;
+  overflow: hidden;
+  border-radius: 7px;
+  background: #282637;
+}
+.alerts-main .alert-image-wrap img {
+  display: block;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+.alerts-main .alert-detail .image-info {
+  min-height: 64px;
+  padding: 16px 0;
+  border-bottom: 1px solid #edf0f5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  font-size: 12px;
+}
+@media (max-width: 720px) {
+  .alerts-main .alert-detail > .image-card { padding: 0 14px 14px; }
+  .alerts-main .alert-detail .card-heading { min-height: 54px; }
+  .alerts-main .alert-detail .card-heading h2 { font-size: 16px; }
+  .alerts-main .alert-image-wrap { aspect-ratio: 1.61; height: auto; }
+  .alerts-main .alert-image-wrap img { width: 100%; max-width: none; }
+}
