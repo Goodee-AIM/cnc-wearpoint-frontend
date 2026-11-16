@@ -1,0 +1,160 @@
+{
+  "app": {
+    "title": "Tool Wear Diagnosis Dashboard"
+  },
+
+  "header": {
+    "preview": "UI Preview",
+    "alertHistory": "Alert History",
+    "currentAlerts": "Current Alerts",
+    "backToMonitoring": "Back to Monitoring",
+    "language": "Language selection",
+    "languageLabel": "Language",
+    "currentLanguage": "Current:"
+  },
+
+  "monitoring": {
+    "eyebrow": "TOOL CONDITION MONITORING",
+    "setSelection": "Tool Set Selection",
+    "title": "Set {{setNumber}} Monitoring",
+    "historyTitle": "Set {{setNumber}} Alert History",
+    "autoPlaying": "Auto Monitoring · Playing",
+    "roundCompleted": "Round Complete · Waiting for Next Round",
+    "loadingServer": "Loading Server Status",
+    "returnLive": "Return to Live Monitoring",
+    "currentWearStatus": "Current Wear Status"
+  },
+
+  "status": {
+    "normal": "Normal",
+    "warning": "Warning",
+    "danger": "Danger",
+    "pending": "Pending"
+  },
+
+  "statusCaption": {
+    "normal": "Tool condition is normal",
+    "warning": "Check tool wear condition",
+    "danger": "Tool replacement required",
+    "pending": "Waiting for diagnosis"
+  },
+
+  "image": {
+    "toolImage": "Tool Image",
+    "expand": "Enlarge Tool Image",
+    "toolWearImage": "Tool Wear Image",
+    "zoomedToolWearImage": "Enlarged Tool Wear Image",
+    "waiting": "Waiting for Image",
+    "fileWaiting": "Waiting for Image File",
+    "sensorTime": "Sensor Capture Time",
+    "timeWaiting": "Waiting for Capture Time",
+    "modalTitle": "Set {{setNumber}} · Tool Image",
+    "zoomHelp": "Mouse wheel: Zoom · Drag: Move · Double click: Reset"
+  },
+
+  "prediction": {
+    "predictedWear": "Predicted Wear",
+    "wearType": "Wear Type",
+    "noResult": "No Prediction",
+    "noType": "No Type Information",
+    "pending": "Pending"
+  },
+
+  "wearType": {
+    "flank_wear": "Flank Wear",
+    "adhesion": "Adhesion",
+    "other": "Other"
+  },
+
+  "sensor": {
+    "channels": {
+      "acoustic": "Acoustic",
+      "acceleration": "Acceleration",
+      "forceX": "X-Axis",
+      "forceY": "Y-Axis"
+    },
+    "waiting": "Waiting for Sensor Data",
+    "recentWaveform": "{{label}} waveform for the last 5 seconds",
+    "recentFiveSeconds": "Last 5 seconds from the current position"
+  },
+
+  "alerts": {
+    "eyebrow": "TOOL CONDITION ALERTS",
+    "title": "Warning & Danger Alerts",
+    "demoData": "Demo Data",
+
+    "sessionTotal": "Current session",
+    "totalUnit": "total",
+    "unreadLabel": "Unread",
+    "unreadUnit": "",
+    "countLoading": "Loading Alert Count",
+
+    "fetchFailedRetrying": "Failed to load alerts · Retrying automatically",
+
+    "dangerHeading": "Danger · Tool Replacement Required",
+    "warningHeading": "Warning · Check Tool Wear",
+
+    "acknowledged": "Acknowledged",
+    "unread": "Unread",
+    "cycle": "Cycle {{count}}",
+
+    "replacementRequired": "Tool Replacement Required",
+    "checkWear": "Check Tool Wear",
+
+    "predictedWearBasis": "Predicted Wear",
+    "labelWearBasis": "Labeled Wear",
+
+    "occurredAt": "Alert Time",
+
+    "actionTitle": "Alert Confirmation & Details",
+    "acknowledgedAt": "Acknowledged at: {{date}} {{time}}",
+    "cannotAcknowledge": "The acknowledgement time cannot be saved because no prediction result is available.",
+    "demoAcknowledge": "Acknowledging this alert will mark it as acknowledged in this preview.",
+    "saveAcknowledge": "Save the acknowledgement time.",
+
+    "saving": "Saving…",
+    "acknowledge": "Acknowledge",
+    "goMonitoring": "Go to Monitoring ↗",
+
+    "loadingList": "Loading alerts.",
+    "loadingListShort": "Loading Alert List",
+    "noAlerts": "No alerts match the selected conditions.",
+
+    "allSetAlerts": "All Set Alerts",
+    "latestAlerts": "Latest Alerts ↗",
+
+    "filterSet": "Set",
+    "allSets": "All Sets",
+    "filterLevel": "Severity",
+    "allLevels": "All Severities",
+    "filterState": "Status",
+    "allStates": "All",
+
+    "filterResultLoading": "Loading matching alerts",
+    "filterResult": "{{count}} matching alerts",
+
+    "tableTime": "Alert Time",
+    "tableSet": "Set",
+    "tableLevel": "Severity",
+    "tableWear": "Evaluated Wear",
+    "tableState": "Status",
+    "tableDetail": "Details",
+
+    "selectAria": "Select Set {{setNumber}} alert at {{time}}",
+    "selected": "Selected",
+    "select": "Select",
+
+    "range": "{{start}}–{{end}} / {{total}}",
+    "zero": "0",
+    "previous": "← Previous",
+    "page": "Page {{current}} / {{max}}",
+    "next": "Next →"
+  },
+
+  "common": {
+    "reset": "Reset",
+    "close": "Close",
+    "loading": "Loading",
+    "now": "Now"
+  }
+}

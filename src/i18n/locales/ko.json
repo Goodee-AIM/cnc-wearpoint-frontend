@@ -1,0 +1,160 @@
+{
+  "app": {
+    "title": "공구 마모 진단 대시보드"
+  },
+
+  "header": {
+    "preview": "UI 미리보기",
+    "alertHistory": "알림 이력",
+    "currentAlerts": "현재 알림",
+    "backToMonitoring": "전체 모니터링으로",
+    "language": "언어 선택",
+    "languageLabel": "Language",
+    "currentLanguage": "현재 언어:"
+  },
+
+  "monitoring": {
+    "eyebrow": "공구 상태 모니터링",
+    "setSelection": "공구 세트 선택",
+    "title": "Set {{setNumber}} 모니터링",
+    "historyTitle": "Set {{setNumber}} 과거 알림 조회",
+    "autoPlaying": "자동 모니터링 · 재생 중",
+    "roundCompleted": "이번 회차 완료 · 다음 회차 대기",
+    "loadingServer": "서버 상태 조회 중",
+    "returnLive": "현재 자동 모니터링으로 돌아가기",
+    "currentWearStatus": "현재 마모 상태"
+  },
+
+  "status": {
+    "normal": "정상",
+    "warning": "경고",
+    "danger": "위험",
+    "pending": "판정 대기"
+  },
+
+  "statusCaption": {
+    "normal": "정상 상태 유지",
+    "warning": "마모 상태 확인",
+    "danger": "공구 교체 필요",
+    "pending": "판정 정보를 기다리는 중"
+  },
+
+  "image": {
+    "toolImage": "공구 이미지",
+    "expand": "공구 이미지 크게 보기",
+    "toolWearImage": "공구 마모 이미지",
+    "zoomedToolWearImage": "공구 마모 확대 이미지",
+    "waiting": "이미지 대기",
+    "fileWaiting": "이미지 파일 대기",
+    "sensorTime": "센서 측정 시간",
+    "timeWaiting": "측정 시간 대기",
+    "modalTitle": "Set {{setNumber}} · 공구 이미지",
+    "zoomHelp": "마우스 휠: 확대·축소 · 드래그: 이동 · 더블 클릭: 초기화"
+  },
+
+  "prediction": {
+    "predictedWear": "예측 마모량",
+    "wearType": "마모 유형",
+    "noResult": "예측 결과 없음",
+    "noType": "유형 정보 없음",
+    "pending": "판정 대기"
+  },
+
+  "wearType": {
+    "flank_wear": "플랭크 마모",
+    "adhesion": "응착",
+    "other": "기타"
+  },
+
+  "sensor": {
+    "channels": {
+      "acoustic": "음향",
+      "acceleration": "가속도",
+      "forceX": "X축",
+      "forceY": "Y축"
+    },
+    "waiting": "센서 데이터 대기",
+    "recentWaveform": "{{label}} 최근 5초 파형",
+    "recentFiveSeconds": "진행 위치 기준 최근 5초"
+  },
+
+  "alerts": {
+    "eyebrow": "공구 상태 알림",
+    "title": "경고·위험 알림",
+    "demoData": "예시 데이터",
+
+    "sessionTotal": "현재 세션 전체",
+    "totalUnit": "건",
+    "unreadLabel": "미확인",
+    "unreadUnit": "건",
+    "countLoading": "알림 건수 조회 중",
+
+    "fetchFailedRetrying": "알림 조회 실패 · 자동 재시도 중",
+
+    "dangerHeading": "위험 · 공구 교체 필요",
+    "warningHeading": "경고 · 마모 상태 확인",
+
+    "acknowledged": "확인 완료",
+    "unread": "미확인",
+    "cycle": "{{count}}회차",
+
+    "replacementRequired": "공구 교체 필요",
+    "checkWear": "마모 상태 확인",
+
+    "predictedWearBasis": "예측 마모량",
+    "labelWearBasis": "라벨 마모량",
+
+    "occurredAt": "알림 발생 시각",
+
+    "actionTitle": "알림 확인 및 상세 조회",
+    "acknowledgedAt": "확인 시각: {{date}} {{time}}",
+    "cannotAcknowledge": "예측 결과가 없어 확인 시각을 저장할 수 없습니다.",
+    "demoAcknowledge": "확인하면 이 미리보기에서 확인 완료로 표시됩니다.",
+    "saveAcknowledge": "확인 시각을 저장합니다.",
+
+    "saving": "저장 중…",
+    "acknowledge": "확인",
+    "goMonitoring": "모니터링으로 이동 ↗",
+
+    "loadingList": "알림 목록을 불러오는 중입니다.",
+    "loadingListShort": "알림 목록 조회 중",
+    "noAlerts": "조건에 맞는 알림이 없습니다.",
+
+    "allSetAlerts": "전체 Set 알림",
+    "latestAlerts": "최신 알림 ↗",
+
+    "filterSet": "Set",
+    "allSets": "전체 Set",
+    "filterLevel": "단계",
+    "allLevels": "전체 단계",
+    "filterState": "확인 상태",
+    "allStates": "전체",
+
+    "filterResultLoading": "조건에 맞는 알림 조회 중",
+    "filterResult": "조건에 맞는 알림 {{count}}건",
+
+    "tableTime": "알림 시각",
+    "tableSet": "Set",
+    "tableLevel": "단계",
+    "tableWear": "판정 마모량",
+    "tableState": "확인 상태",
+    "tableDetail": "상세",
+
+    "selectAria": "Set {{setNumber}} {{time}} 알림 선택",
+    "selected": "선택됨",
+    "select": "선택",
+
+    "range": "{{start}}–{{end}} / {{total}}건",
+    "zero": "0건",
+    "previous": "← 이전",
+    "page": "{{current}} / {{max}} 페이지",
+    "next": "다음 →"
+  },
+
+  "common": {
+    "reset": "초기화",
+    "close": "닫기",
+    "loading": "조회 중",
+    "now": "현재"
+  }
+}
