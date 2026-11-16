@@ -164,7 +164,7 @@ export default function ManualInputPage({ sets, onSelectSet }) {
       <button type="button" disabled={busy || pairs.some(pair => pair.sensorIndex < 0)} onClick={() => savePairs(pairs)}>{t("manual.confirmPairs")}</button>
       <button type="button" disabled={busy} onClick={() => setPairs(null)}>{t("manual.cancel")}</button>
     </section>}
-    
+
     {playlist.length > 1 && <p role="status">{t("manual.playingIndex", { current: index + 1, total: playlist.length })}</p>}
   </section>;
   return <DashboardPage sets={sets} selectedSet="manual" onSelectSet={onSelectSet} measurement={measurement}
