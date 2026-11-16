@@ -132,7 +132,7 @@
     "now": "Now"
   },
   "manual": {
-    "aria": "TEST SET image and sensor upload",
+    "aria": "{{name}} image and sensor upload",
     "title": "Image and sensor CSV input",
     "sensorCsv": "Sensor CSV",
     "upload": "Upload and play",
@@ -140,7 +140,28 @@
     "sizeLimit": "Select an image up to 8MB and a CSV up to 20MB.",
     "timeRows": "At least two sensor rows with increasing timestamps are required.",
     "sensorFailed": "Unable to load sensor data.",
-    "uploadFailed": "Upload failed."
+    "uploadFailed": "Upload failed.",
+    "files": "Choose files",
+    "fileCount": "{{count}} files selected",
+    "noFiles": "No file chosen",
+    "selectFiles": "Choose files (multiple)",
+    "selectFolder": "Choose folder",
+    "readFailed": "Unable to read the file.",
+    "requestFailed": "Server request failed",
+    "unsupported": "No supported images or CSV files were found.",
+    "unmatched": "Choose a CSV for every image.",
+    "tooMany": "Choose up to 1,000 images per upload.",
+    "uploadProgress": "Saving pair {{current}} / {{total}}…",
+    "uploadComplete": "Saved {{count}} pairs",
+    "partialSaved": "{{count}} pairs have already been saved and are available under saved inputs.",
+    "pairTitle": "Review image and CSV pairs",
+    "pairHelp": "Only matching filenames are paired automatically. Select a CSV for unmatched or ambiguous names. Playback follows the displayed order and loops. A CSV may be assigned to multiple images.",
+    "pairFor": "CSV for {{name}}",
+    "chooseSensor": "Choose a CSV",
+    "confirmPairs": "Confirm pairs and upload",
+    "cancel": "Cancel",
+    "saved": "Saved inputs",
+    "playingIndex": "{{current}} / {{total}} · Sequential loop playback"
   },
   "popover": {
     "title": "Current alerts by Set",

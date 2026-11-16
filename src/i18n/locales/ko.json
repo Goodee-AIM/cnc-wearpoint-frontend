@@ -132,7 +132,7 @@
     "now": "현재"
   },
   "manual": {
-    "aria": "TEST SET 이미지와 센서 업로드",
+    "aria": "{{name}} 이미지와 센서 업로드",
     "title": "이미지와 센서 CSV 입력",
     "sensorCsv": "센서 CSV",
     "upload": "업로드하고 재생",
@@ -140,7 +140,28 @@
     "sizeLimit": "이미지는 8MB, CSV는 20MB 이하로 선택하세요.",
     "timeRows": "시간이 증가하는 센서 데이터 두 행 이상이 필요합니다.",
     "sensorFailed": "센서 데이터를 불러올 수 없습니다.",
-    "uploadFailed": "업로드에 실패했습니다."
+    "uploadFailed": "업로드에 실패했습니다.",
+    "files": "파일 선택",
+    "fileCount": "{{count}}개 파일 선택됨",
+    "noFiles": "선택된 파일 없음",
+    "selectFiles": "파일 선택 (여러 개 가능)",
+    "selectFolder": "폴더 선택",
+    "readFailed": "파일을 읽을 수 없습니다.",
+    "requestFailed": "서버 요청 실패",
+    "unsupported": "지원하는 이미지 또는 CSV 파일이 없습니다.",
+    "unmatched": "모든 이미지에 연결할 CSV를 선택하세요.",
+    "tooMany": "한 번에 이미지 1,000개까지 선택할 수 있습니다.",
+    "uploadProgress": "{{current}} / {{total}}쌍 저장 중…",
+    "uploadComplete": "{{count}}쌍 저장 완료",
+    "partialSaved": "{{count}}쌍은 이미 저장되었습니다. 저장된 입력에서 확인할 수 있습니다.",
+    "pairTitle": "이미지·CSV 연결 확인",
+    "pairHelp": "파일명이 같은 쌍만 자동 연결합니다. 이름이 다르거나 중복되면 CSV를 직접 선택하세요. 표시된 순서로 반복 재생합니다. 하나의 CSV를 여러 이미지에 연결할 수 있습니다.",
+    "pairFor": "{{name}}에 연결할 CSV",
+    "chooseSensor": "CSV 선택 필요",
+    "confirmPairs": "연결 확인 후 업로드",
+    "cancel": "취소",
+    "saved": "저장된 입력",
+    "playingIndex": "{{current}} / {{total}} · 순차 반복 재생 중"
   },
   "popover": {
     "title": "현재 Set별 알림",

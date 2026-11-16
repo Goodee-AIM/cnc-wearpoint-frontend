@@ -48,11 +48,10 @@ export default function DashboardPage({
                       aria-pressed={s.number === selectedSet}
                       onClick={() => onSelectSet(s.number)}
                   >
-                    <span className="tab-dot" />
                     {getSetName(s.number)}
                   </button>
               ))}
-              {onOpenManual && <button type="button" className={"tab" + (selectedSet === "manual" ? " active" : "")} aria-pressed={selectedSet === "manual"} onClick={onOpenManual}>TEST SET</button>}
+              {onOpenManual && <button type="button" className={"tab" + (selectedSet === "manual" ? " active" : "")} aria-pressed={selectedSet === "manual"} onClick={onOpenManual}>Set test</button>}
             </nav>
         )}
 
