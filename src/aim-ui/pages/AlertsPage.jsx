@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState } from "react";
+import { getSetName } from "../../utils/setDisplay.js";
 import {
   Footer,
   ImageCard,
@@ -106,7 +107,7 @@ export default function AlertsPage({
       {history.historyMessage && <p className="request-message" role="status">{history.historyMessage}</p>}
       {selected && (
         <h2 className={"selected-alert-heading " + selected.level}>
-          [Set{selected.setNumber}] {selected.level === "danger" ? "위험 · 공구 교체 필요" : "경고 · 마모 상태 확인"}
+          [{getSetName(selected.setNumber)}] {selected.level === "danger" ? "위험 · 공구 교체 필요" : "경고 · 마모 상태 확인"}
         </h2>
       )}
       {selected ? (
@@ -128,7 +129,7 @@ export default function AlertsPage({
             </div>
             <article className={"risk-card " + selected.level}>
               <div className="risk-top">
-                <span>Set {selected.setNumber}</span>
+                <span>{getSetName(selected.setNumber)}</span>
                 <span className="severity-tag">
                   {selected.level === "danger" ? "위험" : "경고"}
                 </span>
@@ -223,9 +224,9 @@ export default function AlertsPage({
               <option value="all">전체 Set</option>
               {sets.map((s) => (
                 <option value={s.number} key={s.number}>
-                  Set {s.number}
+                  {getSetName(s.number)}
                 </option>
-              ))}
+                ))}
             </select>
           </label>
           <label>
@@ -279,10 +280,10 @@ export default function AlertsPage({
                     <td className="row-time">
                       {date(r.occurredAt)} <b>{time(r.occurredAt)}</b>
                     </td>
-                    <td className="table-set">Set {r.setNumber}</td>
+                    <td className="table-set">{getSetName(r.setNumber)}</td>
                     <td>
                       <span className={"level-badge " + r.level}>
-                        <i />
+                       
                         {r.level === "danger" ? "위험" : "경고"}
                       </span>
                     </td>
@@ -305,7 +306,7 @@ export default function AlertsPage({
                     <td>
                       <button
                         className="row-select"
-                        aria-label={`Set ${r.setNumber} ${time(r.occurredAt)} 알림 선택`}
+                        aria-label={`${getSetName(r.setNumber)} ${time(r.occurredAt)} 알림 선택`}
                         onClick={() => selectAlertAndScrollToTop(r.id)}
                       >
                         {r.id === selected?.id ? "선택됨" : "선택"}

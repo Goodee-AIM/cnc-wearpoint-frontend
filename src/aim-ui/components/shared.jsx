@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { getSetName } from "../../utils/setDisplay.js";
 export function Icon({ name }) {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -16,6 +17,7 @@ export function Header({
   page = "dashboard",
   alertCount = 0,
   onDashboard,
+  onHome,
   onAlerts,
   onHistory,
   historyOpen = false,
@@ -28,7 +30,7 @@ export function Header({
         href="#monitoring"
         onClick={(e) => {
           e.preventDefault();
-          onDashboard?.();
+          (onHome ?? onDashboard)?.();
         }}
       >
         <span className="logo" translate="no">AIM</span>
@@ -68,7 +70,7 @@ export function Footer({ page = "dashboard" }) {
   return (
     <footer>
       <span>
-        <span className="footer-logo">AIM</span> CNC WearPoint
+        <span className="footer-logo">AIM</span> CNC WearPoint | (팀장)구민석, 강지인, 김정훈, 신상석, 오성일
       </span>
     </footer>
   );
@@ -76,7 +78,6 @@ export function Footer({ page = "dashboard" }) {
 export function ImageCard({
   image,
   caption = "공구 이미지",
-  setNumber,
   onExpand,
   alert = false,
 }) {
@@ -95,7 +96,7 @@ export function ImageCard({
             <Icon name="expand" />
           </button>
         ) : (
-          <span className="detail-set">Set {setNumber}</span>
+          <span className="detail-set">{getSetName(setNumber)}</span>
         )}
       </div>
       <div className={alert ? "alert-image-wrap" : "image-wrap"}>

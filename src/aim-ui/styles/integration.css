@@ -262,3 +262,14 @@ button:disabled { cursor: default; opacity: .5; }
   .alerts-main .alert-image-wrap { aspect-ratio: 1.61; height: auto; }
   .alerts-main .alert-image-wrap img { width: 100%; max-width: none; }
 }
+
+/* Dedicated upload area; existing Set data is unchanged. */
+.manual-upload { margin: 24px auto; width: calc(100% - 48px); max-width: 1600px; padding: 24px; }
+.manual-upload form, .manual-controls { display:flex; gap:16px; align-items:center; flex-wrap:wrap; margin-top:16px; }
+.manual-upload label { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.manual-upload input, .manual-upload select { max-width:100%; }
+.manual-controls select { max-width:460px; }
+.manual-upload p { margin-top:12px; color:#69788d; }
+.manual-upload [role="alert"] { color:#b42318; }
+nav { overflow-x:auto; }
+nav .tab { flex:1; min-width:90px; }

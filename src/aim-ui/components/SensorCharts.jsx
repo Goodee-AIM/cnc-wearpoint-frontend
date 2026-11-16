@@ -24,7 +24,7 @@ export function SensorChart({ channel, cursorSeconds }) {
     <article className="card sensor">
       <div className="sensor-heading">
         <h2>
-          <span className="signal-dot" />
+      
           {channel.label}
         </h2>
       </div>

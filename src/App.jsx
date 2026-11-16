@@ -27,7 +27,7 @@ export default function App() {
       channels={toSensorChannels(monitoring.visibleRows, monitoring.sensorStartMs)}
       cursorSeconds={monitoring.elapsedMs / 1000}
       preview={!dashboard.unifiedMode}
-      onReturnLive={() => dashboard.returnToMonitoring()}
+      onReturnLive={(setNumber) => dashboard.returnToMonitoring(setNumber)}
       playbackStatus={monitoring.setStatus}
       dataMessage={monitoring.dataMessage}
       alerts={alerts}

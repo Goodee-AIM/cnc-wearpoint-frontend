@@ -1,5 +1,6 @@
 import { useState } from "react";
 import SensorCharts from "../components/SensorCharts";
+import { getSetName } from "../../utils/setDisplay.js";
 import {
   ImageCard,
   ImageModal,
@@ -18,6 +19,8 @@ export default function DashboardPage({
   preview = false,
   onReturnLive,
   playbackStatus,
+  onOpenManual,
+  beforeContent,
 }) {
   const [expanded, setExpanded] = useState(false);
   const status = measurement?.status || "pending";
@@ -38,23 +41,25 @@ export default function DashboardPage({
             onClick={() => onSelectSet(s.number)}
           >
             <span className="tab-dot" />
-            Set {s.number}
+            {getSetName(s.number)}
           </button>
         ))}
+        {onOpenManual && <button type="button" className={"tab" + (selectedSet === "manual" ? " active" : "")} onClick={onOpenManual} aria-pressed={selectedSet === "manual"}>Set test</button>}
       </nav>}
+      {beforeContent}
       <main>
         <div className="page-heading">
           <div>
             <div className="eyebrow">TOOL CONDITION MONITORING</div>
             <h1>
-              Set {selectedSet} {preview ? "과거 알림 조회" : "모니터링"}{" "}
+              {getSetName(selectedSet)} {preview ? "과거 알림 조회" : "모니터링"}{" "}
               {measurement?.material && (
                 <span className="small-badge">{measurement.material}</span>
               )}
             </h1>
           </div>
           <div className="view-context">
-            {!preview && <span>{playbackStatus === "completed" ? "이번 회차 완료 · 다음 회차 대기" : playbackStatus === "running" ? "자동 모니터링 · 재생 중" : "서버 상태 조회 중"}</span>}
+            {!preview && selectedSet !== "manual" && <span>{playbackStatus === "completed" ? "이번 회차 완료 · 다음 회차 대기" : playbackStatus === "running" ? "자동 모니터링 · 재생 중" : "서버 상태 조회 중"}</span>}
             {preview && <button type="button" onClick={onReturnLive}>현재 자동 모니터링으로 돌아가기</button>}
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { getSetName } from "../../utils/setDisplay.js";
 export default function HistoryPopover({
   open,
   alerts = [],
@@ -58,7 +59,7 @@ export default function HistoryPopover({
             <article key={r.id} className={"history-alert " + r.level}>
               <div className="history-alert-heading">
                 <h3>
-                  <span>Set {r.setNumber}</span>
+                  <span>{getSetName(r.setNumber)}</span>
                   <span className="history-level">
                     {r.level === "danger" ? "위험" : "경고"}
                   </span>
@@ -69,7 +70,7 @@ export default function HistoryPopover({
                     e.stopPropagation();
                     onDismiss?.(r);
                   }}
-                  aria-label={`Set ${r.setNumber} 알림 카드 닫기`}
+                  aria-label={`${getSetName(r.setNumber)} 알림 카드 닫기`}
                   title="이 팝업에서 숨기기"
                 >
                   ✕
