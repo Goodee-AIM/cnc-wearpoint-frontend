@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { API_BASE } from "../dashboardConfig.js";
 import { parseSensor } from "../utils/csv.js";
+import { createSensorCache } from "../utils/sensorCache.js";
 import {
   projectMonitoringSets,
   readMonitoringJson,
@@ -16,8 +17,8 @@ export default function useSharedMonitoring(enabled, selectedSet) {
   const [connected, setConnected] = useState(false);
   const [message, setMessage] = useState("공통 재생 상태 조회 중...");
   const [clock, setClock] = useState(0);
-  const [sensor, setSensor] = useState(null);
-  const sensorCache = useRef(new Map());
+  const [sensors, setSensors] = useState(() => new Map());
+  const sensorCache = useRef(null);
 
   // 활성화 시 바로 조회하고, 비활성화·언마운트 시 요청/타이머/이벤트를 모두 정리합니다.
   useEffect(() => {
@@ -88,67 +89,85 @@ export default function useSharedMonitoring(enabled, selectedSet) {
   // 같은 세션·Set·센서 원본은 재사용합니다. 반복 회차의 재생 위치는 서버 elapsed_ms가 별도로 결정합니다.
   const sensorKey = JSON.stringify([sessionId, selectedSet, sensorUrl]);
 
-  // 선택한 센서가 바뀔 때만 파일을 읽고 최근 3개를 캐시합니다. 실패하면 5초 후 재시도합니다.
+  // 캐시는 선택 Set과 무관하게 살아 있어 전환 중에도 진행 중 요청을 재사용합니다.
+  useEffect(() => {
+    if (!enabled) return;
+    const cache = createSensorCache({
+      onChange: setSensors,
+      load: async (url, signal) => {
+        const controller = new AbortController();
+        const abort = () => controller.abort();
+        signal.addEventListener("abort", abort, { once: true });
+        if (signal.aborted) abort();
+        const timeout = setTimeout(abort, 15000);
+        try {
+          const response = await fetch(new URL(url, API_BASE), { signal: controller.signal });
+          if (!response.ok) throw new Error(`센서 조회 실패: HTTP ${response.status}`);
+          return parseSensor(await response.text());
+        } finally {
+          clearTimeout(timeout);
+          signal.removeEventListener("abort", abort);
+        }
+      },
+    });
+    sensorCache.current = cache;
+    return () => { cache.close(); sensorCache.current = null; };
+  }, [enabled]);
+
+  // 선택 Set은 즉시 요청합니다. 클릭으로 다른 Set에 갔다 와도 같은 요청을 공유합니다.
   useEffect(() => {
     if (!enabled || !sensorUrl) return;
-    const cached = sensorCache.current.get(sensorKey);
-    if (cached) {
-      setSensor({ key: sensorKey, rows: cached, message: "" });
-      return;
-    }
+    const cache = sensorCache.current;
+    cache.peek(sensorKey);
     let disposed = false;
     let timer;
-    let controller;
-
-    async function loadSensor() {
-      controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 15000);
-      try {
-        const response = await fetch(new URL(sensorUrl, API_BASE), {
-          signal: controller.signal,
-        });
-        if (!response.ok) throw new Error(`센서 조회 실패: HTTP ${response.status}`);
-        const rows = parseSensor(await response.text());
-        if (disposed) return;
-        sensorCache.current.set(sensorKey, rows);
-        if (sensorCache.current.size > 3) {
-          sensorCache.current.delete(sensorCache.current.keys().next().value);
-        }
-        setSensor({ key: sensorKey, rows, message: "" });
-      } catch (error) {
-        if (!disposed) {
-          setSensor({ key: sensorKey, rows: [], message: error.message });
-          timer = setTimeout(loadSensor, 5000);
-        }
-      } finally {
-        clearTimeout(timeout);
+    async function loadSelected() {
+      await cache.read(sensorKey, sensorUrl);
+      if (!disposed && cache.peek(sensorKey)?.status === "error") {
+        timer = setTimeout(loadSelected, 1000);
       }
     }
-
-    void loadSensor();
-    return () => {
-      disposed = true;
-      clearTimeout(timer);
-      controller?.abort();
-    };
+    void loadSelected();
+    return () => { disposed = true; clearTimeout(timer); };
   }, [enabled, sensorKey, sensorUrl]);
+
+  // 다른 Set의 현재 파일은 한 번에 하나씩 미리 읽어 API/브라우저 부하를 제한합니다.
+  // 재생 위치는 캐시와 별도로 서버 elapsed_ms를 따릅니다.
+  const currentSensors = JSON.stringify(Object.entries(sets)
+    .filter(([, item]) => item.playback_mode === "sensor" && item.sensor_url)
+    .map(([set, item]) => [JSON.stringify([sessionId, Number(set), item.sensor_url]), item.sensor_url]));
+  useEffect(() => {
+    if (!enabled) return;
+    const cache = sensorCache.current;
+    let disposed = false;
+    async function prepareOthers() {
+      for (const [key, url] of JSON.parse(currentSensors)) {
+        if (disposed) break;
+        await cache.read(key, url);
+      }
+    }
+    void prepareOthers();
+    return () => { disposed = true; };
+  }, [enabled, currentSensors]);
+
+  const sensor = enabled ? sensors.get(sensorKey) : null;
 
   // 서버 상태와 센서 로딩 상태를 기존 대시보드에서 사용하는 rows/elapsed/message 구조로 변환합니다.
   const entries = Object.fromEntries(Object.entries(sets).map(([set, item]) => {
     const isSelected = Number(set) === selectedSet;
-    const loaded = sensor?.key === sensorKey && isSelected;
+    const loaded = sensor?.status === "ready" && isSelected;
     let status = "ready";
     if (item.status === "empty" || item.status === "completed") status = "finished";
     else if (item.playback_mode === "image_only") status = "image-only";
+    else if (isSelected && sensor?.status === "error") status = "error";
     else if (isSelected && !loaded) status = "loading";
-    else if (isSelected && sensor?.message) status = "error";
     return [set, {
       status,
       rows: loaded ? sensor.rows : [],
       elapsed: item.elapsed_ms ?? 0,
       duration: item.duration_ms ?? 0,
       message: item.status === "empty" ? "등록된 재생 일정 없음"
-        : item.message || (loaded && sensor.message) || item.sensor_name || "센서 연결 없음",
+        : item.message || (isSelected && sensor?.message) || item.sensor_name || "센서 연결 없음",
     }];
   }));
 
