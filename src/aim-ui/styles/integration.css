@@ -273,3 +273,67 @@ button:disabled { cursor: default; opacity: .5; }
 .manual-upload [role="alert"] { color:#b42318; }
 nav { overflow-x:auto; }
 nav .tab { flex:1; min-width:90px; }
+
+
+/* Set navigation: keep the existing content, place its menu on the left. */
+.monitoring-layout {
+  display: grid;
+  grid-template-columns: clamp(260px, 16vw, 300px) minmax(0, 1fr);
+  gap: 24px;
+  max-width: 1920px;
+  margin: 0 auto;
+  padding: 30px 3.15% 0;
+  align-items: start;
+}
+.monitoring-content { grid-column: 2; grid-row: 1; min-width: 0; }
+.monitoring-content > main { max-width: none; margin: 0; padding: 0; }
+.monitoring-content > .manual-upload { width: 100%; max-width: none; margin: 0 0 24px; }
+.monitoring-layout > .set-sidebar {
+  grid-column: 1;
+  grid-row: 1;
+  position: static;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px 16px;
+  min-width: 0;
+  overflow: visible;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 2px 5px rgba(30,43,67,.04);
+}
+.set-sidebar-heading { font-size: 20px; margin: 0 0 12px; color: var(--ink); }
+.set-sidebar .tab {
+  flex: none;
+  width: 100%;
+  min-width: 0;
+  min-height: 52px;
+  font-size: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: #fff;
+  color: #58677e;
+  justify-content: space-between;
+  text-align: left;
+}
+.set-sidebar .tab::after { content: "›"; font-size: 22px; line-height: 1; color: #8894a8; }
+.set-sidebar .tab:hover { background: #f1f5ff; border-color: #b2c7ff; }
+.set-sidebar .tab.active { color: var(--blue); background: #eaf0ff; border-color: #c8d7ff; font-weight: 700; }
+.set-sidebar .tab.active::after { color: var(--blue); }
+.monitoring-layout-preview { display: block; }
+@media (min-width: 1600px) { .monitoring-layout { padding-top: 36px; } }
+@media (max-width: 1000px) {
+  .monitoring-layout { grid-template-columns: 210px minmax(0, 1fr); gap: 16px; }
+  .monitoring-layout > .set-sidebar { padding: 16px 10px; }
+  .set-sidebar-heading { font-size: 17px; }
+}
+@media (max-width: 720px) {
+  .monitoring-layout { display: flex; flex-direction: column; padding: 20px 16px 0; gap: 20px; }
+  .monitoring-content { width: 100%; }
+  .monitoring-layout > .set-sidebar { position: static; width: 100%; flex-direction: row; flex-wrap: wrap; padding: 12px; }
+  .set-sidebar-heading { width: 100%; margin-bottom: 4px; }
+  .set-sidebar .tab { width: auto; flex: 1 0 90px; }
+  .set-sidebar .tab::after { display: none; }
+}

@@ -39,8 +39,10 @@ export default function DashboardPage({
 
   return (
       <>
+        <div className={preview ? "monitoring-layout monitoring-layout-preview" : "monitoring-layout"}>
         {!preview && (
-            <nav aria-label={t("monitoring.setSelection")}>
+            <nav className="set-sidebar" aria-label={t("monitoring.setSelection")}>
+              <h2 className="set-sidebar-heading">{t("monitoring.setSelection")}</h2>
               {sets.map((s) => (
                   <button
                       key={s.number}
@@ -55,6 +57,7 @@ export default function DashboardPage({
             </nav>
         )}
 
+        <div className="monitoring-content">
         {beforeContent}
         <main>
           <div className="page-heading">
@@ -162,6 +165,8 @@ export default function DashboardPage({
 
           <Footer />
         </main>
+        </div>
+        </div>
 
         {expanded && (
             <ImageModal
