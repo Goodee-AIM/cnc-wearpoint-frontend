@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useEffect, useRef } from "react";
 import { getSetName } from "../../utils/setDisplay.js";
 export default function HistoryPopover({
@@ -9,6 +10,7 @@ export default function HistoryPopover({
   onSelectSet,
   onViewAll,
 }) {
+  const { t } = useTranslation();
   const panel = useRef(null),
     close = useRef(null);
   useEffect(() => {
@@ -38,17 +40,17 @@ export default function HistoryPopover({
       className="history-panel"
       id="history-panel"
       role="dialog"
-      aria-label="현재 Set별 알림"
+      aria-label={t("popover.title")}
     >
       <div className="history-heading">
         <h2>
-          현재 Set별 알림 <span>{alerts.length}</span>
+          {t("popover.title")} <span>{alerts.length}</span>
         </h2>
         <button
           ref={close}
           className="icon-button"
           onClick={onClose}
-          aria-label="알림 내역 닫기"
+          aria-label={t("popover.close")}
         >
           ✕
         </button>
@@ -61,7 +63,7 @@ export default function HistoryPopover({
                 <h3>
                   <span>{getSetName(r.setNumber)}</span>
                   <span className="history-level">
-                    {r.level === "danger" ? "위험" : "경고"}
+                    {t(`status.${r.level}`)}
                   </span>
                 </h3>
                 <button
@@ -70,20 +72,20 @@ export default function HistoryPopover({
                     e.stopPropagation();
                     onDismiss?.(r);
                   }}
-                  aria-label={`${getSetName(r.setNumber)} 알림 카드 닫기`}
-                  title="이 팝업에서 숨기기"
+                  aria-label={t("popover.dismiss", { name: getSetName(r.setNumber) })}
+                  title={t("popover.hide")}
                 >
                   ✕
                 </button>
               </div>
               <h4>
-                {r.level === "danger" ? "공구 교체 필요" : "마모 상태 확인"}
+                {t(r.level === "danger" ? "alerts.replacementRequired" : "alerts.checkWear")}
               </h4>
               <p className="history-filename">
-                {r.image?.filename || "이미지 대기"}
+                {r.image?.filename || t("image.waiting")}
               </p>
               <div className="history-reading">
-                <span>{r.basis === "prediction" ? "예측" : "라벨"} 마모량</span>
+                <span>{t(r.basis === "prediction" ? "alerts.predictedWearBasis" : "alerts.labelWearBasis")}</span>
                 <b>
                   {(r.judgedWear == null ? "—" : r.judgedWear.toFixed(2))} <small>μm</small>
                 </b>
@@ -95,7 +97,7 @@ export default function HistoryPopover({
                     onClose();
                   }}
                 >
-                  Set {r.setNumber} 보기 ↗
+                  {t("popover.viewSet", { name: getSetName(r.setNumber) })}
                 </button>
               </div>
             </article>
@@ -103,17 +105,17 @@ export default function HistoryPopover({
         ) : (
           <div className="history-empty">
             <span>✓</span>
-            <p>표시할 알림이 없습니다.</p>
+            <p>{t("popover.empty")}</p>
             {onRestore && (
-              <button onClick={onRestore}>숨긴 알림 다시 보기</button>
+              <button onClick={onRestore}>{t("popover.restore")}</button>
             )}
           </div>
         )}
       </div>
       <div className="history-footer">
-        <span>Set별 최신 상태 · 전체 공통 표시</span>
+        <span>{t("popover.latest")}</span>
         <button className="text-link" onClick={onViewAll}>
-          전체 알림 보기 ↗
+          {t("popover.viewAll")}
         </button>
       </div>
     </section>

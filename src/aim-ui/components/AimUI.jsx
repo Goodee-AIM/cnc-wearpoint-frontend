@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import ManualInputPage from "../pages/ManualInputPage.jsx";
 import { useState } from "react";
 import { Header } from "./shared";
@@ -11,6 +12,7 @@ export default function AimUI({
   selectedAlertId, onSelectAlert, onNavigate, onGoMonitoring, onCurrentSet,
   onAcknowledge, onDismissAlert, onRestoreAlerts, acknowledgingId, history,
 }) {
+  const { t } = useTranslation();
   const [manualActive, setManualActive] = useState(() => sessionStorage.getItem("aim-manual-active") === "1");
   const openManual = () => { close(); setManualActive(true); sessionStorage.setItem("aim-manual-active", "1"); };
   const selectLiveSet = (number) => { setManualActive(false); sessionStorage.removeItem("aim-manual-active"); onSelectSet(number); };
@@ -25,7 +27,7 @@ export default function AimUI({
   };
   return (
     <>
-      <Header onHome={goHome} page={page} alertCount={history.historyCounts?.unread ?? "조회 중"}
+      <Header onHome={goHome} page={page} alertCount={history.historyCounts?.unread ?? t("common.loading")}
         onDashboard={() => navigate("dashboard")} onAlerts={() => navigate("alerts")}
         onHistory={() => setHistoryOpen((open) => !open)} historyOpen={historyOpen} />
       {page === "dashboard" ? (
