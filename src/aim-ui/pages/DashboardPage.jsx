@@ -27,7 +27,6 @@ export default function DashboardPage({
                                       }) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
-
   const status = measurement?.status || "pending";
 
   const statusCaptionKey = {
@@ -58,9 +57,8 @@ export default function DashboardPage({
         )}
 
         <div className="monitoring-content">
-        {beforeContent}
         <main>
-          <div className="page-heading">
+          <div className={"page-heading" + (beforeContent ? " page-heading-with-input" : "")}>
             <div>
               <div className="eyebrow">
                 {t("monitoring.eyebrow")}
@@ -84,6 +82,7 @@ export default function DashboardPage({
             </div>
 
             <div className="view-context">
+              {beforeContent}
               {!preview && selectedSet !== "manual" && (
                   <span>
                 {playbackStatus === "completed"

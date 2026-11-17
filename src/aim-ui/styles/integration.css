@@ -292,7 +292,8 @@ nav .tab { flex:1; min-width:90px; }
   grid-column: 1;
   grid-row: 1;
   position: static;
-  align-self: stretch;
+  align-self: start;
+  min-height: min-content;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -332,8 +333,88 @@ nav .tab { flex:1; min-width:90px; }
 @media (max-width: 720px) {
   .monitoring-layout { display: flex; flex-direction: column; padding: 20px 16px 0; gap: 20px; }
   .monitoring-content { width: 100%; }
-  .monitoring-layout > .set-sidebar { position: static; width: 100%; flex-direction: row; flex-wrap: wrap; padding: 12px; }
+  .monitoring-layout > .set-sidebar { position: static; height: auto; width: 100%; flex-direction: row; flex-wrap: wrap; padding: 12px; }
   .set-sidebar-heading { width: 100%; margin-bottom: 4px; }
   .set-sidebar .tab { width: auto; flex: 1 0 90px; }
   .set-sidebar .tab::after { display: none; }
+}
+
+
+/* TEST SET inputs share the heading row so the monitoring cards stay aligned. */
+.page-heading-with-input { gap: 16px; }
+.page-heading-with-input > div:first-child { flex-shrink: 0; }
+.page-heading-with-input > .view-context { min-width: 0; flex: 1; }
+.page-heading-with-input .manual-upload {
+  position: relative;
+  width: auto;
+  max-width: 100%;
+  margin: 0;
+  padding: 10px 12px;
+}
+.page-heading-with-input .manual-upload > h2 {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.page-heading-with-input .manual-upload form { margin: 0; gap: 12px; }
+.page-heading-with-input .manual-picker { font-size: 12px; gap: 6px; }
+.page-heading-with-input .manual-picker-description { max-width: 100px; }
+.page-heading-with-input .manual-upload form > button { padding: 8px 12px; font-size: 12px; }
+.page-heading-with-input .manual-upload-feedback {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 40;
+  width: min(680px, calc(100vw - 40px));
+  max-height: 60vh;
+  overflow: auto;
+  display: grid;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: white;
+  box-shadow: 0 6px 18px rgba(30,43,67,.12);
+  text-align: left;
+}
+.page-heading-with-input .manual-upload-feedback:empty { display: none; }
+.page-heading-with-input .manual-upload-feedback > p { margin: 0; }
+.page-heading-with-input .manual-pairing { margin-top: 0; border-top: 0; padding-top: 0; }
+@media (max-width: 1100px) {
+  .page-heading-with-input { flex-wrap: wrap; }
+  .page-heading-with-input > .view-context { flex-basis: 100%; justify-content: flex-start; }
+}
+@media (max-width: 720px) {
+  .page-heading-with-input .manual-upload { width: 100%; }
+  .page-heading-with-input .manual-upload-feedback { right: auto; left: 0; }
+}
+
+
+/* Share grid rows: Set panel spans image/charts through wear summary. */
+@media (min-width: 721px) {
+  .monitoring-layout:not(.monitoring-layout-preview) { row-gap: 22px; }
+  .monitoring-layout:not(.monitoring-layout-preview) > .monitoring-content,
+  .monitoring-layout:not(.monitoring-layout-preview) > .monitoring-content > main { display: contents; }
+  .monitoring-layout:not(.monitoring-layout-preview) .page-heading { grid-column: 2; grid-row: 1; margin-bottom: 0; }
+  .monitoring-layout:not(.monitoring-layout-preview) .workspace { grid-column: 2; grid-row: 2; }
+  .monitoring-layout:not(.monitoring-layout-preview) .summary { grid-column: 2; grid-row: 3; margin-top: 0; }
+  .monitoring-layout:not(.monitoring-layout-preview) > .set-sidebar {
+    grid-column: 1;
+    grid-row: 2 / 4;
+    align-self: stretch;
+    height: auto;
+  }
+  .monitoring-layout:not(.monitoring-layout-preview) footer {
+    grid-column: 1 / -1;
+    grid-row: 4;
+    justify-content: flex-start;
+    padding: 0 0 24px;
+    min-width: 0;
+    flex-wrap: wrap;
+  }
 }

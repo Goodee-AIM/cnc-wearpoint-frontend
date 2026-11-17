@@ -154,6 +154,7 @@ export default function ManualInputPage({ sets, onSelectSet }) {
       <ManualFilePicker label={t("manual.sensorCsv")} accept=".csv,text/csv" files={sensors} disabled={busy} onChange={files => select(files, "sensor")} />
       <button type="submit" disabled={busy}>{busy ? t("alerts.saving") : t("manual.upload")}</button>
     </form>
+    <div className="manual-upload-feedback">
     {error && <p role="alert">{error}</p>}
     {progress && <p role="status">{progress}</p>}
     {pairs && <section className="manual-pairing" aria-label={t("manual.pairTitle")}>
@@ -166,6 +167,7 @@ export default function ManualInputPage({ sets, onSelectSet }) {
     </section>}
 
     {playlist.length > 1 && <p role="status">{t("manual.playingIndex", { current: index + 1, total: playlist.length })}</p>}
+    </div>
   </section>;
   return <DashboardPage sets={sets} selectedSet="manual" onSelectSet={onSelectSet} measurement={measurement}
     channels={toSensorChannels(visible, start)} cursorSeconds={elapsed / 1000}
