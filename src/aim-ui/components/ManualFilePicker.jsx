@@ -1,8 +1,9 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import ManualControlIcon from "./ManualControlIcon.jsx";
 
 // Keep one visible selection button per input; its menu offers files or a folder.
-export default function ManualFilePicker({ label, accept, files, disabled, onChange }) {
+export default function ManualFilePicker({ label, icon = "image", accept, files, disabled, onChange }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const container = useRef(null), fileInput = useRef(null), folderInput = useRef(null);
@@ -19,9 +20,9 @@ export default function ManualFilePicker({ label, accept, files, disabled, onCha
     event.target.value = "";
   };
   return <div className="manual-picker" ref={container}>
-    <span id={id + "-label"}>{label}</span>
+    <span className="manual-picker-label" id={id + "-label"}><ManualControlIcon name={icon} />{label}</span>
     <button className="manual-picker-button" type="button" disabled={disabled} aria-labelledby={id + "-label " + id + "-button"} aria-expanded={open} aria-controls={id + "-options"} onClick={() => fileInput.current.click()}>
-      <span id={id + "-button"}>{t("manual.files")}</span>
+      <ManualControlIcon name="folder" /><span id={id + "-button"}>{t("manual.files")}</span>
     </button>
     <span className="manual-picker-description" title={files.map(f => f.webkitRelativePath || f.name).join("\n")}>{files.length === 1 ? files[0].name : files.length ? t("manual.fileCount", { count: files.length }) : t("manual.noFiles")}</span>
     <input ref={fileInput} type="file" accept={accept} multiple hidden onChange={change} />

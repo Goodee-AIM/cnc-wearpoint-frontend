@@ -1,3 +1,4 @@
+import { wearAdviceKey } from "../../utils/wearAdvice.js";
 import { useTranslation } from "react-i18next";
 import { useEffect, useRef } from "react";
 import { getSetName } from "../../utils/setDisplay.js";
@@ -79,7 +80,7 @@ export default function HistoryPopover({
                 </button>
               </div>
               <h4>
-                {t(r.level === "danger" ? "alerts.replacementRequired" : "alerts.checkWear")}
+                {t(wearAdviceKey(r.level, r.wearType))}
               </h4>
               <p className="history-filename">
                 {r.image?.filename || t("image.waiting")}

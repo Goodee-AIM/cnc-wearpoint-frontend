@@ -1,3 +1,4 @@
+import { wearAdviceKey } from "../../utils/wearAdvice.js";
 import { getSetName } from "../../utils/setDisplay.js";
 import { useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -259,10 +260,6 @@ export default function AlertsPage({
       >
         <div className="page-heading">
           <div>
-            <div className="eyebrow">
-              {t("alerts.eyebrow")}
-            </div>
-
             <h1>
               {t("alerts.title")}{" "}
 
@@ -318,9 +315,7 @@ export default function AlertsPage({
                 }
             >
               [{getSetName(selected.setNumber)}]{" "}
-              {selected.level === "danger"
-                  ? t("alerts.dangerHeading")
-                  : t("alerts.warningHeading")}
+              {t(`status.${selected.level}`)} · {t(wearAdviceKey(selected.level, selected.wearType))}
             </h2>
         )}
 
@@ -390,14 +385,7 @@ export default function AlertsPage({
                   </div>
 
                   <h2>
-                    {selected.level ===
-                    "danger"
-                        ? t(
-                            "alerts.replacementRequired",
-                        )
-                        : t(
-                            "alerts.checkWear",
-                        )}
+                    {t(wearAdviceKey(selected.level, selected.wearType))}
                   </h2>
 
                   <p>
@@ -674,13 +662,11 @@ export default function AlertsPage({
               <tbody>
               {rows.map((row) => (
                   <tr
-                      key={row.id}
-                      className={
-                        row.id ===
-                        selected?.id
-                            ? "selected"
-                            : ""
-                      }
+                    key={row.id}
+                    className={`alert-selectable-row ${
+                      row.id === selected?.id ? "selected" : ""
+                    }`}
+                    onClick={() => selectAlertAndScrollToTop(row.id)}
                   >
                     <td className="row-time">
                       {date(

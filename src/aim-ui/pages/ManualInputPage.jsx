@@ -9,6 +9,7 @@ import { imageFiles, sensorFiles, filePath, planPairs, playlistPosition } from "
 import { toSensorChannels } from "../adapters.js";
 import ManualFilePicker from "../components/ManualFilePicker.jsx";
 import DashboardPage from "./DashboardPage.jsx";
+import ManualControlIcon from "../components/ManualControlIcon.jsx";
 
 const base64 = (file) => new Promise((resolve, reject) => {
   const reader = new FileReader();
@@ -258,7 +259,7 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
   };
   const upload = (event) => {
     event.preventDefault(); setError("");
-    if (!images.length || !sensors.length) { setError(t("manual.selectBoth")); return; }
+    if (!images.length || !sensors.length) { window.alert(t("manual.selectBoth")); return; }
     if (images.length > 1000) { setError(t("manual.tooMany")); return; }
     const planned = planPairs(images, sensors);
     if (images.length === 1 && sensors.length === 1) savePairs(planned);
@@ -297,45 +298,153 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
     setProgress("");
     cache.current.clear();
   };
-  const uploadPanel = <section className="manual-upload card" aria-label={t("manual.aria", { name: getSetName("manual") })}>
-    <h2>{t("manual.title")}</h2>
-    <form onSubmit={upload}>
-      <ManualFilePicker label={t("image.toolImage")} accept="image/png,image/jpeg,image/webp" files={images} disabled={busy} onChange={files => select(files, "image")} />
-      <ManualFilePicker label={t("manual.sensorCsv")} accept=".csv,text/csv" files={sensors} disabled={busy} onChange={files => select(files, "sensor")} />
-      <button type="submit" disabled={busy}>{busy ? t("alerts.saving") : t("manual.upload")}</button>
-      <button
-        type="button"
-        disabled={busy || !playlist.length}
-        onClick={() => setPosition(0)}
-      >
-        {playbackText.replay}
-      </button>
+    const uploadPanel = (
+    <section
+      className="manual-upload card"
+      aria-label={t("manual.aria", { name: getSetName("manual") })}
+    >
+      <h2>{t("manual.title")}</h2>
 
-      <button
-        type="button"
-        disabled={busy}
-        onClick={clearScreen}
-      >
-        {playbackText.clear}
-      </button>
-    </form>
-    <div className="manual-upload-feedback">
-    {error && <p role="alert">{error}</p>}
-    {progress && <p role="status">{progress}</p>}
-    {completed && <p role="status">{playbackText.done}</p>}
-    {pairs && <section className="manual-pairing" aria-label={t("manual.pairTitle")}>
-      <h3>{t("manual.pairTitle")}</h3><p>{t("manual.pairHelp")}</p>
-      <div className="manual-pairing-list">{pairs.map((pair, row) => <label key={filePath(pair.image)}><span>{row + 1}. {filePath(pair.image)}</span><select disabled={busy} aria-label={t("manual.pairFor", { name: filePath(pair.image) })} value={pair.sensorIndex} onChange={event => setPairs(previous => previous.map((item, i) => i === row ? { ...item, sensorIndex: Number(event.target.value) } : item))}>
-        <option value={-1}>{t("manual.chooseSensor")}</option>{sensors.map((sensor, i) => <option key={filePath(sensor)} value={i}>{filePath(sensor)}</option>)}
-      </select></label>)}</div>
-      <button type="button" disabled={busy || pairs.some(pair => pair.sensorIndex < 0)} onClick={() => savePairs(pairs)}>{t("manual.confirmPairs")}</button>
-      <button type="button" disabled={busy} onClick={() => setPairs(null)}>{t("manual.cancel")}</button>
-    </section>}
+      <form onSubmit={upload}>
+        <ManualFilePicker
+          label={t("image.toolImage")}
+          accept="image/png,image/jpeg,image/webp"
+          files={images}
+          disabled={busy}
+          onChange={files => select(files, "image")}
+        />
 
-    {playlist.length > 1 && <p role="status">{t("manual.playingIndex", { current: index + 1, total: playlist.length })}</p>}
-    </div>
-  </section>;
-  return <DashboardPage sets={sets} selectedSet="manual" onSelectSet={onSelectSet} measurement={measurement}
-    channels={toSensorChannels(visible, start)} cursorSeconds={elapsed / 1000}
-    playbackStatus="manual" onOpenManual={() => {}} beforeContent={uploadPanel} />;
+        <ManualFilePicker
+          label={t("manual.sensorCsv")}
+          accept=".csv,text/csv"
+          files={sensors}
+          disabled={busy}
+          onChange={files => select(files, "sensor")}
+        />
+
+        <button
+          className="manual-action manual-action-upload"
+          type="submit"
+          disabled={busy}
+        >
+          <ManualControlIcon name="play" />
+          {busy ? t("alerts.saving") : t("manual.upload")}
+        </button>
+
+        <button
+          className="manual-action manual-action-replay"
+          type="button"
+          disabled={busy || !playlist.length}
+          onClick={() => setPosition(0)}
+        >
+          <ManualControlIcon name="replay" />
+          {playbackText.replay}
+        </button>
+
+        <button
+          className="manual-action manual-action-reset"
+          type="button"
+          disabled={busy}
+          onClick={clearScreen}
+        >
+          {playbackText.clear}
+        </button>
+      </form>
+
+      <div className="manual-upload-feedback">
+        {error && <p role="alert">{error}</p>}
+        {progress && <p role="status">{progress}</p>}
+        {completed && <p role="status">{playbackText.done}</p>}
+
+        {pairs && (
+          <section
+            className="manual-pairing"
+            aria-label={t("manual.pairTitle")}
+          >
+            <h3>{t("manual.pairTitle")}</h3>
+            <p>{t("manual.pairHelp")}</p>
+
+            <div className="manual-pairing-list">
+              {pairs.map((pair, row) => (
+                <label key={filePath(pair.image)}>
+                  <span>
+                    {row + 1}. {filePath(pair.image)}
+                  </span>
+
+                  <select
+                    disabled={busy}
+                    aria-label={t("manual.pairFor", {
+                      name: filePath(pair.image),
+                    })}
+                    value={pair.sensorIndex}
+                    onChange={event =>
+                      setPairs(previous =>
+                        previous.map((item, i) =>
+                          i === row
+                            ? {
+                                ...item,
+                                sensorIndex: Number(event.target.value),
+                              }
+                            : item
+                        )
+                      )
+                    }
+                  >
+                    <option value={-1}>
+                      {t("manual.chooseSensor")}
+                    </option>
+
+                    {sensors.map((sensor, i) => (
+                      <option key={filePath(sensor)} value={i}>
+                        {filePath(sensor)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              disabled={busy || pairs.some(pair => pair.sensorIndex < 0)}
+              onClick={() => savePairs(pairs)}
+            >
+              {t("manual.confirmPairs")}
+            </button>
+
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => setPairs(null)}
+            >
+              {t("manual.cancel")}
+            </button>
+          </section>
+        )}
+
+        {playlist.length > 1 && (
+          <p role="status">
+            {t("manual.playingIndex", {
+              current: index + 1,
+              total: playlist.length,
+            })}
+          </p>
+        )}
+      </div>
+    </section>
+  );
+
+  return (
+    <DashboardPage
+      sets={sets}
+      selectedSet="manual"
+      onSelectSet={onSelectSet}
+      measurement={measurement}
+      channels={toSensorChannels(visible, start)}
+      cursorSeconds={elapsed / 1000}
+      playbackStatus="manual"
+      onOpenManual={() => {}}
+      beforeContent={uploadPanel}
+    />
+  );
 }

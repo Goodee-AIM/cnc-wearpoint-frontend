@@ -428,3 +428,105 @@ nav .tab { flex:1; min-width:90px; }
 .monitoring-restart-dialog input { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 7px; font: inherit; }
 .monitoring-restart-dialog [role="alert"] { color: #b42318; }
 .monitoring-restart-actions { display: flex; gap: 12px; justify-content: flex-end; }
+/* 일반 Set의 전체 다시 시작 버튼 */
+.view-context > .monitoring-restart-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid #dbe3ee;
+  border-radius: 10px;
+  background: #f4f7fb;
+  color: #475975;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.view-context > .monitoring-restart-trigger::before {
+  content: none;
+}
+
+.view-context > .monitoring-restart-trigger:hover {
+  background: #e8eef7;
+}
+
+.view-context > .monitoring-restart-trigger:focus-visible {
+  outline: 3px solid #93bbff;
+  outline-offset: 3px;
+}
+/* 기존 문자 아이콘 제거 */
+button.monitoring-restart-trigger::before {
+  content: none;
+}
+
+/* 다시 재생과 같은 아이콘 크기 */
+button.monitoring-restart-trigger .manual-control-icon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+}
+button.monitoring-restart-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid #dbe3ee;
+  border-radius: 10px;
+  background: #f4f7fb;
+  color: #475975;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  box-shadow: none;
+}
+
+button.monitoring-restart-trigger::before {
+  content: none;
+}
+
+button.monitoring-restart-trigger .manual-control-icon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+}
+
+button.monitoring-restart-trigger:hover {
+  background: #e8eef7;
+}
+/* 현재 마모 상태: 심볼 제거 및 왼쪽 정렬 */
+.summary .status-symbol {
+  display: none;
+}
+
+.summary .status-layout {
+  justify-content: flex-start;
+  gap: 0;
+}
+
+.summary .status-texts {
+  width: 100%;
+  text-align: left;
+}
+/* 상태 글자 아래에 설명 문구를 가운데 정렬 */
+.summary .status-texts {
+  width: fit-content;
+  text-align: center;
+}
+
+.summary .status-caption {
+  text-align: center;
+}
+/* Set 모니터링 제목 */
+.monitoring-layout .page-heading h1 {
+  padding-left: 12px; /* 오른쪽으로 이동: 공구 이미지 내부 글자와 정렬 */
+  font-size: 30px;    /* 제목 크기 */
+  margin: 0;
+}

@@ -12,15 +12,15 @@
     "currentLanguage": "현재 언어:"
   },
   "monitoring": {
-    "restartAll": "전체 다시 시작",
+    "restartAll": "분석 시작",
     "restartDescription": "Set 1~8을 모두 처음부터 재생합니다. 다른 접속자에게도 적용되며 기존 알림·확인 기록과 Set test는 유지됩니다.",
     "controlKey": "운영자 제어 키",
-    "restarting": "다시 시작 중…",
+    "restarting": "분석 시작 중…",
     "restartDenied": "운영자 제어 키를 확인하세요.",
     "restartFailed": "전체 다시 시작 요청에 실패했습니다. (HTTP {{status}})",
     "restartTimeout": "응답이 지연됐습니다. 서버 재생 상태를 확인하세요.",
     "eyebrow": "공구 상태 모니터링",
-    "setSelection": "세트 선택",
+    "setSelection": "공구 ID",
     "title": "{{setNumber}} 모니터링",
     "historyTitle": "{{setNumber}} 과거 알림 조회",
     "autoPlaying": "자동 모니터링 · 재생 중",
@@ -36,7 +36,9 @@
     "pending": "판정 대기"
   },
   "statusCaption": {
-    "normal": "정상 상태 유지",
+    "slowDown": "감속 필요",
+    "inspect": "공구 점검 필요",
+    "normal": "마모 상태 양호",
     "warning": "마모 상태 확인",
     "danger": "공구 교체 필요",
     "pending": "판정 정보를 기다리는 중"
@@ -61,6 +63,7 @@
     "pending": "판정 대기"
   },
   "wearType": {
+    "adhesion_flank": "응착 + 플랭크 마모",
     "flank_wear": "플랭크 마모",
     "adhesion": "응착",
     "other": "기타"
@@ -69,8 +72,8 @@
     "channels": {
       "acoustic": "음향",
       "acceleration": "가속도",
-      "forceX": "X축",
-      "forceY": "Y축"
+      "forceX": "절삭력 (X축)",
+      "forceY": "절삭력 (Y축)"
     },
     "waiting": "센서 데이터 대기",
     "recentWaveform": "{{label}} 최근 5초 파형",

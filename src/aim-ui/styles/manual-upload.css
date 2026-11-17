@@ -12,3 +12,235 @@
 .manual-saved { display:flex; gap:8px; margin-top:16px; }
 .manual-saved select { max-width:70%; }
 @media(max-width:700px) { .manual-pairing-list label { grid-template-columns:1fr; } .manual-picker { flex-wrap:wrap; } }
+
+/* Set test 전용 업로드 바: 기존 업로드·재생·초기화 동작은 유지합니다. */
+.page-heading-with-input .manual-upload {
+  padding: 12px 16px;
+  border: 1px solid #dbe5f3;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 4px 14px #1d365b0a;
+}
+.page-heading-with-input .manual-upload form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+}
+.manual-upload .manual-control-icon { flex: 0 0 auto; width: 20px; height: 20px; }
+.page-heading-with-input .manual-upload .manual-picker {
+  display: flex;
+  flex: 1 1 270px;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+  padding-right: 14px;
+  border-right: 1px solid #dde4ed;
+  font-size: 13px;
+}
+.manual-upload .manual-picker-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #233149;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.manual-upload .manual-picker-label .manual-control-icon { color: #0965de; }
+.page-heading-with-input .manual-upload .manual-picker-button,
+.page-heading-with-input .manual-upload form > .manual-action {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color .15s, border-color .15s, box-shadow .15s;
+}
+.page-heading-with-input .manual-upload .manual-picker-button {
+  flex-shrink: 0;
+  border-color: #1671ed;
+  color: #075dcc;
+  background: #f3f8ff;
+}
+.page-heading-with-input .manual-upload .manual-picker-description {
+  flex: 1 1 70px;
+  min-width: 0;
+  max-width: 160px;
+  color: #637189;
+  font-size: 12px;
+  text-align: left;
+}
+.page-heading-with-input .manual-upload form > .manual-action-upload {
+  border-color: #0864dd;
+  color: #fff;
+  background: #0864dd;
+  box-shadow: 0 2px 5px #0864dd21;
+}
+.page-heading-with-input .manual-upload form > .manual-action-replay {
+  border-color: #dbe3ee;
+  color: #475975;
+  background: #f4f7fb;
+}
+.page-heading-with-input .manual-upload form > .manual-action-reset {
+  border-color: #e04b54;
+  color: #c92d3a;
+  background: #fff;
+}
+.page-heading-with-input .manual-upload .manual-picker-button:hover:not(:disabled) { background: #e8f2ff; }
+.page-heading-with-input .manual-upload form > .manual-action-upload:hover:not(:disabled) { background: #0554be; }
+.page-heading-with-input .manual-upload form > .manual-action-replay:hover:not(:disabled) { background: #e8eef7; }
+.page-heading-with-input .manual-upload form > .manual-action-reset:hover:not(:disabled) { background: #fff2f3; }
+.page-heading-with-input .manual-upload .manual-picker-button:focus-visible,
+.page-heading-with-input .manual-upload form > .manual-action:focus-visible {
+  outline: 3px solid #93bbff;
+  outline-offset: 3px;
+}
+.page-heading-with-input .manual-upload .manual-picker-button:disabled,
+.page-heading-with-input .manual-upload form > .manual-action:disabled {
+  opacity: 1;
+  border-color: #e9edf3;
+  background: #f0f2f6;
+  color: #a2abba;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+@media (max-width: 720px) {
+  .page-heading-with-input .manual-upload { padding: 12px; }
+  .page-heading-with-input .manual-upload .manual-picker {
+    flex-basis: 100%;
+    flex-wrap: nowrap;
+    border-right: 0;
+    padding: 0 0 12px;
+    border-bottom: 1px solid #e7edf5;
+  }
+  .page-heading-with-input .manual-upload .manual-picker-description { max-width: none; }
+  .page-heading-with-input .manual-upload form > .manual-action { flex: 1 1 auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-heading-with-input .manual-upload button { transition: none; }
+}
+/* 이미지·센서 선택 영역의 비율 통일 */
+.page-heading-with-input .manual-upload .manual-picker {
+  flex: 1 1 340px;
+  min-width: 340px;
+}
+
+.page-heading-with-input .manual-upload .manual-picker-label {
+  min-width: 76px;
+  justify-content: flex-start;
+}
+
+/* '선택된 파일 없음'이 들어갈 공간 확보 */
+.page-heading-with-input .manual-upload .manual-picker-description {
+  flex: 1 1 116px;
+  min-width: 116px;
+  max-width: none;
+}
+
+/* 좁은 화면에서는 영역을 한 줄씩 배치 */
+@media (max-width: 720px) {
+  .page-heading-with-input .manual-upload .manual-picker {
+    flex-basis: 100%;
+    min-width: 0;
+  }
+}
+/* 공구 이미지·센서 CSV: 제목 위 / 파일 선택·파일명 아래 */
+.page-heading-with-input .manual-upload .manual-picker {
+  display: grid;
+  grid-template-columns: max-content minmax(116px, 1fr);
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: 14px;
+  row-gap: 6px;
+  flex: 1 1 280px;
+  min-width: 280px;
+}
+
+.page-heading-with-input .manual-upload .manual-picker-label {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  min-width: 0;
+}
+
+.page-heading-with-input .manual-upload .manual-picker-button {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.page-heading-with-input .manual-upload .manual-picker-description {
+  grid-column: 2;
+  grid-row: 2;
+  min-width: 116px;
+  max-width: none;
+}
+
+/* 제목 앞 아이콘의 빈 공간 제거 */
+.manual-upload .manual-picker-label .manual-control-icon {
+  display: none;
+}
+
+/* 초기화: 아이콘 공간 없이 글자를 정중앙에 배치 */
+.page-heading-with-input .manual-upload form > .manual-action-reset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 100px;
+  min-height: 44px;
+  padding: 10px 18px;
+  gap: 0;
+}
+
+.manual-upload .manual-action-reset .manual-control-icon {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .page-heading-with-input .manual-upload .manual-picker {
+    flex-basis: 100%;
+    min-width: 0;
+  }
+}
+/* 초기화: 빨간 배경 + 흰 글자 */
+.page-heading-with-input .manual-upload form > .manual-action-reset {
+  border-color: #dc3545;
+  background: #dc3545;
+  color: #fff;
+  box-shadow: 0 2px 5px #dc354521;
+}
+
+.page-heading-with-input .manual-upload form > .manual-action-reset:hover:not(:disabled) {
+  border-color: #bd2534;
+  background: #bd2534;
+}
+
+.page-heading-with-input .manual-upload form > .manual-action-reset:disabled {
+  border-color: #e9edf3;
+  background: #f0f2f6;
+  color: #a2abba;
+  box-shadow: none;
+}
+.page-heading-with-input .manual-upload .manual-picker-button {
+  background: none;
+  border-color: #e5b94b;
+  color: #805b12;
+}
+
+.page-heading-with-input .manual-upload .manual-picker-button .manual-control-icon {
+  color: #d99a13;
+  fill: none;
+}
+
+.page-heading-with-input .manual-upload .manual-picker-button:hover:not(:disabled) {
+  background: #fff0c2;
+  border-color: #cf9b25;
+}

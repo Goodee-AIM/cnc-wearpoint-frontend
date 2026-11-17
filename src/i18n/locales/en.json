@@ -12,15 +12,15 @@
     "currentLanguage": "Current:"
   },
   "monitoring": {
-    "restartAll": "Restart all Sets",
+    "restartAll": "Start analysis",
     "restartDescription": "Replay Sets 1–8 from the beginning for all viewers. Existing alerts, acknowledgments and Set test are preserved.",
     "controlKey": "Operator control key",
-    "restarting": "Restarting…",
+    "restarting": "Starting analysis…",
     "restartDenied": "Check the operator control key.",
     "restartFailed": "Unable to restart all Sets. (HTTP {{status}})",
     "restartTimeout": "The request timed out. Check the server playback state.",
     "eyebrow": "TOOL CONDITION MONITORING",
-    "setSelection": "Tool Set Selection",
+    "setSelection": "Tool ID",
     "title": "{{setNumber}} Monitoring",
     "historyTitle": "{{setNumber}} Alert History",
     "autoPlaying": "Auto Monitoring · Playing",
@@ -36,6 +36,8 @@
     "pending": "Pending"
   },
   "statusCaption": {
+    "slowDown": "Reduce cutting speed",
+    "inspect": "Tool inspection required",
     "normal": "Tool condition is normal",
     "warning": "Check tool wear condition",
     "danger": "Tool replacement required",
@@ -61,6 +63,7 @@
     "pending": "Pending"
   },
   "wearType": {
+    "adhesion_flank": "Adhesion + Flank Wear",
     "flank_wear": "Flank Wear",
     "adhesion": "Adhesion",
     "other": "Other"

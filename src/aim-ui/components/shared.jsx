@@ -1,5 +1,6 @@
 import { getSetName } from "../../utils/setDisplay.js";
 import { useEffect, useRef, useState } from "react";
+import { wearTypeKey } from "../../utils/wearAdvice.js";
 import { useTranslation } from "react-i18next";
 
 
@@ -354,7 +355,7 @@ export function WearTypeCard({
 
     const translatedType =
         type
-            ? t(`wearType.${type}`, {
+            ? t(`wearType.${wearTypeKey(type)}`, {
                 defaultValue: "",
             })
             : "";

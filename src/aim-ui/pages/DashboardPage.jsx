@@ -1,3 +1,4 @@
+import { wearAdviceKey } from "../../utils/wearAdvice.js";
 import { getSetName } from "../../utils/setDisplay.js";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -30,12 +31,6 @@ export default function DashboardPage({
   const [expanded, setExpanded] = useState(false);
   const status = measurement?.status || "pending";
 
-  const statusCaptionKey = {
-    danger: "statusCaption.danger",
-    warning: "statusCaption.warning",
-    normal: "statusCaption.normal",
-    pending: "statusCaption.pending",
-  };
 
   return (
       <>
@@ -61,10 +56,6 @@ export default function DashboardPage({
         <main>
           <div className={"page-heading" + (beforeContent ? " page-heading-with-input" : "")}>
             <div>
-              <div className="eyebrow">
-                {t("monitoring.eyebrow")}
-              </div>
-
               <h1>
                 {preview
                     ? t("monitoring.historyTitle", {
@@ -146,7 +137,7 @@ export default function DashboardPage({
                     </h2>
 
                     <p className="status-caption">
-                      {t(statusCaptionKey[status])}
+                      {t(wearAdviceKey(status, measurement?.wearType))}
                     </p>
                   </div>
                 </div>
