@@ -23,7 +23,7 @@ export default function useDashboard() {
   // 테스트값·사진 인덱스·페이지 선택은 브라우저 내부 상태입니다. 서버 DB의 측정/예측을 덮어쓰지 않습니다.
   const [testValues, setTestValues] = useState({});
   const [testModes, setTestModes] = useState({});
-  const [selectedSet, setSelectedSet] = useState(10);
+  const [selectedSet, setSelectedSet] = useState(4);
   const [page, setPage] = usePageLocation();
   const shared = useSharedMonitoring(unifiedMode, selectedSet);
   const unifiedPlaying = unifiedMode && shared.connected && shared.state?.status === "running";

@@ -24,17 +24,84 @@ async function request(path, options = {}) {
   }
   return response.json();
 }
+const TEST_STORAGE_KEY = `aim-test-session:v1:${API_BASE}`;
+
+function readTestSession() {
+  const empty = {
+    items: [], groups: [], selectedKey: "", position: 0,
+  };
+
+  try {
+    const saved = JSON.parse(localStorage.getItem(TEST_STORAGE_KEY));
+    const records = saved?.records;
+
+    if (
+      saved?.version !== 1 ||
+      !Array.isArray(records) ||
+      !records.length ||
+      records.length > 1000 ||
+      records.some(item =>
+        !item ||
+        typeof item.id !== "string" ||
+        typeof item.image_url !== "string" ||
+        typeof item.sensor_url !== "string" ||
+        !Number.isFinite(Number(item.duration_ms)) ||
+        Number(item.duration_ms) <= 0
+      )
+    ) return empty;
+
+    const total = records.reduce(
+      (sum, item) => sum + Number(item.duration_ms), 0,
+    );
+    const position = Math.min(
+      total, Math.max(0, Number(saved.position) || 0),
+    );
+
+    if (records.length === 1) {
+      return {
+        items: records, groups: [],
+        selectedKey: records[0].id, position,
+      };
+    }
+
+    return {
+      items: records,
+      groups: [{
+        id: "restored-test",
+        name: getSetName("manual"),
+        created_at: records[0].created_at || "",
+        item_ids: records.map(item => item.id),
+        items: records,
+      }],
+      selectedKey: "group:restored-test",
+      position,
+    };
+  } catch {
+    return empty;
+  }
+}
 export default function ManualInputPage({ sets, onSelectSet }) {
   const { t } = useTranslation();
-  const [images, setImages] = useState([]), [sensors, setSensors] = useState([]);
+  const [restored] = useState(readTestSession);
+
+  const [images, setImages] = useState([]);
+  const [sensors, setSensors] = useState([]);
   const [pairs, setPairs] = useState(null);
-  const [items, setItems] = useState([]);
-  const [groups, setGroups] = useState([]), [selectedKey, setSelectedKey] = useState("");
+
+  const [items, setItems] = useState(restored.items);
+  const [groups, setGroups] = useState(restored.groups);
+  const [selectedKey, setSelectedKey] = useState(restored.selectedKey);
+
   const [loaded, setLoaded] = useState({ key: "", rows: [] });
-  const [position, setPosition] = useState(0), [busy, setBusy] = useState(false);
-  const [error, setError] = useState(""), [progress, setProgress] = useState("");
+  const [position, setPosition] = useState(restored.position);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [progress, setProgress] = useState("");
+
   const cache = useRef(new Map());
   const mounted = useRef(true);
+  const sessionSnapshot = useRef(null);
+  const storageWarningShown = useRef(false);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const choices = useMemo(() => {
     const grouped = new Set(groups.flatMap(group => group.item_ids));
@@ -43,22 +110,72 @@ export default function ManualInputPage({ sets, onSelectSet }) {
       .sort((a, b) => b.created.localeCompare(a.created));
   }, [groups, items]);
   const playlist = choices.find(choice => choice.key === selectedKey)?.items || [];
-  const { index, elapsed } = playlistPosition(position, playlist);
+    // 현재 테스트의 파일 정보와 재생 위치만 보관합니다.
+  useEffect(() => {
+    sessionSnapshot.current = playlist.length
+      ? { version: 1, records: playlist, position }
+      : null;
+  }, [playlist, position]);
+
+  // 재생 중에는 1초마다 저장하고, 화면을 떠날 때도 저장합니다.
+  useEffect(() => {
+    const save = () => {
+      const snapshot = sessionSnapshot.current;
+      if (!snapshot) return;
+
+      try {
+        localStorage.setItem(
+          TEST_STORAGE_KEY,
+          JSON.stringify(snapshot),
+        );
+      } catch {
+        if (!storageWarningShown.current) {
+          storageWarningShown.current = true;
+          setError(
+            i18n.resolvedLanguage?.startsWith("en")
+              ? "Unable to save this test in your browser."
+              : "브라우저에 테스트 상태를 저장할 수 없습니다.",
+          );
+        }
+      }
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "hidden") save();
+    };
+
+    const timer = setInterval(save, 1000);
+
+    window.addEventListener("pagehide", save);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener("pagehide", save);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      save();
+    };
+  }, []);
+  const totalDuration = playlist.reduce(
+  (sum, item) => sum + Math.max(1, Number(item.duration_ms) || 1),
+  0,
+);
+const completed = totalDuration > 0 && position >= totalDuration;
+
+const { index, elapsed } = completed
+  ? {
+      index: playlist.length - 1,
+      elapsed: Math.max(1, Number(playlist.at(-1)?.duration_ms) || 1),
+    }
+  : playlistPosition(position, playlist);
+
+const playbackText = i18n.resolvedLanguage?.startsWith("en")
+  ? { replay: "Replay", clear: "Reset", done: "Playback complete" }
+  : { replay: "다시 재생", clear: "초기화", done: "재생 완료" };
   const selected = playlist[index];
   const sensorKey = selected?.sensor_url || "";
   const rows = loaded.key === sensorKey ? loaded.rows : [];
 
-  useEffect(() => {
-    const controller = new AbortController();
-    Promise.all([request("/api/manual-inputs", { signal: controller.signal }), request("/api/manual-inputs/playlists", { signal: controller.signal })])
-      .then(([data, batches]) => {
-        if (controller.signal.aborted) return;
-        setItems(previous => [...new Map([...data.items, ...previous].map(item => [item.id, item])).values()]); setGroups(previous => [...new Map([...batches.items, ...previous].map(item => [item.id, item])).values()]);
-        const newest = [...batches.items.map(group => ({ key: "group:" + group.id, created: group.created_at })), ...data.items.map(item => ({ key: item.id, created: item.created_at }))].sort((a,b) => b.created.localeCompare(a.created))[0];
-        setSelectedKey(id => id || newest?.key || "");
-      }).catch(err => { if (!controller.signal.aborted) setError(err.message); });
-    return () => controller.abort();
-  }, []);
   useEffect(() => {
     if (!sensorKey) return;
     const controller = new AbortController();
@@ -78,14 +195,20 @@ export default function ManualInputPage({ sets, onSelectSet }) {
     return () => controller.abort();
   }, [sensorKey]);
   useEffect(() => {
-    if (!rows.length || busy) return;
-    let previous = performance.now();
-    const timer = setInterval(() => {
-      const now = performance.now(); const delta = now - previous; previous = now;
-      setPosition(value => value + delta);
-    }, 80);
-    return () => clearInterval(timer);
-  }, [rows, busy]);
+  if (!rows.length || busy || completed || !totalDuration) return;
+
+  let previous = performance.now();
+
+  const timer = setInterval(() => {
+    const now = performance.now();
+    const delta = now - previous;
+    previous = now;
+
+    setPosition(value => Math.min(totalDuration, value + delta));
+  }, 80);
+
+  return () => clearInterval(timer);
+}, [rows, busy, completed, totalDuration]);
 
   const select = (files, kind) => {
     const supported = kind === "image" ? imageFiles(files) : sensorFiles(files);
@@ -147,16 +270,59 @@ export default function ManualInputPage({ sets, onSelectSet }) {
     image: selected ? { url: new URL(selected.image_url, API_BASE).href, filename: selected.image_name, sensorTime: visible.at(-1)?.time } : null,
     predictedWear: selected?.predicted_wear ?? null, status: "pending", wearTypeLabel: null,
   };
+  const clearScreen = () => {
+    if (busy) return;
+      sessionSnapshot.current = null;
+
+  try {
+    localStorage.removeItem(TEST_STORAGE_KEY);
+  } catch {
+    setError(
+      i18n.resolvedLanguage?.startsWith("en")
+        ? "Unable to reset the saved test."
+        : "저장된 테스트 상태를 초기화할 수 없습니다.",
+    );
+    return;
+  }
+
+    setSelectedKey("");
+    setItems([]);
+    setGroups([]);
+    setImages([]);
+    setSensors([]);
+    setPairs(null);
+    setLoaded({ key: "", rows: [] });
+    setPosition(0);
+    setError("");
+    setProgress("");
+    cache.current.clear();
+  };
   const uploadPanel = <section className="manual-upload card" aria-label={t("manual.aria", { name: getSetName("manual") })}>
     <h2>{t("manual.title")}</h2>
     <form onSubmit={upload}>
       <ManualFilePicker label={t("image.toolImage")} accept="image/png,image/jpeg,image/webp" files={images} disabled={busy} onChange={files => select(files, "image")} />
       <ManualFilePicker label={t("manual.sensorCsv")} accept=".csv,text/csv" files={sensors} disabled={busy} onChange={files => select(files, "sensor")} />
       <button type="submit" disabled={busy}>{busy ? t("alerts.saving") : t("manual.upload")}</button>
+      <button
+        type="button"
+        disabled={busy || !playlist.length}
+        onClick={() => setPosition(0)}
+      >
+        {playbackText.replay}
+      </button>
+
+      <button
+        type="button"
+        disabled={busy}
+        onClick={clearScreen}
+      >
+        {playbackText.clear}
+      </button>
     </form>
     <div className="manual-upload-feedback">
     {error && <p role="alert">{error}</p>}
     {progress && <p role="status">{progress}</p>}
+    {completed && <p role="status">{playbackText.done}</p>}
     {pairs && <section className="manual-pairing" aria-label={t("manual.pairTitle")}>
       <h3>{t("manual.pairTitle")}</h3><p>{t("manual.pairHelp")}</p>
       <div className="manual-pairing-list">{pairs.map((pair, row) => <label key={filePath(pair.image)}><span>{row + 1}. {filePath(pair.image)}</span><select disabled={busy} aria-label={t("manual.pairFor", { name: filePath(pair.image) })} value={pair.sensorIndex} onChange={event => setPairs(previous => previous.map((item, i) => i === row ? { ...item, sensorIndex: Number(event.target.value) } : item))}>

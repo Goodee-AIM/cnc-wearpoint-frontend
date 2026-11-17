@@ -30,10 +30,21 @@ export default function AimUI({
       <Header onHome={goHome} page={page} alertCount={history.historyCounts?.unread ?? t("common.loading")}
         onDashboard={() => navigate("dashboard")} onAlerts={() => navigate("alerts")}
         onHistory={() => setHistoryOpen((open) => !open)} historyOpen={historyOpen} />
+        <div hidden={page !== "dashboard" || !manualActive}>
+          <ManualInputPage sets={sets} onSelectSet={selectLiveSet} />
+        </div>
       {page === "dashboard" ? (
         <>
-          {manualActive ? <ManualInputPage sets={sets} onSelectSet={selectLiveSet} /> : <DashboardPage onOpenManual={openManual} {...{sets, selectedSet, onSelectSet, measurement, channels, cursorSeconds,
-            preview, onReturnLive, playbackStatus, dataMessage}} />}
+          {!manualActive && (
+            <DashboardPage
+              onOpenManual={openManual}
+              {...{
+                sets, selectedSet, onSelectSet, measurement,
+                channels, cursorSeconds, preview, onReturnLive,
+                playbackStatus, dataMessage,
+              }}
+            />
+          )}
           <HistoryPopover open={historyOpen} alerts={latestAlerts} onClose={close}
             onDismiss={onDismissAlert} onRestore={onRestoreAlerts} onSelectSet={(alert) => { setManualActive(false); sessionStorage.removeItem("aim-manual-active"); onCurrentSet(alert); }}
             onViewAll={() => navigate("alerts")} />
