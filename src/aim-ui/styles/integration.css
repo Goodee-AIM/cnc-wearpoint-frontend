@@ -418,3 +418,13 @@ nav .tab { flex:1; min-width:90px; }
     flex-wrap: wrap;
   }
 }
+
+
+/* 전체 다시 시작 입력창 */
+.monitoring-restart-dialog { width: min(480px, calc(100vw - 32px)); padding: 24px; }
+.monitoring-restart-dialog h2 { font-size: 20px; margin: 0 0 16px; }
+.monitoring-restart-dialog p { line-height: 1.6; white-space: normal; }
+.monitoring-restart-dialog label { display: grid; gap: 8px; margin: 20px 0; }
+.monitoring-restart-dialog input { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 7px; font: inherit; }
+.monitoring-restart-dialog [role="alert"] { color: #b42318; }
+.monitoring-restart-actions { display: flex; gap: 12px; justify-content: flex-end; }

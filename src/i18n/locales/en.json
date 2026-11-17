@@ -12,6 +12,13 @@
     "currentLanguage": "Current:"
   },
   "monitoring": {
+    "restartAll": "Restart all Sets",
+    "restartDescription": "Replay Sets 1–8 from the beginning for all viewers. Existing alerts, acknowledgments and Set test are preserved.",
+    "controlKey": "Operator control key",
+    "restarting": "Restarting…",
+    "restartDenied": "Check the operator control key.",
+    "restartFailed": "Unable to restart all Sets. (HTTP {{status}})",
+    "restartTimeout": "The request timed out. Check the server playback state.",
     "eyebrow": "TOOL CONDITION MONITORING",
     "setSelection": "Tool Set Selection",
     "title": "{{setNumber}} Monitoring",

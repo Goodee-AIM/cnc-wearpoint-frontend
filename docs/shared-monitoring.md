@@ -24,12 +24,8 @@ npm.cmd run dev -- --host 127.0.0.1 --port 5173 --strictPort
 아직 일정을 준비하지 않은 백엔드는 서버 재생 대기가 표시됩니다. 한 번 준비한 뒤 reset하면 기존 일정으로 새 세션 1회차가 즉시 재생됩니다.
 백엔드 운영자 요청 창에서 실행합니다.
 
-```powershell
-$headers = @{ "X-Monitoring-Control-Token" = "local-monitoring-test" }
-Invoke-RestMethod -Method Post `
-    -Uri "http://127.0.0.1:8001/api/monitoring/start" `
-    -Headers $headers -TimeoutSec 600 | Select-Object status, session_id
-```
+운영자 제어 키는 백엔드 .env의 MONITORING_CONTROL_TOKEN에 설정합니다.
+실제 키는 문서나 Git에 기록하지 않습니다.
 
 이미 실행 중이면 같은 세션을 반환합니다.
 

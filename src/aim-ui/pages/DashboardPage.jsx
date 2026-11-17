@@ -2,6 +2,7 @@ import { getSetName } from "../../utils/setDisplay.js";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import RestartMonitoringButton from "../components/RestartMonitoringButton.jsx";
 import SensorCharts from "../components/SensorCharts";
 import {
   ImageCard,
@@ -83,6 +84,7 @@ export default function DashboardPage({
 
             <div className="view-context">
               {beforeContent}
+              {!preview && selectedSet !== "manual" && <RestartMonitoringButton />}
               {!preview && selectedSet !== "manual" && (
                   <span>
                 {playbackStatus === "completed"
