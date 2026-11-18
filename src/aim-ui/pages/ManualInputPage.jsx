@@ -101,14 +101,12 @@ export default function ManualInputPage({ sets, onSelectSet }) {
   const [progress, setProgress] = useState("");
   const [autoBusy, setAutoBusy] = useState(false);
   const [autoResult, setAutoResult] = useState(null);
-  const autoImageRef = useRef(null);
 
   const cache = useRef(new Map());
   const mounted = useRef(true);
   const sessionSnapshot = useRef(null);
   const storageWarningShown = useRef(false);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
-  useEffect(() => () => { if (autoImageRef.current) URL.revokeObjectURL(autoImageRef.current); }, []);
   const choices = useMemo(() => {
     const grouped = new Set(groups.flatMap(group => group.item_ids));
     return [...groups.map(group => ({ key: "group:" + group.id, created: group.created_at, name: group.name, items: group.items })),
@@ -217,24 +215,17 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
 }, [rows, busy, completed, totalDuration]);
 
   const resetAutoPreview = () => {
-    if (autoImageRef.current) URL.revokeObjectURL(autoImageRef.current);
-    autoImageRef.current = null;
     setAutoResult(null);
   };
-  const showAutoResult = async (payload, image, sensor) => {
-    let sensorRows = [];
-    try { sensorRows = parseSensor(await sensor.text()); } catch { /* Prediction is still valid. */ }
-    if (autoImageRef.current) URL.revokeObjectURL(autoImageRef.current);
-    const url = URL.createObjectURL(image);
-    autoImageRef.current = url;
+  // AI results update only the wear summary; playback keeps its original image,
+  // sensor channels and moving cursor.
+  const showAutoResult = (payload) => {
     setAutoResult({
-      image: { url, filename: image.name, sensorTime: sensorRows.at(-1)?.time },
       predictedWear: payload.prediction.predicted_wear_um,
       wearType: payload.prediction.predicted_type,
       wearTypeLabel: payload.prediction.predicted_type,
       status: payload.prediction.status,
       basis: "prediction",
-      rows: sensorRows,
     });
   };
   const select = (files, kind) => {
@@ -294,9 +285,11 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
   };
   const start = rows[0]?.ms ?? 0;
   const visible = rows.filter(row => row.ms >= start + elapsed - 5000 && row.ms <= start + elapsed);
-  const measurement = autoResult || {
+  const measurement = {
     image: selected ? { url: new URL(selected.image_url, API_BASE).href, filename: selected.image_name, sensorTime: visible.at(-1)?.time } : null,
     predictedWear: selected?.predicted_wear ?? null, status: "pending", wearTypeLabel: null,
+    // Never replace the playback image or sensor stream with prediction data.
+    ...(autoResult ?? {}),
   };
   const clearScreen = () => {
     if (busy || autoBusy) return;
@@ -475,8 +468,8 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
       selectedSet="manual"
       onSelectSet={onSelectSet}
       measurement={measurement}
-      channels={autoResult ? toSensorChannels(autoResult.rows, autoResult.rows[0]?.ms ?? 0) : toSensorChannels(visible, start)}
-      cursorSeconds={autoResult ? ((autoResult.rows.at(-1)?.ms ?? 0) - (autoResult.rows[0]?.ms ?? 0)) / 1000 : elapsed / 1000}
+      channels={toSensorChannels(visible, start)}
+      cursorSeconds={elapsed / 1000}
       playbackStatus="manual"
       onOpenManual={() => {}}
       beforeContent={uploadPanel}
