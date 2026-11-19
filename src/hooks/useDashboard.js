@@ -373,6 +373,7 @@ export default function useDashboard() {
         ? {
             predicted: dbPredicted,
             predictionId: dbRecord.prediction_id,
+            type: dbRecord.predicted_type ?? null,
             actual: dbActual,
             error: dbActual === null ? null : Math.abs(dbActual - dbPredicted),
             sensorName: dbRecord.sensor_name,
@@ -1010,6 +1011,11 @@ export default function useDashboard() {
     },
     diagnosis: { current, selectedSet },
     notifications: {
+      liveToastSource: {
+        records: SETS.map(getRecord),
+        enabled: unifiedMode && shared.connected,
+        playback: shared.state,
+      },
       alerts,
       setDismissedAlerts,
       changeSet,

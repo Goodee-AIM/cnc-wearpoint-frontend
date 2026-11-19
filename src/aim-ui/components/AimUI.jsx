@@ -1,3 +1,4 @@
+import AlertToastStack from "./AlertToastStack.jsx";
 import { useTranslation } from "react-i18next";
 import ManualInputPage from "../pages/ManualInputPage.jsx";
 import { useState } from "react";
@@ -10,7 +11,7 @@ export default function AimUI({
   page, sets, selectedSet, onSelectSet, measurement, channels, cursorSeconds,
   preview, onReturnLive, playbackStatus, dataMessage, alerts, latestAlerts,
   selectedAlertId, onSelectAlert, onNavigate, onGoMonitoring, onCurrentSet,
-  onAcknowledge, onDismissAlert, onRestoreAlerts, acknowledgingId, history,
+  onAcknowledge, onDismissAlert, onRestoreAlerts, acknowledgingId, history, toastSource,
 }) {
   const { t } = useTranslation();
   const [manualActive, setManualActive] = useState(() => sessionStorage.getItem("aim-manual-active") === "1");
@@ -27,6 +28,13 @@ export default function AimUI({
   };
   return (
     <>
+      <AlertToastStack source={toastSource} onOpenSet={(setNumber) => {
+        close();
+        setManualActive(false);
+        sessionStorage.removeItem("aim-manual-active");
+        onCurrentSet({ setNumber });
+        window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+      }} />
       <Header onHome={goHome} page={page} alertCount={history.historyCounts?.unread ?? t("common.loading")}
         onDashboard={() => navigate("dashboard")} onAlerts={() => navigate("alerts")}
         onHistory={() => setHistoryOpen((open) => !open)} historyOpen={historyOpen} />

@@ -32,6 +32,7 @@ export default function App() {
       dataMessage={monitoring.dataMessage}
       alerts={alerts}
       latestAlerts={latestAlerts}
+      toastSource={notifications.liveToastSource}
       selectedAlertId={alertPage.selectedAlert?.id}
       onSelectAlert={alertPage.setSelectedAlertId}
       onNavigate={(page) => dashboard.header.setPage(page === "alerts" ? "alerts" : "monitoring")}

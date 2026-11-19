@@ -1,0 +1,82 @@
+.alert-toast-stack {
+  position: fixed;
+  inset: auto 24px 24px auto;
+  z-index: 900;
+  width: min(360px, calc(100vw - 32px));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+.alert-toast-stack .alert-toast {
+  --toast-accent: #bd810b;
+  --toast-tint: #fffaf0;
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 16px 18px;
+  border: 1px solid #e3e8f0;
+  border-left: 4px solid var(--toast-accent);
+  border-radius: 0;
+  background: var(--toast-tint);
+  box-shadow: 0 5px 22px #20314b20;
+  color: #23344f;
+  pointer-events: auto;
+  animation: alert-toast-enter 180ms ease-out;
+}
+.alert-toast-stack .alert-toast-danger {
+  --toast-accent: #dc3545;
+  --toast-tint: #fff6f6;
+}
+.alert-toast-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.alert-toast-top strong { font-size: 16px; color: var(--toast-accent); }
+.alert-toast-stack .alert-toast-close {
+  flex: 0 0 28px;
+  width: 28px;
+  min-height: 28px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #6b7b91;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+.alert-toast-stack .alert-toast-message { margin: 8px 0; font-size: 14px; line-height: 1.5; }
+.alert-toast-meta { display: flex; flex-wrap: wrap; gap: 8px 12px; font-size: 12px; color: #68798d; }
+.alert-toast-meta time { margin-left: auto; }
+.alert-toast-stack .alert-toast-link {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #2864d5;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.alert-toast-stack button:focus-visible { outline: 2px solid #2864d5; outline-offset: 3px; }
+.alert-toast-stack .alert-toast-queued {
+  margin: 0;
+  padding: 7px 10px;
+  background: #fff;
+  box-shadow: 0 2px 10px #20314b18;
+  color: #61718b;
+  text-align: right;
+  font-size: 12px;
+}
+@keyframes alert-toast-enter {
+  from { opacity: 0; transform: translateX(18px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@media (max-width: 600px) {
+  .alert-toast-stack { right: 16px; bottom: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .alert-toast-stack .alert-toast { animation: none; }
+}

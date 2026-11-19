@@ -19,213 +19,104 @@ export function Icon({ name }) {
 }
 
 export function Header({
-                           page = "dashboard",
-                           alertCount = 0,
-                           onDashboard,
-                           onHome,
-                           onAlerts,
-                           onHistory,
-                           historyOpen = false,
-                           demo = false,
-                       }) {
-    const { t, i18n } = useTranslation();
+  page = "dashboard",
+  alertCount = 0,
+  onDashboard,
+  onHome,
+  onAlerts,
+  onHistory,
+  historyOpen = false,
+  demo = false,
+}) {
+  const { t, i18n } = useTranslation();
 
-    const [languageOpen, setLanguageOpen] = useState(false);
-    const languageRef = useRef(null);
+  const currentLanguage =
+    i18n.resolvedLanguage?.startsWith("en") ? "en" : "ko";
 
-    const currentLanguage =
-        i18n.resolvedLanguage?.startsWith("en") ? "en" : "ko";
+  const selectLanguage = async (language) => {
+    await i18n.changeLanguage(language);
+    localStorage.setItem("language", language);
+  };
 
-    const currentLanguageCode =
-        currentLanguage === "ko" ? "KR" : "EN";
-
-    const otherLanguage =
-        currentLanguage === "ko"
-            ? { code: "en", label: "EN" }
-            : { code: "ko", label: "KR" };
-
-    const selectLanguage = async (language) => {
-        await i18n.changeLanguage(language);
-        localStorage.setItem("language", language);
-        setLanguageOpen(false);
-    };
-
-    useEffect(() => {
-        if (!languageOpen) {
-            return;
-        }
-
-        const handleOutsideClick = (event) => {
-            if (
-                languageRef.current &&
-                !languageRef.current.contains(event.target)
-            ) {
-                setLanguageOpen(false);
-            }
-        };
-
-        const handleEscape = (event) => {
-            if (event.key === "Escape") {
-                setLanguageOpen(false);
-            }
-        };
-
-        document.addEventListener("pointerdown", handleOutsideClick);
-        document.addEventListener("keydown", handleEscape);
-
-        return () => {
-            document.removeEventListener("pointerdown", handleOutsideClick);
-            document.removeEventListener("keydown", handleEscape);
-        };
-    }, [languageOpen]);
-
-    return (
-        <header>
-            <a
-                className="brand"
-                href="#monitoring"
-                onClick={(e) => {
-                    e.preventDefault();
-                    (onHome ?? onDashboard)?.();
-                }}
-            >
+  return (
+    <header>
+      <a
+        className="brand"
+        href="#monitoring"
+        onClick={(event) => {
+          event.preventDefault();
+          (onHome ?? onDashboard)?.();
+        }}
+      >
         <span className="logo" translate="no">
           AIM
         </span>
 
-                <span
-                    className="brand-separator"
-                    aria-hidden="true"
-                >
+        <span className="brand-separator" aria-hidden="true">
           |
         </span>
 
-                <span className="brand-name">
+        <span className="brand-name">
           {t("app.title")}
         </span>
-            </a>
+      </a>
 
-            <div className="header-actions">
-                {demo && (
-                    <span className="preview">
+      <div className="header-actions">
+        {demo && (
+          <span className="preview">
             <i />
-                        {t("header.preview")}
+            {t("header.preview")}
           </span>
-                )}
+        )}
 
-                {page === "dashboard" ? (
-                    <>
-                        <button
-                            className="alert-button"
-                            onClick={onAlerts}
-                        >
-                            <Icon name="bell" />
-                            {t("header.alertHistory")}{" "}
-                            <span>{alertCount}</span>
-                        </button>
+        {page === "dashboard" ? (
+          <>
+            <button
+              type="button"
+              className="alert-button"
+              onClick={onAlerts}
+            >
+              <Icon name="bell" />
+              {t("header.alertHistory")}{" "}
+              <span>{alertCount}</span>
+            </button>
 
-                        <button
-                            aria-expanded={historyOpen}
-                            aria-controls="history-panel"
-                            onClick={onHistory}
-                        >
-                            {t("header.currentAlerts")}{" "}
-                            <span className="arrow">↗</span>
-                        </button>
-                    </>
-                ) : (
-                    <button onClick={onDashboard}>
-                        ← {t("header.backToMonitoring")}
-                    </button>
-                )}
+            <button
+              type="button"
+              aria-expanded={historyOpen}
+              aria-controls="history-panel"
+              onClick={onHistory}
+            >
+              {t("header.currentAlerts")}{" "}
+              <span className="arrow">↗</span>
+            </button>
+          </>
+        ) : (
+          <button type="button" onClick={onDashboard}>
+            ← {t("header.backToMonitoring")}
+          </button>
+        )}
 
-                <div
-                    className="language-dropdown"
-                    ref={languageRef}
-                >
-                    <button
-                        type="button"
-                        className="language-trigger"
-                        aria-label={t("header.language")}
-                        aria-haspopup="menu"
-                        aria-expanded={languageOpen}
-                        onClick={() =>
-                            setLanguageOpen((open) => !open)
-                        }
-                    >
-                        <svg
-                            className="language-globe"
-                            viewBox="0 0 24 24"
-                            aria-hidden="true"
-                        >
-                            <circle cx="12" cy="12" r="9" />
-                            <path d="M3 12h18" />
-                            <path d="M12 3c2.8 2.5 4.2 5.5 4.2 9S14.8 18.5 12 21" />
-                            <path d="M12 3C9.2 5.5 7.8 8.5 7.8 12S9.2 18.5 12 21" />
-                        </svg>
-
-                        <span>{t("header.languageLabel")}</span>
-
-                        <svg
-                            className={
-                                "language-chevron" +
-                                (languageOpen ? " open" : "")
-                            }
-                            viewBox="0 0 20 20"
-                            aria-hidden="true"
-                        >
-                            <path d="m6 8 4 4 4-4" />
-                        </svg>
-                    </button>
-
-                    {languageOpen && (
-                        <div
-                            className="language-dropdown-menu"
-                            role="menu"
-                        >
-                            <div className="language-current">
-                <span>
-                  {t("header.currentLanguage")}
-                </span>
-
-                                <strong>
-                                    {currentLanguageCode}
-                                </strong>
-                            </div>
-
-                            <div className="language-menu-divider" />
-
-                            <button
-                                type="button"
-                                className="language-option"
-                                role="menuitem"
-                                onClick={() =>
-                                    selectLanguage(otherLanguage.code)
-                                }
-                            >
-                <span>
-                  {otherLanguage.label}
-                </span>
-
-                                <svg
-                                    className="language-switch-icon"
-                                    viewBox="0 0 20 20"
-                                    aria-hidden="true"
-                                >
-                                    <path d="M11 4h5v5" />
-                                    <path d="m16 4-7 7" />
-                                    <path d="M14 11v4H5V6h4" />
-                                </svg>
-                            </button>
-                        </div>
-                    )}
-                </div>
-            </div>
-        </header>
-    );
+        <div className="language-switch">
+  <button
+    type="button"
+    className="language-switch-button"
+    onClick={() =>
+      selectLanguage(currentLanguage === "ko" ? "en" : "ko")
+    }
+    aria-label={
+      currentLanguage === "ko"
+        ? "영어로 변경"
+        : "Switch to Korean"
+    }
+  >
+    {currentLanguage === "ko" ? "ENG" : "한국어"}
+  </button>
+</div>
+      </div>
+    </header>
+  );
 }
-
-
 export function Footer({ page = "dashboard" }) {
   return (
       <footer>

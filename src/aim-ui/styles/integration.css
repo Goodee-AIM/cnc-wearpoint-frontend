@@ -530,3 +530,59 @@ button.monitoring-restart-trigger:hover {
   font-size: 30px;    /* 제목 크기 */
   margin: 0;
 }
+/* 전체 페이지 모서리를 90도로 통일 */
+#root *,
+#root *::before,
+#root *::after {
+  border-radius: 0 !important;
+}
+/* 한 번 클릭으로 언어 선택 */
+.header-actions .language-switch {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 0;
+  border: 1px solid #dce4ef;
+  background: #fff;
+}
+
+.header-actions .language-switch-button {
+  margin: 0;
+  padding: 10px 14px;
+  border: 0;
+  background: transparent;
+  color: #6d7f99;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.header-actions .language-switch-button + .language-switch-button {
+  border-left: 1px solid #dce4ef;
+}
+
+.header-actions .language-switch-button.is-active {
+  background: #eaf0ff;
+  color: #2864ff;
+}
+
+.header-actions .language-switch-button:hover {
+  background: #f1f5ff;
+}
+
+.header-actions .language-switch-button:focus-visible {
+  outline: 2px solid #2864ff;
+  outline-offset: -2px;
+}
+.header-actions .language-switch-button {
+  box-sizing: border-box;
+  width: 76px;
+  min-width: 76px;
+  flex: 0 0 76px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+/* 모든 센서 그래프의 하단 시간 표시 숨김 */
+.sensor .chart-bottom {
+  display: none;
+}
