@@ -120,78 +120,92 @@ const CHANNELS = [
 
 // 기존 그래프와 같은 구간별 최솟값·최댓값 방식.
 // 피크와 시간 좌표를 유지합니다.
+// 센서 파일별 채널 범위를 한 번 계산해 보관합니다.
+const sensorRangeCache = new WeakMap();
+
+function getSensorRanges(rows) {
+  if (sensorRangeCache.has(rows)) {
+    return sensorRangeCache.get(rows);
+  }
+
+  const ranges = CHANNELS.map((_, column) => {
+    let min = Infinity;
+    let max = -Infinity;
+
+    for (const row of rows) {
+      const value = row.values?.[column];
+      if (!Number.isFinite(value)) continue;
+
+      min = Math.min(min, value);
+      max = Math.max(max, value);
+    }
+
+    if (!Number.isFinite(min)) return null;
+
+    const padding = max > min
+      ? (max - min) * 0.05
+      : Math.max(Math.abs(min) * 0.05, 1);
+
+    return { min: min - padding, max: max + padding };
+  });
+
+  sensorRangeCache.set(rows, ranges);
+  return ranges;
+}
 export function toSensorChannels(
-    rows = [],
-    sensorStartMs = 0,
+  rows = [],
+  sensorStartMs = 0,
+  allRows = rows,
 ) {
+  const ranges = getSensorRanges(allRows);
+
   const step = Math.max(
-      1,
-      Math.ceil(rows.length / 250),
+    1,
+    Math.ceil(rows.length / 250),
   );
 
   return CHANNELS.map(
-      ([id, labelKey, subtitle], column) => {
-        const samples = [];
+    ([id, labelKey, subtitle], column) => {
+      const samples = [];
 
-        for (
-            let begin = 0;
-            begin < rows.length;
-            begin += step
-        ) {
-          const end = Math.min(
-              rows.length,
-              begin + step,
-          );
+      for (
+        let begin = 0;
+        begin < rows.length;
+        begin += step
+      ) {
+        const end = Math.min(rows.length, begin + step);
 
-          let low = begin;
-          let high = begin;
+        let low = begin;
+        let high = begin;
 
-          for (
-              let i = begin;
-              i < end;
-              i++
-          ) {
-            if (
-                rows[i].values[column] <
-                rows[low].values[column]
-            ) {
-              low = i;
-            }
-
-            if (
-                rows[i].values[column] >
-                rows[high].values[column]
-            ) {
-              high = i;
-            }
+        for (let i = begin; i < end; i++) {
+          if (rows[i].values[column] < rows[low].values[column]) {
+            low = i;
           }
 
-          for (const i of [
-            ...new Set([
-              low,
-              high,
-            ]),
-          ].sort(
-              (a, b) => a - b,
-          )) {
-            samples.push({
-              time:
-                  (rows[i].ms -
-                      sensorStartMs) /
-                  1000,
-
-              value:
-                  rows[i].values[column],
-            });
+          if (rows[i].values[column] > rows[high].values[column]) {
+            high = i;
           }
         }
 
-        return {
-          id,
-          labelKey,
-          subtitle,
-          samples,
-        };
-      },
+        const indices = [...new Set([low, high])]
+          .sort((a, b) => a - b);
+
+        for (const i of indices) {
+          samples.push({
+            time: (rows[i].ms - sensorStartMs) / 1000,
+            value: rows[i].values[column],
+          });
+        }
+      }
+
+      return {
+        id,
+        labelKey,
+        subtitle,
+        samples,
+        yRange: ranges[column],
+      };
+    },
   );
 }

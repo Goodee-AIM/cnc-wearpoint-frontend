@@ -28,13 +28,9 @@ export function SensorChart({
         : channel.label || channel.id;
 
     // 원시 파형을 유지하며 기존 그래프와 같은 최솟값·최댓값 범위로 표시합니다.
-    let min = Infinity;
-    let max = -Infinity;
-
-    for (const point of points) {
-        min = Math.min(min, point.value);
-        max = Math.max(max, point.value);
-    }
+    // 현재 5초 구간 대신 센서 파일 전체 범위를 사용합니다.
+const min = channel.yRange?.min ?? -1;
+const max = channel.yRange?.max ?? 1;
 
     const path = points
         .map(

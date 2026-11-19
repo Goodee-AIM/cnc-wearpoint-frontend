@@ -106,6 +106,7 @@ export default function ManualInputPage({ sets, onSelectSet }) {
   const mounted = useRef(true);
   const sessionSnapshot = useRef(null);
   const storageWarningShown = useRef(false);
+  const inputAlertDialog = useRef(null);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const choices = useMemo(() => {
     const grouped = new Set(groups.flatMap(group => group.item_ids));
@@ -277,7 +278,15 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
   };
   const upload = (event) => {
     event.preventDefault(); setError("");
-    if (!images.length || !sensors.length) { window.alert(t("manual.selectBoth")); return; }
+    if (!images.length || !sensors.length) {
+  const dialog = inputAlertDialog.current;
+
+  if (dialog && !dialog.open) {
+    dialog.showModal();
+  }
+
+  return;
+}
     if (images.length > 1000) { setError(t("manual.tooMany")); return; }
     const planned = planPairs(images, sensors);
     if (images.length === 1 && sensors.length === 1) savePairs(planned);
@@ -324,6 +333,30 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
       className="manual-upload card"
       aria-label={t("manual.aria", { name: getSetName("manual") })}
     >
+      <dialog
+  ref={inputAlertDialog}
+  className="manual-input-alert"
+  aria-labelledby="manual-input-alert-title"
+  aria-describedby="manual-input-alert-message"
+>
+  <h2 id="manual-input-alert-title">
+    {i18n.resolvedLanguage?.startsWith("en")
+      ? "Check your files"
+      : "입력 확인"}
+  </h2>
+
+  <p id="manual-input-alert-message">
+    {t("manual.selectBoth")}
+  </p>
+
+  <form method="dialog" className="manual-input-alert-actions">
+    <button type="submit" autoFocus>
+      {i18n.resolvedLanguage?.startsWith("en")
+        ? "OK"
+        : "확인"}
+    </button>
+  </form>
+</dialog>
       <h2>{t("manual.title")}</h2>
 
       <form onSubmit={upload}>
