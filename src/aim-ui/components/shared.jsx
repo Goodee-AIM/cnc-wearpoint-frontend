@@ -2,6 +2,7 @@ import { getSetName } from "../../utils/setDisplay.js";
 import { useEffect, useRef, useState } from "react";
 import { wearTypeKey } from "../../utils/wearAdvice.js";
 import { useTranslation } from "react-i18next";
+import RestartMonitoringButton from "./RestartMonitoringButton.jsx";
 
 
 export function Icon({ name }) {
@@ -71,6 +72,8 @@ export function Header({
 
         {page === "dashboard" ? (
           <>
+            <RestartMonitoringButton />
+
             <button
               type="button"
               className="alert-button"
@@ -81,15 +84,7 @@ export function Header({
               <span>{alertCount}</span>
             </button>
 
-            <button
-              type="button"
-              aria-expanded={historyOpen}
-              aria-controls="history-panel"
-              onClick={onHistory}
-            >
-              {t("header.currentAlerts")}{" "}
-              <span className="arrow">↗</span>
-            </button>
+
           </>
         ) : (
           <button type="button" onClick={onDashboard}>

@@ -3,7 +3,6 @@ import { getSetName } from "../../utils/setDisplay.js";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import RestartMonitoringButton from "../components/RestartMonitoringButton.jsx";
 import SensorCharts from "../components/SensorCharts";
 import {
   ImageCard,
@@ -27,14 +26,22 @@ export default function DashboardPage({
                                         onOpenManual,
                                         beforeContent,
                                       }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const status = measurement?.status || "pending";
 
 
   return (
       <>
-        <div className={preview ? "monitoring-layout monitoring-layout-preview" : "monitoring-layout"}>
+        <div
+  className={
+    preview
+      ? "monitoring-layout monitoring-layout-preview"
+      : selectedSet === "manual"
+        ? "monitoring-layout"
+        : "monitoring-layout monitoring-layout-standard"
+  }
+>
         {!preview && (
             <nav className="set-sidebar" aria-label={t("monitoring.setSelection")}>
               <h2 className="set-sidebar-heading">{t("monitoring.setSelection")}</h2>
@@ -71,20 +78,22 @@ export default function DashboardPage({
                 </span>
                 )}
               </h1>
+              {!preview && selectedSet !== "manual" && (
+  <p className="monitoring-playback-caption" role="status">
+    {playbackStatus === "completed"
+      ? (i18n.resolvedLanguage?.startsWith("en")
+          ? "Waiting for the next cycle"
+          : "다음 회차 대기")
+      : playbackStatus === "running"
+        ? t("monitoring.autoPlaying")
+        : t("monitoring.loadingServer")}
+  </p>
+)}
             </div>
 
             <div className="view-context">
               {beforeContent}
-              {!preview && selectedSet !== "manual" && <RestartMonitoringButton />}
-              {!preview && selectedSet !== "manual" && (
-                  <span>
-                {playbackStatus === "completed"
-                    ? t("monitoring.roundCompleted")
-                    : playbackStatus === "running"
-                        ? t("monitoring.autoPlaying")
-                        : t("monitoring.loadingServer")}
-              </span>
-              )}
+
 
               {preview && (
                   <button
