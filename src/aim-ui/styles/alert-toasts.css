@@ -15,7 +15,6 @@
   min-width: 0;
   padding: 16px 18px;
   border: 1px solid #e3e8f0;
-  border-left: 4px solid var(--toast-accent);
   border-radius: 0;
   background: var(--toast-tint);
   box-shadow: 0 5px 22px #20314b20;

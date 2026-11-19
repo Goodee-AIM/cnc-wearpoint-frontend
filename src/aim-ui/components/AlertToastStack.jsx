@@ -5,7 +5,8 @@ import { getSetName } from "../../utils/setDisplay.js";
 import { wearAdviceKey } from "../../utils/wearAdvice.js";
 import "../styles/alert-toasts.css";
 
-const DISPLAY_MS = 8000;
+// 토스트 알림 표시 시간
+const DISPLAY_MS = 3000;
 
 function AlertToast({ item, onClose, onOpenSet }) {
   const { t, i18n } = useTranslation();

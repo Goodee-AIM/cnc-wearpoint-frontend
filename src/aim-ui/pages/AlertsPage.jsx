@@ -220,31 +220,35 @@ export default function AlertsPage({
   })();
 
   const tableHeaders = [
-    {
-      key: "time",
-      label: t("alerts.tableTime"),
-    },
-    {
-      key: "set",
-      label: t("alerts.tableSet"),
-    },
-    {
-      key: "level",
-      label: t("alerts.tableLevel"),
-    },
-    {
-      key: "wear",
-      label: t("alerts.tableWear"),
-    },
-    {
-      key: "state",
-      label: t("alerts.tableState"),
-    },
-    {
-      key: "detail",
-      label: t("alerts.tableDetail"),
-    },
-  ];
+  {
+    key: "time",
+    label: t("alerts.tableTime"),
+  },
+  {
+    key: "set",
+    label: t("alerts.tableSet"),
+  },
+  {
+    key: "level",
+    label: t("alerts.tableLevel"),
+  },
+  {
+    key: "message",
+    label: i18n.resolvedLanguage?.startsWith("en")
+      ? "Alert message"
+      : "경고 메시지",
+  },
+  {
+    key: "wear",
+    label: i18n.resolvedLanguage?.startsWith("en")
+      ? "Wear amount"
+      : "마모량",
+  },
+  {
+    key: "state",
+    label: t("alerts.tableState"),
+  },
+];
 
   return (
       <main
@@ -660,110 +664,53 @@ export default function AlertsPage({
               </thead>
 
               <tbody>
-              {rows.map((row) => (
-                  <tr
-                    key={row.id}
-                    className={`alert-selectable-row ${
-                      row.id === selected?.id ? "selected" : ""
-                    }`}
-                    onClick={() => selectAlertAndScrollToTop(row.id)}
-                  >
-                    <td className="row-time">
-                      {date(
-                          row.occurredAt,
-                      )}{" "}
+  {rows.map((row) => (
+    <tr
+      key={row.id}
+      className={`alert-selectable-row ${
+        row.id === selected?.id ? "selected" : ""
+      }`}
+      onClick={() => selectAlertAndScrollToTop(row.id)}
+    >
+      <td className="row-time">
+        {date(row.occurredAt)}{" "}
+        <b>{time(row.occurredAt)}</b>
+      </td>
 
-                      <b>
-                        {time(
-                            row.occurredAt,
-                        )}
-                      </b>
-                    </td>
+      <td className="table-set">
+        {getSetName(row.setNumber)}
+      </td>
 
-                    <td className="table-set">
-                      {getSetName(row.setNumber)}
-                    </td>
+      <td>
+        <span className={`level-badge ${row.level}`}>
+          {t(`status.${row.level}`)}
+        </span>
+      </td>
 
-                    <td>
-                    <span
-                        className={
-                            "level-badge " +
-                            row.level
-                        }
-                    >
+      <td className="alert-message-cell">
+        {t(wearAdviceKey(row.level, row.wearType))}
+      </td>
 
-                      {t(
-                          `status.${row.level}`,
-                      )}
-                    </span>
-                    </td>
+      <td className="value-cell">
+        <b>{formatWear(row.judgedWear)}</b>
+        <small>μm</small>
+        <span>{wearBasis(row.basis)}</span>
+      </td>
 
-                    <td className="value-cell">
-                      <b>
-                        {formatWear(
-                            row.judgedWear,
-                        )}
-                      </b>
-
-                      <small>μm</small>
-
-                      <span>
-                      {wearBasis(
-                          row.basis,
-                      )}
-                    </span>
-                    </td>
-
-                    <td>
-                    <span
-                        className={
-                            "read-state" +
-                            (row.acknowledgedAt
-                                ? " read"
-                                : "")
-                        }
-                    >
-                      {row.acknowledgedAt
-                          ? t(
-                              "alerts.acknowledged",
-                          )
-                          : t(
-                              "alerts.unread",
-                          )}
-                    </span>
-                    </td>
-
-                    <td>
-                      <button
-                          className="row-select"
-                          aria-label={t(
-                              "alerts.selectAria",
-                              {
-                                setNumber: getSetName(row.setNumber),
-                                time: time(
-                                    row.occurredAt,
-                                ),
-                              },
-                          )}
-                          onClick={() =>
-                              selectAlertAndScrollToTop(
-                                  row.id,
-                              )
-                          }
-                      >
-                        {row.id ===
-                        selected?.id
-                            ? t(
-                                "alerts.selected",
-                            )
-                            : t(
-                                "alerts.select",
-                            )}
-                      </button>
-                    </td>
-                  </tr>
-              ))}
-              </tbody>
+      <td>
+        <span
+          className={`read-state ${
+            row.acknowledgedAt ? "read" : ""
+          }`}
+        >
+          {row.acknowledgedAt
+            ? t("alerts.acknowledged")
+            : t("alerts.unread")}
+        </span>
+      </td>
+    </tr>
+  ))}
+</tbody>
             </table>
 
             {!rows.length && (
