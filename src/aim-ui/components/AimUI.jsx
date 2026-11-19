@@ -9,7 +9,7 @@ import HistoryPopover from "./HistoryPopover";
 
 export default function AimUI({
   page, sets, selectedSet, onSelectSet, measurement, channels, cursorSeconds,
-  preview, onReturnLive, playbackStatus, dataMessage, alerts, latestAlerts,
+  preview, onReturnLive, playbackStatus, dataMessage, gatedPlayback, playbackPhase, inferenceState, alerts, latestAlerts,
   selectedAlertId, onSelectAlert, onNavigate, onGoMonitoring, onCurrentSet,
   onAcknowledge, onDismissAlert, onRestoreAlerts, acknowledgingId, history, toastSource,
 }) {
@@ -39,7 +39,7 @@ export default function AimUI({
         onDashboard={() => navigate("dashboard")} onAlerts={() => navigate("alerts")}
         onHistory={() => setHistoryOpen((open) => !open)} historyOpen={historyOpen} />
         <div hidden={page !== "dashboard" || !manualActive}>
-          <ManualInputPage sets={sets} onSelectSet={selectLiveSet} />
+          <ManualInputPage sets={sets} onSelectSet={selectLiveSet} active={page === "dashboard" && manualActive} />
         </div>
       {page === "dashboard" ? (
         <>
@@ -50,6 +50,7 @@ export default function AimUI({
                 sets, selectedSet, onSelectSet, measurement,
                 channels, cursorSeconds, preview, onReturnLive,
                 playbackStatus, dataMessage,
+                gatedPlayback, playbackPhase, inferenceState,
               }}
             />
           )}

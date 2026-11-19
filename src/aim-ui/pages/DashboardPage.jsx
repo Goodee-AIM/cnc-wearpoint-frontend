@@ -23,6 +23,9 @@ export default function DashboardPage({
                                         preview = false,
                                         onReturnLive,
                                         playbackStatus,
+                                        gatedPlayback = false,
+                                        playbackPhase,
+                                        inferenceState = "",
                                         onOpenManual,
                                         beforeContent,
                                       }) {
@@ -80,13 +83,25 @@ export default function DashboardPage({
               </h1>
               {!preview && selectedSet !== "manual" && (
   <p className="monitoring-playback-caption" role="status">
-    {playbackStatus === "completed"
-      ? (i18n.resolvedLanguage?.startsWith("en")
-          ? "Waiting for the next cycle"
-          : "다음 회차 대기")
-      : playbackStatus === "running"
-        ? t("monitoring.autoPlaying")
-        : t("monitoring.loadingServer")}
+    {gatedPlayback
+      ? (inferenceState === "failed"
+          ? (i18n.resolvedLanguage?.startsWith("en") ? "AI inference failed" : "AI 추론 실패")
+          : inferenceState
+            ? (i18n.resolvedLanguage?.startsWith("en") ? "Prediction status unavailable" : "추론 상태 조회 실패")
+            : playbackPhase === "playing"
+              ? (i18n.resolvedLanguage?.startsWith("en") ? "Playing · AI inference in progress" : "재생 중 · AI 추론 진행")
+              : playbackPhase === "waiting"
+                ? (i18n.resolvedLanguage?.startsWith("en") ? "Waiting for AI inference" : "AI 추론 완료 대기 중")
+                : playbackPhase === "showing"
+                  ? (i18n.resolvedLanguage?.startsWith("en") ? "Showing result · 3 seconds" : "추론 결과 표시 중 · 3초")
+                  : (i18n.resolvedLanguage?.startsWith("en") ? "Preparing" : "재생 준비 중"))
+      : playbackStatus === "completed"
+        ? (i18n.resolvedLanguage?.startsWith("en")
+            ? "Waiting for the next cycle"
+            : "다음 회차 대기")
+        : playbackStatus === "running"
+          ? t("monitoring.autoPlaying")
+          : t("monitoring.loadingServer")}
   </p>
 )}
             </div>
