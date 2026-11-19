@@ -58,7 +58,11 @@ export default function App() {
       selectedSet={dashboard.selectedSet}
       onSelectSet={dashboard.navigation.changeSet}
       measurement={measurement}
-      channels={toSensorChannels(monitoring.visibleRows, monitoring.sensorStartMs)}
+      channels={toSensorChannels(
+  monitoring.visibleRows,
+  monitoring.sensorStartMs,
+  dashboard.sensorSettings.sensorRows,
+)}
       cursorSeconds={monitoring.elapsedMs / 1000}
       preview={!dashboard.unifiedMode}
       onReturnLive={(setNumber) => dashboard.returnToMonitoring(setNumber)}

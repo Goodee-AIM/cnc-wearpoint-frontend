@@ -32,7 +32,21 @@ export default function DashboardPage({
   const { t, i18n } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const status = measurement?.status || "pending";
+  const english = i18n.resolvedLanguage?.startsWith("en");
 
+  const statusCriteria = {
+    normal: english
+      ? "Predicted wear < 150 μm · Normal"
+      : "예측 마모량 150μm 미만 · 정상",
+
+    warning: english
+      ? "150 μm ≤ Predicted wear < 200 μm · Warning"
+      : "예측 마모량 150μm 이상 ~ 200μm 미만 · 경고",
+
+    danger: english
+      ? "Predicted wear ≥ 200 μm · Danger"
+      : "예측 마모량 200μm 이상 · 위험",
+  }[status];
 
   return (
       <>
@@ -137,9 +151,17 @@ export default function DashboardPage({
           <section className="summary">
             <article className={"status-card status-" + status}>
               <div className="status-content">
-                <div className="status-kicker">
-                  {t("monitoring.currentWearStatus")}
-                </div>
+                <div className="wear-status-heading">
+  <div className="status-kicker">
+    {t("monitoring.currentWearStatus")}
+  </div>
+
+  {statusCriteria && (
+    <span className="wear-status-criteria">
+      {statusCriteria}
+    </span>
+  )}
+</div>
 
                 <div className="status-layout">
                 <span

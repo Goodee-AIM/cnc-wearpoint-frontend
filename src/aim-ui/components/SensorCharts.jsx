@@ -28,13 +28,9 @@ export function SensorChart({
         : channel.label || channel.id;
 
     // 원시 파형을 유지하며 기존 그래프와 같은 최솟값·최댓값 범위로 표시합니다.
-    let min = Infinity;
-    let max = -Infinity;
-
-    for (const point of points) {
-        min = Math.min(min, point.value);
-        max = Math.max(max, point.value);
-    }
+    // 현재 5초 구간 대신 센서 파일 전체 범위를 사용합니다.
+const min = channel.yRange?.min ?? -1;
+const max = channel.yRange?.max ?? 1;
 
     const path = points
         .map(
@@ -93,6 +89,31 @@ export function SensorChart({
                         d={path}
                     />
                 )}
+                {points.length > 0 &&
+  (channel.changeMarkers ?? [])
+    .filter(
+      (time) =>
+        Number.isFinite(time) &&
+        time >= start &&
+        time <= end,
+    )
+    .map((time) => {
+      const x = 28 + ((time - start) / 5) * 516;
+
+      return (
+        <line
+          key={time}
+          x1={x}
+          x2={x}
+          y1="20"
+          y2="150"
+          stroke="#ef2929"
+          strokeWidth="2"
+          vectorEffect="non-scaling-stroke"
+          pointerEvents="none"
+        />
+      );
+    })}
             </svg>
 
             {!points.length && (

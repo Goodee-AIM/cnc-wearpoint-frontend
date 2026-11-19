@@ -244,3 +244,55 @@
   background: #fff0c2;
   border-color: #cf9b25;
 }
+/* 파일 누락 안내창 */
+dialog.manual-input-alert {
+  box-sizing: border-box;
+  width: min(420px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  margin: auto;
+  padding: 24px;
+  overflow: auto;
+  border: 1px solid #dce4ef;
+  border-radius: 0;
+  background: #fff;
+  color: #20314b;
+  box-shadow: 0 12px 40px #20314b26;
+}
+
+dialog.manual-input-alert::backdrop {
+  background: rgb(15 23 42 / 35%);
+  backdrop-filter: none;
+}
+
+dialog.manual-input-alert h2 {
+  margin: 0 0 12px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+dialog.manual-input-alert p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+dialog.manual-input-alert .manual-input-alert-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin: 24px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+dialog.manual-input-alert .manual-input-alert-actions > button {
+  min-width: 88px;
+  min-height: 42px;
+  padding: 10px 20px;
+  border: 1px solid #0866e8;
+  border-radius: 0;
+  background: #0866e8;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}

@@ -1,6 +1,7 @@
 // 서버 공통 재생 상태와 선택 Set의 센서를 조회합니다. 브라우저는 서버가 정한 측정 위치를 표시합니다.
 import { useEffect, useMemo, useRef, useState } from "react";
 import { API_BASE } from "../dashboardConfig.js";
+import { loadCuttingMarkers } from "../utils/cuttingSegmentMarkers.js";
 import { parseSensor } from "../utils/csv.js";
 import { createSensorCache } from "../utils/sensorCache.js";
 import {
@@ -127,7 +128,8 @@ export default function useSharedMonitoring(enabled, selectedSet) {
         try {
           const response = await fetch(new URL(url, API_BASE), { signal: controller.signal });
           if (!response.ok) throw new Error(`센서 조회 실패: HTTP ${response.status}`);
-          return parseSensor(await response.text());
+          const rows = parseSensor(await response.text());
+          return await loadCuttingMarkers(rows, url, API_BASE, controller.signal);
         } finally {
           clearTimeout(timeout);
           signal.removeEventListener("abort", abort);

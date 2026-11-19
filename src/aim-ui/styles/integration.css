@@ -694,3 +694,101 @@ button.monitoring-restart-trigger:hover {
     grid-row: 4;
   }
 }
+/* 일반 Set: 상단 카드와 아래 이미지·그래프의 경계를 맞춥니다. */
+@media (min-width: 721px) {
+  .monitoring-layout-standard {
+    --image-column: 41%;
+    --card-gap: 22px;
+  }
+
+  .monitoring-layout-standard .workspace {
+    grid-template-columns:
+      var(--image-column) minmax(0, 1fr);
+    column-gap: var(--card-gap);
+  }
+
+  .monitoring-layout-standard .sensor-grid {
+    grid-template-columns:
+      minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: var(--card-gap);
+  }
+
+  .monitoring-layout-standard .summary {
+    grid-template-columns:
+      var(--image-column)
+      minmax(0, 1fr)
+      minmax(0, 1fr);
+    column-gap: var(--card-gap);
+  }
+
+  .monitoring-layout-standard .summary > * {
+    min-width: 0;
+  }
+}
+
+@media (min-width: 1600px) {
+  .monitoring-layout-standard {
+    --card-gap: 26px;
+  }
+}
+
+@media (min-width: 721px) and (max-width: 1100px) {
+  .monitoring-layout-standard {
+    --image-column: 40%;
+    --card-gap: 15px;
+  }
+}
+/* 현재 마모 상태와 설명을 카드 중앙에 배치 */
+.monitoring-layout-standard .summary .status-layout {
+  justify-content: center;
+}
+
+.monitoring-layout-standard .summary .status-texts {
+  width: fit-content;
+  margin-inline: auto;
+  text-align: center;
+}
+
+/* 예측 마모량과 마모 유형을 카드 중앙에 배치 */
+.monitoring-layout-standard .summary > .metric .metric-value {
+  width: 100%;
+  text-align: center;
+}
+/* 마모 유형 값을 가로 중앙에 배치 */
+.monitoring-layout-standard .summary > .metric.wear .wear-value {
+  width: 100%;
+  text-align: center;
+}
+
+/* 정상·경고·위험 상태 글자 확대 */
+.monitoring-layout-standard .summary .status-card h2 {
+  font-size: 80 px;
+}
+/* 상태 제목 왼쪽, 단계별 기준 오른쪽 */
+.summary .wear-status-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+}
+
+.summary .wear-status-heading .status-kicker {
+  flex-shrink: 0;
+}
+
+.summary .wear-status-criteria {
+  margin-left: auto;
+  color: #69788d;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  text-align: right;
+}
+
+@media (max-width: 1100px) {
+  .summary .wear-status-heading {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
