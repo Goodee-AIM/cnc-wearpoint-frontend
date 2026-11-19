@@ -10,6 +10,7 @@ import { toSensorChannels } from "../adapters.js";
 import ManualFilePicker from "../components/ManualFilePicker.jsx";
 import DashboardPage from "./DashboardPage.jsx";
 import ManualControlIcon from "../components/ManualControlIcon.jsx";
+import AutoPredictionButton from "../components/AutoPredictionButton.jsx";
 
 const base64 = (file) => new Promise((resolve, reject) => {
   const reader = new FileReader();
@@ -98,6 +99,8 @@ export default function ManualInputPage({ sets, onSelectSet }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [progress, setProgress] = useState("");
+  const [autoBusy, setAutoBusy] = useState(false);
+  const [autoResult, setAutoResult] = useState(null);
 
   const cache = useRef(new Map());
   const mounted = useRef(true);
@@ -211,7 +214,22 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
   return () => clearInterval(timer);
 }, [rows, busy, completed, totalDuration]);
 
+  const resetAutoPreview = () => {
+    setAutoResult(null);
+  };
+  // AI results update only the wear summary; playback keeps its original image,
+  // sensor channels and moving cursor.
+  const showAutoResult = (payload) => {
+    setAutoResult({
+      predictedWear: payload.prediction.predicted_wear_um,
+      wearType: payload.prediction.predicted_type,
+      wearTypeLabel: payload.prediction.predicted_type,
+      status: payload.prediction.status,
+      basis: "prediction",
+    });
+  };
   const select = (files, kind) => {
+    resetAutoPreview();
     const supported = kind === "image" ? imageFiles(files) : sensorFiles(files);
     (kind === "image" ? setImages : setSensors)(supported);
     setPairs(null); setError(supported.length ? "" : t("manual.unsupported")); setProgress("");
@@ -270,9 +288,11 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
   const measurement = {
     image: selected ? { url: new URL(selected.image_url, API_BASE).href, filename: selected.image_name, sensorTime: visible.at(-1)?.time } : null,
     predictedWear: selected?.predicted_wear ?? null, status: "pending", wearTypeLabel: null,
+    // Never replace the playback image or sensor stream with prediction data.
+    ...(autoResult ?? {}),
   };
   const clearScreen = () => {
-    if (busy) return;
+    if (busy || autoBusy) return;
       sessionSnapshot.current = null;
 
   try {
@@ -286,6 +306,7 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
     return;
   }
 
+    resetAutoPreview();
     setSelectedKey("");
     setItems([]);
     setGroups([]);
@@ -310,7 +331,7 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
           label={t("image.toolImage")}
           accept="image/png,image/jpeg,image/webp"
           files={images}
-          disabled={busy}
+          disabled={busy || autoBusy}
           onChange={files => select(files, "image")}
         />
 
@@ -318,14 +339,14 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
           label={t("manual.sensorCsv")}
           accept=".csv,text/csv"
           files={sensors}
-          disabled={busy}
+          disabled={busy || autoBusy}
           onChange={files => select(files, "sensor")}
         />
 
         <button
           className="manual-action manual-action-upload"
           type="submit"
-          disabled={busy}
+          disabled={busy || autoBusy}
         >
           <ManualControlIcon name="play" />
           {busy ? t("alerts.saving") : t("manual.upload")}
@@ -344,12 +365,19 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
         <button
           className="manual-action manual-action-reset"
           type="button"
-          disabled={busy}
+          disabled={busy || autoBusy}
           onClick={clearScreen}
         >
           {playbackText.clear}
         </button>
       </form>
+      <AutoPredictionButton
+        images={images}
+        sensors={sensors}
+        disabled={busy}
+        onBusyChange={setAutoBusy}
+        onResult={showAutoResult}
+      />
 
       <div className="manual-upload-feedback">
         {error && <p role="alert">{error}</p>}
