@@ -89,6 +89,31 @@ const max = channel.yRange?.max ?? 1;
                         d={path}
                     />
                 )}
+                {points.length > 0 &&
+  (channel.changeMarkers ?? [])
+    .filter(
+      (time) =>
+        Number.isFinite(time) &&
+        time >= start &&
+        time <= end,
+    )
+    .map((time) => {
+      const x = 28 + ((time - start) / 5) * 516;
+
+      return (
+        <line
+          key={time}
+          x1={x}
+          x2={x}
+          y1="20"
+          y2="150"
+          stroke="#ef2929"
+          strokeWidth="2"
+          vectorEffect="non-scaling-stroke"
+          pointerEvents="none"
+        />
+      );
+    })}
             </svg>
 
             {!points.length && (

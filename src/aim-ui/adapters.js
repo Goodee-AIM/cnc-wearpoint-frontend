@@ -1,3 +1,4 @@
+import { getCuttingMarkers } from "../utils/cuttingSegmentMarkers.js";
 // UI 번역은 React 컴포넌트에서 처리합니다.
 // adapter에서는 언어에 종속되지 않는 코드만 전달합니다.
 
@@ -152,12 +153,24 @@ function getSensorRanges(rows) {
   sensorRangeCache.set(rows, ranges);
   return ranges;
 }
+// 파일별·채널별 변화 지점을 계산해 보관합니다.
+function getWaveformMarkers(rows) {
+  const origin = rows[0]?.ms ?? 0;
+  const common = getCuttingMarkers(rows).map(
+    (seconds) => origin + seconds * 1000,
+  );
+  return CHANNELS.map(() => common);
+}
+
+
+
 export function toSensorChannels(
   rows = [],
   sensorStartMs = 0,
   allRows = rows,
 ) {
   const ranges = getSensorRanges(allRows);
+  const markers = getWaveformMarkers(allRows);
 
   const step = Math.max(
     1,
@@ -173,17 +186,26 @@ export function toSensorChannels(
         begin < rows.length;
         begin += step
       ) {
-        const end = Math.min(rows.length, begin + step);
+        const end = Math.min(
+          rows.length,
+          begin + step,
+        );
 
         let low = begin;
         let high = begin;
 
         for (let i = begin; i < end; i++) {
-          if (rows[i].values[column] < rows[low].values[column]) {
+          if (
+            rows[i].values[column] <
+            rows[low].values[column]
+          ) {
             low = i;
           }
 
-          if (rows[i].values[column] > rows[high].values[column]) {
+          if (
+            rows[i].values[column] >
+            rows[high].values[column]
+          ) {
             high = i;
           }
         }
@@ -193,7 +215,8 @@ export function toSensorChannels(
 
         for (const i of indices) {
           samples.push({
-            time: (rows[i].ms - sensorStartMs) / 1000,
+            time:
+              (rows[i].ms - sensorStartMs) / 1000,
             value: rows[i].values[column],
           });
         }
@@ -205,6 +228,9 @@ export function toSensorChannels(
         subtitle,
         samples,
         yRange: ranges[column],
+        changeMarkers: markers[column].map(
+          (ms) => (ms - sensorStartMs) / 1000,
+        ),
       };
     },
   );
