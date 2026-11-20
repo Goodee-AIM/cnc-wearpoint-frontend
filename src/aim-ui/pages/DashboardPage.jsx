@@ -225,11 +225,10 @@ export default function DashboardPage({
                 legend
             />
           </section>
-          {selectedSet === "manual" && beforeContent}
+                    {selectedSet === "manual" && beforeContent}
 
-<Footer />
+          <Footer showRestart={selectedSet !== "manual" && !preview} />
 
-          <Footer />
         </main>
         </div>
         </div>

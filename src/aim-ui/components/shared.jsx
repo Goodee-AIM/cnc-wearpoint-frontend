@@ -72,7 +72,7 @@ export function Header({
 
         {page === "dashboard" ? (
           <>
-            <RestartMonitoringButton />
+
 
             <button
               type="button"
@@ -112,16 +112,21 @@ export function Header({
     </header>
   );
 }
-export function Footer({ page = "dashboard" }) {
+export function Footer({
+  page = "dashboard",
+  showRestart = true,
+}) {
   return (
-      <footer>
+    <footer className="monitoring-footer">
       <span>
-        <span className="footer-logo">
-          AIM
-        </span>{" "}
+        <span className="footer-logo">AIM</span>{" "}
         CNC WearPoint | (팀장)구민석, 강지인, 김정훈, 신상석, 오성일
       </span>
-      </footer>
+
+      {page === "dashboard" && showRestart && (
+        <RestartMonitoringButton />
+      )}
+    </footer>
   );
 }
 

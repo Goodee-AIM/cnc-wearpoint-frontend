@@ -855,7 +855,7 @@ button.monitoring-restart-trigger:hover {
 }
 /* 현재 마모 상태: 정상·경고·위험 */
 .monitoring-layout-standard .summary .status-card h2 {
-  font-size: 72 px;
+  font-size: 50px;
 }
 
 /* 상태 아래 설명: 마모 상태 양호 등 */
@@ -865,7 +865,7 @@ button.monitoring-restart-trigger:hover {
 
 /* 예측 마모량 숫자 */
 .monitoring-layout-standard .summary > .metric .metric-value {
-  font-size: 70px;
+  font-size: 45px;
 }
 
 /* 예측값이 없을 때: 예측 결과 없음 */
@@ -875,7 +875,7 @@ button.monitoring-restart-trigger:hover {
 
 /* 마모 유형: 플랭크 마모 등 */
 .monitoring-layout-standard .summary > .metric.wear .wear-value {
-  font-size: 50px;
+  font-size: 40px;
 }
 @media (min-width: 721px) {
   /* 공구 ID 박스를 이미지·그래프 하단선에 맞춤 */
@@ -1403,4 +1403,22 @@ dialog[data-set-test-popup="true"] .manual-action-upload {
   grid-column: 1 / -1 !important;
   justify-self: end !important;
   margin: 0 !important;
+}
+/* 분석 시작 버튼: 이미지·그래프 아래 오른쪽 */
+.monitoring-footer > button.monitoring-restart-trigger {
+  flex-shrink: 0;
+  margin-left: auto;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 16px;
+  gap: 8px;
+
+  background: #fff;
+  border-radius: 0;
+  font-size: 14px;
+  box-shadow: none;
+}
+
+.monitoring-footer > button.monitoring-restart-trigger:hover {
+  background: #f8faff;
 }
