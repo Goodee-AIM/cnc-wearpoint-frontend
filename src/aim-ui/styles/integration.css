@@ -962,3 +962,229 @@ button.monitoring-restart-trigger:hover {
     margin-bottom: 0;
   }
 }
+/* 예측·유형 카드: 제목 아래 값 표시 영역을 동일하게 정렬 */
+.monitoring-layout-standard .summary > .metric {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  align-content: stretch;
+}
+
+.monitoring-layout-standard .summary > .metric .metric-title {
+  margin: 0 0 12px;
+}
+
+.monitoring-layout-standard .summary > .metric .metric-value,
+.monitoring-layout-standard .summary > .metric.wear .wear-value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  text-align: center;
+  line-height: 1.3;
+}
+
+/* 결과가 없는 두 문구의 글자 크기·색상 통일 */
+.monitoring-layout-standard .summary > .metric .metric-value .missing-value,
+.monitoring-layout-standard .summary > .metric.wear .wear-value.missing-value {
+  color: #69788d;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+/* 예측 마모량·마모 유형 제목을 좌측 상단으로 정렬 */
+.monitoring-layout-standard .summary > .metric .metric-title {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+
+  justify-self: stretch;
+  align-self: start;
+
+  width: 100%;
+  margin: 0 0 12px;
+  padding: 0;
+  text-align: left;
+}
+/* 제목 위치를 카드의 왼쪽 위에 고정 */
+.monitoring-layout-standard .summary > .metric {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  padding-top: 48px;
+}
+
+.monitoring-layout-standard .summary > .metric .metric-title {
+  position: absolute !important;
+  top: 20px !important;
+  left: 20px !important;
+  right: 20px !important;
+  bottom: auto !important;
+
+  display: block !important;
+  width: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  text-align: left !important;
+}
+
+/* 결과 값은 제목 아래 영역 중앙에 유지 */
+.monitoring-layout-standard .summary > .metric .metric-value,
+.monitoring-layout-standard .summary > .metric.wear .wear-value {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  width: 100%;
+  min-width: 0;
+}
+/* Set test 입력 패널: 이미지·그래프 아래에 배치 */
+.monitoring-layout-manual .manual-bottom-controls {
+  min-width: 0;
+  width: 100%;
+}
+
+.monitoring-layout-manual
+.manual-bottom-controls > .manual-upload {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+/* 입력 패널 안의 안내 문구는 패널 내부에 표시 */
+.monitoring-layout-manual
+.manual-bottom-controls > .manual-upload
+.manual-upload-feedback {
+  position: static;
+  width: auto;
+  max-height: none;
+  margin-top: 12px;
+}
+
+@media (min-width: 721px) {
+  .monitoring-layout.monitoring-layout-manual {
+    grid-template-rows: 86px 70px auto auto auto;
+  }
+
+  .monitoring-layout-manual .manual-bottom-controls {
+    grid-column: 2;
+    grid-row: 4;
+  }
+
+  .monitoring-layout.monitoring-layout-manual footer {
+    grid-column: 1 / -1;
+    grid-row: 5;
+  }
+}
+/* Set test 제목 아래 파일 입력 버튼 */
+.monitoring-layout-manual .manual-file-input-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+  padding: 8px 16px;
+  border: 1px solid #dce4ef;
+  background: #fff;
+  color: #526783;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.monitoring-layout-manual .manual-file-input-trigger:hover {
+  background: #f1f5ff;
+  border-color: #b2c7ff;
+}
+
+.monitoring-layout-manual .manual-file-input-trigger:focus-visible {
+  outline: 2px solid #2864ff;
+  outline-offset: 2px;
+}
+
+/* 하단 입력 패널이 없으므로 푸터를 바로 다음 행에 배치 */
+@media (min-width: 721px) {
+  .monitoring-layout.monitoring-layout-manual {
+    grid-template-rows: 86px 70px auto auto;
+  }
+
+  .monitoring-layout.monitoring-layout-manual footer {
+    grid-row: 4;
+  }
+}
+/* 기존 파일 선택 버튼과 디자인 통일 */
+.monitoring-layout-manual .manual-file-input-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  min-height: 48px;
+  margin-top: 10px;
+  padding: 12px 18px;
+
+  border: 1px solid #efb331;
+  background: #fff;
+  color: #916000;
+
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.monitoring-layout-manual .manual-file-input-trigger svg {
+  width: 23px;
+  height: 23px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: #dc9600;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.monitoring-layout-manual .manual-file-input-trigger:hover {
+  border-color: #dc9600;
+  background: #fffbf2;
+}
+
+.monitoring-layout-manual .manual-file-input-trigger:focus-visible {
+  outline: 2px solid #dc9600;
+  outline-offset: 3px;
+}
+/* Set test 파일 입력 버튼 크기·위치 */
+.monitoring-layout-manual .manual-file-input-trigger {
+  width: 100px;       /* 버튼 너비 */
+  height: 40px;       /* 버튼 높이 */
+  min-height: 0;
+  padding: 0;
+  margin-top: 10px;  /* 제목과의 간격 */
+  margin-left: 0;
+
+  position: relative;
+  left: -18px;           /* 양수: 오른쪽 / 음수: 왼쪽 */
+  top: 3px;            /* 양수: 아래 / 음수: 위 */
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;   /* 글자 크기 */
+}
+
+.monitoring-layout-manual .manual-file-input-trigger svg {
+  width: 17px;      /* 아이콘 크기 */
+  height: 17px;
+}

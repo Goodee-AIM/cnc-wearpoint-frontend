@@ -255,9 +255,14 @@ export function WearTypeCard({
                 {t("prediction.wearType")}
             </div>
 
-            <div className="wear-value">
-                {displayLabel}
-            </div>
+            <div
+    className={
+        "wear-value" +
+        (!translatedType ? " missing-value" : "")
+    }
+>
+    {displayLabel}
+</div>
         </article>
     );
 }

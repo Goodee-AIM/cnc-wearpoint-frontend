@@ -52,12 +52,11 @@ export default function DashboardPage({
       <>
         <div
   className={
-    preview
-      ? "monitoring-layout monitoring-layout-preview"
-      : selectedSet === "manual"
-        ? "monitoring-layout"
-        : "monitoring-layout monitoring-layout-standard"
-  }
+  preview
+    ? "monitoring-layout monitoring-layout-preview"
+    : "monitoring-layout monitoring-layout-standard" +
+      (selectedSet === "manual" ? " monitoring-layout-manual" : "")
+}
 >
         {!preview && (
             <nav className="set-sidebar" aria-label={t("monitoring.setSelection")}>
@@ -78,7 +77,14 @@ export default function DashboardPage({
 
         <div className="monitoring-content">
         <main>
-          <div className={"page-heading" + (beforeContent ? " page-heading-with-input" : "")}>
+          <div
+  className={
+    "page-heading" +
+    (beforeContent && selectedSet !== "manual"
+      ? " page-heading-with-input"
+      : "")
+  }
+>
             <div>
               <h1>
                 {preview
@@ -118,10 +124,26 @@ export default function DashboardPage({
           : t("monitoring.loadingServer")}
   </p>
 )}
+            {selectedSet === "manual" && onOpenManual && (
+  <button
+  type="button"
+  className="manual-file-input-trigger"
+  onClick={onOpenManual}
+>
+  <svg
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+  >
+    <path d="M3 7V5a2 2 0 0 1 2-2h5l3 4h6a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z" />
+  </svg>
+
+  {english ? "File input" : "파일 입력"}
+</button>
+)}
             </div>
 
             <div className="view-context">
-              {beforeContent}
+              {selectedSet !== "manual" && beforeContent}
 
 
               {preview && (
@@ -200,6 +222,9 @@ export default function DashboardPage({
                 legend
             />
           </section>
+          {selectedSet === "manual" && beforeContent}
+
+<Footer />
 
           <Footer />
         </main>

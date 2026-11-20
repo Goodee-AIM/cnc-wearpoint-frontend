@@ -553,92 +553,7 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
     }
   };
 
-    const uploadPanel = (
-    <section
-      className="manual-upload card"
-      aria-label={t("manual.aria", { name: getSetName("manual") })}
-    >
-      <h2>{t("manual.title")}</h2>
 
-      <form onSubmit={upload}>
-        <ManualFilePicker
-          label={t("image.toolImage")}
-          accept="image/png,image/jpeg"
-          single
-          files={images}
-          disabled={busy || autoBusy}
-          onChange={files => select(files, "image")}
-        />
-
-        <ManualFilePicker
-          label={t("manual.sensorCsv")}
-          accept=".csv,text/csv"
-          single
-          files={sensors}
-          disabled={busy || autoBusy}
-          onChange={files => select(files, "sensor")}
-        />
-
-        <button
-          className="manual-action manual-action-upload"
-          type="submit"
-          disabled={busy || autoBusy}
-        >
-          <ManualControlIcon name="play" />
-          {busy ? t("alerts.saving") : t("manual.upload")}
-        </button>
-
-        <button
-          className="manual-action manual-action-replay"
-          type="button"
-          disabled={busy || autoBusy || !playlist.length}
-          onClick={replaySavedMeasurement}
-        >
-          <ManualControlIcon name="replay" />
-          {playbackText.replay}
-        </button>
-
-        <button
-          className="manual-action manual-action-reset"
-          type="button"
-          disabled={busy || autoBusy}
-          onClick={clearScreen}
-        >
-          {playbackText.clear}
-        </button>
-      </form>
-      {predictionModal && <div className="auto-inference-backdrop" role="presentation">
-        <section className="auto-inference-dialog" role="alertdialog" aria-modal="true" aria-label={predictionModal.title}>
-          <h3>{predictionModal.title}</h3>
-          <p>{predictionModal.message}</p>
-          {retryMeasurementId && <p className="auto-inference-record-id">Measurement ID: {retryMeasurementId}</p>}
-          <div className="auto-inference-dialog-actions">
-            {retryMeasurementId && <button type="button" onClick={retryPrediction} disabled={autoBusy}>
-              {autoBusy ? tr("재추론 중...", "Retrying...") : tr("재추론", "Retry inference")}
-            </button>}
-            <button type="button" disabled={autoBusy} onClick={() => setPredictionModal(null)}>
-              {tr("닫기", "Close")}
-            </button>
-          </div>
-        </section>
-      </div>}
-
-      <div className="manual-upload-feedback">
-        {error && <p role="alert">{error}</p>}
-        {progress && <p role="status">{progress}</p>}
-        {completed && <p role="status">{playbackText.done}</p>}
-
-        {playlist.length > 1 && (
-          <p role="status">
-            {t("manual.playingIndex", {
-              current: index + 1,
-              total: playlist.length,
-            })}
-          </p>
-        )}
-      </div>
-    </section>
-  );
 
   return (
     <DashboardPage
@@ -652,7 +567,45 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
       onOpenManual={openUploadDialog}
       beforeContent={
         <>
-          {!uploadOpen && uploadPanel}
+        {predictionModal && (
+  <div
+    className="auto-inference-backdrop"
+    role="presentation"
+  >
+    <section
+      className="auto-inference-dialog"
+      role="alertdialog"
+      aria-modal="true"
+      aria-label={predictionModal.title}
+    >
+      <h3>{predictionModal.title}</h3>
+      <p>{predictionModal.message}</p>
+
+      <div className="auto-inference-dialog-actions">
+        {retryMeasurementId && (
+          <button
+            type="button"
+            onClick={retryPrediction}
+            disabled={autoBusy}
+          >
+            {autoBusy
+              ? tr("재추론 중...", "Retrying...")
+              : tr("재추론", "Retry inference")}
+          </button>
+        )}
+
+        <button
+          type="button"
+          disabled={autoBusy}
+          onClick={() => setPredictionModal(null)}
+        >
+          {tr("닫기", "Close")}
+        </button>
+      </div>
+    </section>
+  </div>
+)}
+
           <dialog
             ref={uploadDialog}
             aria-label={t("manual.title")}
@@ -726,6 +679,24 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
                     <ManualControlIcon name="play" />
                     {busy ? t("alerts.saving") : t("manual.upload")}
                   </button>
+                  <button
+  className="manual-action manual-action-replay"
+  type="button"
+  disabled={busy || autoBusy || !playlist.length}
+  onClick={replaySavedMeasurement}
+>
+  <ManualControlIcon name="replay" />
+  {playbackText.replay}
+</button>
+
+<button
+  className="manual-action manual-action-reset"
+  type="button"
+  disabled={busy || autoBusy}
+  onClick={clearScreen}
+>
+  {playbackText.clear}
+</button>
                 </form>
                 <div className="manual-upload-feedback">
                   {error && <p role="alert">{error}</p>}
