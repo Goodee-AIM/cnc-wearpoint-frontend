@@ -792,3 +792,173 @@ button.monitoring-restart-trigger:hover {
     gap: 8px;
   }
 }
+.sensor {
+  position: relative;
+}
+
+
+.sensor .cutting-area-tooltip {
+  position: absolute;
+  top: 54px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+
+  padding: 6px 10px;
+  background: #fff;
+  color: #24344f;
+  border: 1px solid #404040;
+  border-radius: 0;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
+
+  white-space: nowrap;
+  box-shadow: none;
+  pointer-events: none;
+}
+/* 카드 사이 간격 */
+@media (min-width: 721px) {
+  .monitoring-layout.monitoring-layout-standard {
+    --card-gap: 12px;
+
+    /* 상단 마모 카드와 아래 이미지·그래프 사이 */
+    row-gap: 12px;
+  }
+
+  /* 이미지 카드와 그래프 영역 사이 */
+  .monitoring-layout-standard .workspace {
+    column-gap: var(--card-gap);
+  }
+
+  /* 그래프 카드끼리의 가로·세로 간격 */
+  .monitoring-layout-standard .sensor-grid {
+    gap: var(--card-gap);
+  }
+
+  /* 상단 마모 카드끼리의 간격 */
+  .monitoring-layout-standard .summary {
+    column-gap: var(--card-gap);
+  }
+
+  /* 그래프 카드 안쪽 여백 */
+  .monitoring-layout-standard .sensor {
+    padding: 16px;
+  }
+
+  /* 그래프 제목 영역의 아래 여백 */
+  .monitoring-layout-standard .sensor-heading {
+    margin-bottom: 6px;
+  }
+}
+/* 현재 마모 상태: 정상·경고·위험 */
+.monitoring-layout-standard .summary .status-card h2 {
+  font-size: 72 px;
+}
+
+/* 상태 아래 설명: 마모 상태 양호 등 */
+.monitoring-layout-standard .summary .status-caption {
+  font-size: 13px;
+}
+
+/* 예측 마모량 숫자 */
+.monitoring-layout-standard .summary > .metric .metric-value {
+  font-size: 70px;
+}
+
+/* 예측값이 없을 때: 예측 결과 없음 */
+.monitoring-layout-standard .summary > .metric .metric-value .missing-value {
+  font-size: 28px;
+}
+
+/* 마모 유형: 플랭크 마모 등 */
+.monitoring-layout-standard .summary > .metric.wear .wear-value {
+  font-size: 50px;
+}
+@media (min-width: 721px) {
+  /* 공구 ID 박스를 이미지·그래프 하단선에 맞춤 */
+  .monitoring-layout.monitoring-layout-standard > .set-sidebar {
+    grid-row: 2 / 4;
+    align-self: stretch;
+    height: auto;
+    min-height: 0;
+    box-sizing: border-box;
+    padding-bottom: 16px;
+  }
+
+  /* 목록이 박스를 밀어내지 않도록 버튼 높이 조정 */
+  .monitoring-layout.monitoring-layout-standard > .set-sidebar .tab {
+    height: 56px;
+    min-height: 0;
+    flex: 0 0 56px;
+    padding: 0 16px;
+    box-sizing: border-box;
+  }
+}
+@media (min-width: 721px) {
+  .monitoring-layout.monitoring-layout-standard > .set-sidebar {
+    grid-column: 1;
+    grid-row: 2 / 4;
+    align-self: stretch;
+
+    /* 버튼 목록이 전체 그리드 높이를 밀어내지 않도록 설정 */
+    contain: size;
+    height: auto;
+    min-height: 0;
+    box-sizing: border-box;
+
+    display: grid;
+    grid-template-rows: auto repeat(9, minmax(0, 1fr));
+    gap: 8px;
+    padding: 16px;
+  }
+
+  .monitoring-layout.monitoring-layout-standard
+    > .set-sidebar .set-sidebar-heading {
+    margin: 0 0 4px;
+  }
+
+  .monitoring-layout.monitoring-layout-standard
+    > .set-sidebar .tab {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    height: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 0 16px;
+    box-sizing: border-box;
+  }
+}
+@media (min-width: 721px) {
+  /* 기존 그리드 영역을 유지하면서 카드 높이만 축소 */
+  .monitoring-layout.monitoring-layout-standard .summary {
+    align-self: stretch;
+    align-items: start;
+  }
+
+  .monitoring-layout.monitoring-layout-standard .summary > article {
+    height: 150px;
+    min-height: 0;
+    box-sizing: border-box;
+    padding: 16px 20px;
+  }
+
+  /* 카드 내부 여백 축소 */
+  .monitoring-layout-standard .summary .status-kicker {
+    margin-bottom: 10px;
+  }
+
+  .monitoring-layout-standard .summary > .metric .metric-title {
+    margin-bottom: 12px;
+  }
+
+  .monitoring-layout-standard .summary > .metric .metric-value,
+  .monitoring-layout-standard .summary > .metric.wear .wear-value {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+}
