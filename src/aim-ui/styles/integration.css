@@ -1422,3 +1422,39 @@ dialog[data-set-test-popup="true"] .manual-action-upload {
 .monitoring-footer > button.monitoring-restart-trigger:hover {
   background: #f8faff;
 }
+/* 하단 오른쪽 버튼의 위치와 크기 통일 */
+.monitoring-footer > button.monitoring-restart-trigger,
+.monitoring-footer > button.manual-file-input-trigger {
+  position: static;
+  left: auto;
+  top: auto;
+  transform: none;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 120px;
+
+  width: 120px;
+  min-width: 120px;
+  height: 44px;
+  min-height: 44px;
+  box-sizing: border-box;
+
+  margin: 0 0 0 auto;
+  padding: 0 12px;
+  gap: 8px;
+
+  border-radius: 0;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.monitoring-footer > button.manual-file-input-trigger svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+}

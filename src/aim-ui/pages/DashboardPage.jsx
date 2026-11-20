@@ -127,22 +127,7 @@ export default function DashboardPage({
           : t("monitoring.loadingServer")}
   </p>
 )}
-            {selectedSet === "manual" && onOpenManual && (
-  <button
-  type="button"
-  className="manual-file-input-trigger"
-  onClick={onOpenManual}
->
-  <svg
-    viewBox="0 0 24 24"
-    aria-hidden="true"
-  >
-    <path d="M3 7V5a2 2 0 0 1 2-2h5l3 4h6a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z" />
-  </svg>
 
-  {english ? "File input" : "파일 입력"}
-</button>
-)}
             </div>
 
             <div className="view-context">
@@ -227,7 +212,21 @@ export default function DashboardPage({
           </section>
                     {selectedSet === "manual" && beforeContent}
 
-          <Footer showRestart={selectedSet !== "manual" && !preview} />
+          <Footer showRestart={selectedSet !== "manual" && !preview}>
+  {selectedSet === "manual" && !preview && onOpenManual && (
+    <button
+      type="button"
+      className="manual-file-input-trigger"
+      onClick={onOpenManual}
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3 7V5a2 2 0 0 1 2-2h5l3 4h6a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z" />
+      </svg>
+
+      {english ? "File input" : "파일 입력"}
+    </button>
+  )}
+</Footer>
 
         </main>
         </div>

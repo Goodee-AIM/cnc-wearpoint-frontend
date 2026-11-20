@@ -115,6 +115,7 @@ export function Header({
 export function Footer({
   page = "dashboard",
   showRestart = true,
+  children,
 }) {
   return (
     <footer className="monitoring-footer">
@@ -126,6 +127,8 @@ export function Footer({
       {page === "dashboard" && showRestart && (
         <RestartMonitoringButton />
       )}
+
+      {children}
     </footer>
   );
 }
