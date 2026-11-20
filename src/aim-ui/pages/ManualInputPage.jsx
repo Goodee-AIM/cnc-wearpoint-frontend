@@ -96,6 +96,8 @@ export default function ManualInputPage({ sets, onSelectSet, active = false }) {
   const [predictionModal, setPredictionModal] = useState(null);
   const [retryMeasurementId, setRetryMeasurementId] = useState(null);
   const currentRequest = useRef(0);
+  // Bumped by resetSession; an upload that started earlier must stop.
+  const sessionEpoch = useRef(0);
   const currentMeasurementId = useRef(null);
   const uploadDialog = useRef(null);
   const blobUrls = useRef(new Set());
@@ -473,10 +475,14 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
       setError(tr("PNG 또는 JPEG 이미지만 선택할 수 있습니다.", "Choose a PNG or JPEG image.")); return;
     }
     setBusy(true); setError(""); setProgress(tr("파일 검증 중...", "Validating files..."));
+    const epoch = sessionEpoch.current;
+    const stale = () => !mounted.current || epoch !== sessionEpoch.current;
     let record;
     try {
       const bitmap = await createImageBitmap(image); bitmap.close();
-      const parsed = parseSensor(await sensor.text());
+      const text = await sensor.text();
+      if (stale()) return;
+      const parsed = parseSensor(text);
       if (parsed.length < 2 || parsed.at(-1).ms <= parsed[0].ms) throw new Error(t("manual.timeRows"));
       const duration = Math.max(1, parsed.at(-1).ms - parsed[0].ms);
       const imageUrl = URL.createObjectURL(image);
@@ -507,11 +513,17 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
         ...record, image_url: "", sensor_url: ""
       } }); }
       catch { setError(tr("브라우저 파일 복구 캐시를 저장할 수 없습니다. 새로고침 후 재생이 유지되지 않을 수 있습니다.", "Browser replay cache unavailable. Playback may not survive refresh.")); }
+      if (stale()) {
+        // Left Set Test while caching: drop the just-saved replay cache too.
+        clearBrowserSession().catch(() => {});
+        return;
+      }
     } catch (err) {
+      if (stale()) return;
       setError(err instanceof Error ? err.message : t("manual.uploadFailed"));
       setProgress(""); setBusy(false); return;
     }
-    if (!mounted.current) return;
+    if (stale()) return;
     uploadDialog.current?.close();
     setBusy(false);
     setAutoBusy(true);
@@ -536,8 +548,11 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
     // Never replace the playback image or sensor stream with prediction data.
     ...(autoResult ?? {}),
   };
-  const clearScreen = () => {
-    if (busy || autoBusy) return;
+  // Clears playback (image + CSV graph), pending/in-flight results and the
+  // browser replay cache. `force` is used when leaving Set Test mid-run.
+  const resetSession = ({ force = false } = {}) => {
+    if (!force && (busy || autoBusy)) return;
+    sessionEpoch.current += 1;
       sessionSnapshot.current = null;
 
   try {
@@ -569,7 +584,18 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
     setError("");
     setProgress("");
     cache.current.clear();
+    if (force) { setBusy(false); setAutoBusy(false); }
   };
+  const clearScreen = () => resetSession();
+  // Leaving Set Test (Set 1..8, alerts, history) discards the running test:
+  // image, CSV graph and any in-flight inference result are reset.
+  const wasActive = useRef(active);
+  const resetSessionRef = useRef(resetSession);
+  useLayoutEffect(() => { resetSessionRef.current = resetSession; });
+  useEffect(() => {
+    if (wasActive.current && !active) resetSessionRef.current({ force: true });
+    wasActive.current = active;
+  }, [active]);
   const openUploadDialog = () => {
     if (busy || autoBusy) return;
     const dialog = uploadDialog.current;
@@ -696,6 +722,40 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
             }}
           >
             <style>{`
+              dialog[data-set-test-popup="true"] {
+                outline: none;
+                position: fixed;
+              }
+              dialog[data-set-test-popup="true"]::backdrop {
+                background: #ffffff;
+                backdrop-filter: none;
+              }
+              dialog[data-set-test-popup="true"] .set-test-popup-close {
+                position: absolute;
+                z-index: 2;
+                top: 12px;
+                right: 12px;
+                width: 32px;
+                height: 32px;
+                display: grid;
+                place-items: center;
+                padding: 0;
+                border: none;
+                border-radius: 8px;
+                background: transparent;
+                color: #69788d;
+                font-size: 22px;
+                line-height: 1;
+                cursor: pointer;
+              }
+              dialog[data-set-test-popup="true"] .set-test-popup-close:hover {
+                background: #eef2f7;
+                color: #182332;
+              }
+              dialog[data-set-test-popup="true"] .set-test-popup-close:disabled {
+                opacity: .4;
+                cursor: not-allowed;
+              }
               dialog[data-set-test-popup="true"] .manual-upload .manual-picker {
                 border-right: none;
                 padding-right: 0;
@@ -703,6 +763,16 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
                 width: 100%;
               }
             `}</style>
+            <button
+              type="button"
+              className="set-test-popup-close"
+              aria-label={tr("닫기", "Close")}
+              title={tr("닫기", "Close")}
+              disabled={busy || autoBusy}
+              onClick={() => uploadDialog.current?.close()}
+            >
+              ×
+            </button>
             {uploadOpen && (
               <section
                 className="manual-upload card"
