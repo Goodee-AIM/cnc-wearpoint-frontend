@@ -2,7 +2,7 @@ import { getSetName } from "../../utils/setDisplay.js";
 import "../styles/manual-upload.css";
 import i18n from "../../i18n/index.js";
 import { useTranslation } from "react-i18next";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useLayoutEffect } from "react";
 import { API_BASE } from "../../dashboardConfig.js";
 import { parseSensor } from "../../utils/csv.js";
 import { imageFiles, sensorFiles, playlistPosition } from "../../utils/manualPlaylist.js";
@@ -71,6 +71,8 @@ function readTestSession() {
     return empty;
   }
 }
+const PREDICTION_TIMEOUT_MS = 200_000;
+
 export default function ManualInputPage({ sets, onSelectSet, active = false }) {
   const { t } = useTranslation();
   const [restored] = useState(readTestSession);
@@ -94,6 +96,8 @@ export default function ManualInputPage({ sets, onSelectSet, active = false }) {
   const [predictionModal, setPredictionModal] = useState(null);
   const [retryMeasurementId, setRetryMeasurementId] = useState(null);
   const currentRequest = useRef(0);
+  // Bumped by resetSession; an upload that started earlier must stop.
+  const sessionEpoch = useRef(0);
   const currentMeasurementId = useRef(null);
   const uploadDialog = useRef(null);
   const blobUrls = useRef(new Set());
@@ -116,10 +120,13 @@ export default function ManualInputPage({ sets, onSelectSet, active = false }) {
   }, []);
   // Open only when Set Test becomes active. Closing the dialog does not
   // reactivate it until Set Test is selected again or onOpenManual is clicked.
+  // Never auto-open over a running/pending analysis: the modal dialog would
+  // hide the result, and picking a file there discards the in-flight result.
+  const sessionInProgress = useRef(false);
   useEffect(() => {
     const dialog = uploadDialog.current;
     if (!dialog) return;
-    if (active && !dialog.open) {
+    if (active && !dialog.open && !sessionInProgress.current) {
       dialog.showModal();
       setUploadOpen(true);
     } else if (!active && dialog.open) {
@@ -229,6 +236,10 @@ export default function ManualInputPage({ sets, onSelectSet, active = false }) {
   0,
 );
 const completed = totalDuration > 0 && position >= totalDuration;
+  const hasSessionInProgress = autoBusy || Boolean(pendingResult) || Boolean(predictionModal)
+    || (playlist.length > 0 && !completed);
+  // Layout effects run before the passive auto-open effect above.
+  useLayoutEffect(() => { sessionInProgress.current = hasSessionInProgress; }, [hasSessionInProgress]);
 
 const { index, elapsed } = completed
   ? {
@@ -266,7 +277,9 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
     return () => controller.abort();
   }, [sensorKey]);
   useEffect(() => {
-  if (!rows.length || busy || completed || !totalDuration) return;
+  // Pause while the upload popup is open; closing it resumes from the same
+  // position (the timer only adds time elapsed while it is running).
+  if (!rows.length || busy || uploadOpen || completed || !totalDuration) return;
 
   let previous = performance.now();
 
@@ -279,7 +292,7 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
   }, 80);
 
   return () => clearInterval(timer);
-}, [rows, busy, completed, totalDuration]);
+}, [rows, busy, uploadOpen, completed, totalDuration]);
 
   const resetAutoPreview = () => {
     setAutoResult(null);
@@ -309,11 +322,18 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
   }, [autoResult, english]);
 
   async function predict(path, options) {
+    // Backend waits up to 180 s for Serving; never leave the UI hanging longer.
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), PREDICTION_TIMEOUT_MS);
     let response;
     try {
-      response = await fetch(new URL(path, API_BASE), { credentials: "same-origin", ...options });
+      response = await fetch(new URL(path, API_BASE), {
+        credentials: "same-origin", ...options, signal: controller.signal,
+      });
     } catch {
-      throw { status: 0, detail: null };
+      throw { status: controller.signal.aborted ? "timeout" : 0, detail: null };
+    } finally {
+      clearTimeout(timer);
     }
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) throw { status: response.status, detail: payload.detail };
@@ -328,7 +348,17 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
       409: tr("이미 처리 중이거나 완료된 요청입니다.", "Already processing or completed."),
       502: tr("AI 분석에 실패했습니다. 저장된 데이터로 재추론할 수 있습니다.", "Inference failed. Retry from saved files."),
       503: tr("AI 분석 서비스를 사용할 수 없습니다.", "Prediction service unavailable."),
+      504: tr("AI 분석 응답 시간이 초과되었습니다. 서버에서는 분석이 끝났을 수 있으니 잠시 후 다시 업로드해 주세요.", "Prediction timed out. The server may still have finished; upload again shortly."),
+      timeout: tr("AI 분석 응답 시간이 초과되었습니다. 서버에서는 분석이 끝났을 수 있으니 잠시 후 다시 업로드해 주세요.", "Prediction timed out. The server may still have finished; upload again shortly."),
+      0: tr("서버에 연결할 수 없습니다. 네트워크 상태를 확인해 주세요.", "Cannot reach the server. Check your network."),
     };
+    // 422: upload validation (string detail) or Serving rejection
+    // ({code: "INPUT_REJECTED", message}) — show the server's concrete reason.
+    const detail = failure?.detail;
+    const reason = failure?.status === 422
+      ? (typeof detail === "string" ? detail : detail?.message)
+      : null;
+    if (typeof reason === "string" && reason.trim()) messages[422] = reason;
     const id = Number(failure?.detail?.measurement_id);
     const eligible = failure?.status === 502 && Number.isSafeInteger(id) && id > 0;
     setRetryMeasurementId(eligible ? id : null);
@@ -447,10 +477,14 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
       setError(tr("PNG 또는 JPEG 이미지만 선택할 수 있습니다.", "Choose a PNG or JPEG image.")); return;
     }
     setBusy(true); setError(""); setProgress(tr("파일 검증 중...", "Validating files..."));
+    const epoch = sessionEpoch.current;
+    const stale = () => !mounted.current || epoch !== sessionEpoch.current;
     let record;
     try {
       const bitmap = await createImageBitmap(image); bitmap.close();
-      const parsed = parseSensor(await sensor.text());
+      const text = await sensor.text();
+      if (stale()) return;
+      const parsed = parseSensor(text);
       if (parsed.length < 2 || parsed.at(-1).ms <= parsed[0].ms) throw new Error(t("manual.timeRows"));
       const duration = Math.max(1, parsed.at(-1).ms - parsed[0].ms);
       const imageUrl = URL.createObjectURL(image);
@@ -481,11 +515,17 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
         ...record, image_url: "", sensor_url: ""
       } }); }
       catch { setError(tr("브라우저 파일 복구 캐시를 저장할 수 없습니다. 새로고침 후 재생이 유지되지 않을 수 있습니다.", "Browser replay cache unavailable. Playback may not survive refresh.")); }
+      if (stale()) {
+        // Left Set Test while caching: drop the just-saved replay cache too.
+        clearBrowserSession().catch(() => {});
+        return;
+      }
     } catch (err) {
+      if (stale()) return;
       setError(err instanceof Error ? err.message : t("manual.uploadFailed"));
       setProgress(""); setBusy(false); return;
     }
-    if (!mounted.current) return;
+    if (stale()) return;
     uploadDialog.current?.close();
     setBusy(false);
     setAutoBusy(true);
@@ -510,8 +550,11 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
     // Never replace the playback image or sensor stream with prediction data.
     ...(autoResult ?? {}),
   };
-  const clearScreen = () => {
-    if (busy || autoBusy) return;
+  // Clears playback (image + CSV graph), pending/in-flight results and the
+  // browser replay cache. `force` is used when leaving Set Test mid-run.
+  const resetSession = ({ force = false } = {}) => {
+    if (!force && (busy || autoBusy)) return;
+    sessionEpoch.current += 1;
       sessionSnapshot.current = null;
 
   try {
@@ -543,7 +586,18 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
     setError("");
     setProgress("");
     cache.current.clear();
+    if (force) { setBusy(false); setAutoBusy(false); }
   };
+  const clearScreen = () => resetSession();
+  // Leaving Set Test (Set 1..8, alerts, history) discards the running test:
+  // image, CSV graph and any in-flight inference result are reset.
+  const wasActive = useRef(active);
+  const resetSessionRef = useRef(resetSession);
+  useLayoutEffect(() => { resetSessionRef.current = resetSession; });
+  useEffect(() => {
+    if (wasActive.current && !active) resetSessionRef.current({ force: true });
+    wasActive.current = active;
+  }, [active]);
   const openUploadDialog = () => {
     if (busy || autoBusy) return;
     const dialog = uploadDialog.current;
@@ -621,6 +675,36 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
             }}
           >
             <style>{`
+              dialog[data-set-test-popup="true"] {
+                outline: none;
+                position: fixed;
+              }
+              dialog[data-set-test-popup="true"] .set-test-popup-close {
+                position: absolute;
+                z-index: 2;
+                top: 12px;
+                right: 12px;
+                width: 32px;
+                height: 32px;
+                display: grid;
+                place-items: center;
+                padding: 0;
+                border: none;
+                border-radius: 8px;
+                background: transparent;
+                color: #69788d;
+                font-size: 22px;
+                line-height: 1;
+                cursor: pointer;
+              }
+              dialog[data-set-test-popup="true"] .set-test-popup-close:hover {
+                background: #eef2f7;
+                color: #182332;
+              }
+              dialog[data-set-test-popup="true"] .set-test-popup-close:disabled {
+                opacity: .4;
+                cursor: not-allowed;
+              }
               dialog[data-set-test-popup="true"] .manual-upload .manual-picker {
                 border-right: none;
                 padding-right: 0;
@@ -628,6 +712,16 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
                 width: 100%;
               }
             `}</style>
+            <button
+              type="button"
+              className="set-test-popup-close"
+              aria-label={tr("닫기", "Close")}
+              title={tr("닫기", "Close")}
+              disabled={busy || autoBusy}
+              onClick={() => uploadDialog.current?.close()}
+            >
+              ×
+            </button>
             {uploadOpen && (
               <section
                 className="manual-upload card"
