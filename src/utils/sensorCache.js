@@ -2,11 +2,15 @@
 // Set 전환은 요청을 취소하지 않습니다. 모니터링 종료/언마운트 때만 모두 정리합니다.
 export function createSensorCache({ load, onChange = () => {}, capacity = 12 }) {
   const entries = new Map();
+  // Keys for files on screen right now (every Set's current measurement).
+  // Never evicted: evicting the selected Set's rows mid-playback left the
+  // charts on "센서 데이터 대기" until the next measurement started.
+  let pinned = new Set();
   let closed = false;
   function trim() {
     for (const [key, entry] of entries) {
       if (entries.size <= capacity) break;
-      if (entry.status !== "loading") entries.delete(key);
+      if (entry.status !== "loading" && !pinned.has(key)) entries.delete(key);
     }
   }
   return {
@@ -14,6 +18,9 @@ export function createSensorCache({ load, onChange = () => {}, capacity = 12 }) 
       const entry = entries.get(key);
       if (entry) { entries.delete(key); entries.set(key, entry); }
       return entry;
+    },
+    pin(keys) {
+      pinned = new Set(keys);
     },
     read(key, url) {
       if (closed) return Promise.resolve(null);

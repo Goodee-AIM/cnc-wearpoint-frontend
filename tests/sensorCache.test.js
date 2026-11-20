@@ -45,3 +45,20 @@ test('bounded cache evicts older completed data while preserving recently viewed
   await cache.read('c', '/c');
   assert(cache.peek('a')); assert(cache.peek('c')); assert.equal(cache.peek('b'), undefined); cache.close();
 });
+
+test('pinned current-measurement files survive eviction while other Sets advance', async () => {
+  let visible = new Map();
+  const cache = createSensorCache({ capacity: 12, onChange: (m) => { visible = m; }, load: async (url) => [url] });
+  const key = (set, n) => `session:${set}:m${n}`;
+  await cache.read(key(4, 1), '/set4/m1');
+  // Regression: without pinning, 12 newer files evicted the selected Set's rows.
+  cache.pin([key(4, 1)]);
+  for (let round = 1; round <= 3; round++) {
+    for (const set of [5, 6, 7, 8, 9, 10, 11]) await cache.read(key(set, round), `/set${set}/m${round}`);
+  }
+  assert.equal(visible.get(key(4, 1))?.status, 'ready');
+  assert.equal(cache.peek(key(4, 1)).status, 'ready');
+  // Unpinned older files are still bounded by capacity (pinned ones excepted).
+  assert(visible.size <= 13);
+  cache.close();
+});

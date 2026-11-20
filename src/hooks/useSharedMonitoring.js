@@ -133,16 +133,23 @@ export default function useSharedMonitoring(enabled, selectedSet) {
         const abort = () => controller.abort();
         signal.addEventListener("abort", abort, { once: true });
         if (signal.aborted) abort();
-        const timeout = setTimeout(abort, 15000);
+        // ~9 MB CSV: allow slow links; a timeout restarts the whole download.
+        const timeout = setTimeout(abort, 30000);
+        let rows;
         try {
           const response = await fetch(new URL(url, API_BASE), { signal: controller.signal });
           if (!response.ok) throw new Error(`센서 조회 실패: HTTP ${response.status}`);
-          const rows = parseSensor(await response.text());
-          return await loadCuttingMarkers(rows, url, API_BASE, controller.signal);
+          rows = parseSensor(await response.text());
         } finally {
           clearTimeout(timeout);
           signal.removeEventListener("abort", abort);
         }
+        // Cutting-segment markers are decoration: never hold the waveform back
+        // for them (that request alone may take up to 10 s). Re-render when ready.
+        void loadCuttingMarkers(rows, url, API_BASE, signal).then(() => {
+          if (!signal.aborted) setSensors((previous) => new Map(previous));
+        });
+        return rows;
       },
     });
     sensorCache.current = cache;
@@ -150,6 +157,9 @@ export default function useSharedMonitoring(enabled, selectedSet) {
   }, [enabled]);
 
   // 선택 Set은 즉시 요청합니다. 클릭으로 다른 Set에 갔다 와도 같은 요청을 공유합니다.
+  // selectedMissing re-runs this when the rows vanish from the cache for any
+  // reason, so the charts recover instead of waiting for the next measurement.
+  const selectedMissing = Boolean(enabled && sensorUrl && !sensors.has(sensorKey));
   useEffect(() => {
     if (!enabled || !sensorUrl) return;
     const cache = sensorCache.current;
@@ -164,13 +174,19 @@ export default function useSharedMonitoring(enabled, selectedSet) {
     }
     void loadSelected();
     return () => { disposed = true; clearTimeout(timer); };
-  }, [enabled, sensorKey, sensorUrl]);
+  }, [enabled, sensorKey, sensorUrl, selectedMissing]);
 
   // 다른 Set의 현재 파일은 한 번에 하나씩 미리 읽어 API/브라우저 부하를 제한합니다.
   // 재생 위치는 캐시와 별도로 서버 elapsed_ms를 따릅니다.
   const currentSensors = JSON.stringify(Object.entries(sets)
     .filter(([, item]) => item.playback_mode === "sensor" && item.sensor_url)
     .map(([set, item]) => [JSON.stringify([sessionId, Number(set), item.sensor_url]), item.sensor_url]));
+  useEffect(() => {
+    if (!enabled) return;
+    const cache = sensorCache.current;
+    if (!cache) return;
+    cache.pin([...JSON.parse(currentSensors).map(([key]) => key), sensorKey]);
+  }, [enabled, currentSensors, sensorKey]);
   useEffect(() => {
     if (!enabled) return;
     const cache = sensorCache.current;
