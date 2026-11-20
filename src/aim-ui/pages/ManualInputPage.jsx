@@ -2,7 +2,7 @@ import { getSetName } from "../../utils/setDisplay.js";
 import "../styles/manual-upload.css";
 import i18n from "../../i18n/index.js";
 import { useTranslation } from "react-i18next";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useLayoutEffect } from "react";
 import { API_BASE } from "../../dashboardConfig.js";
 import { parseSensor } from "../../utils/csv.js";
 import { imageFiles, sensorFiles, playlistPosition } from "../../utils/manualPlaylist.js";
@@ -71,6 +71,8 @@ function readTestSession() {
     return empty;
   }
 }
+const PREDICTION_TIMEOUT_MS = 200_000;
+
 export default function ManualInputPage({ sets, onSelectSet, active = false }) {
   const { t } = useTranslation();
   const [restored] = useState(readTestSession);
@@ -116,10 +118,13 @@ export default function ManualInputPage({ sets, onSelectSet, active = false }) {
   }, []);
   // Open only when Set Test becomes active. Closing the dialog does not
   // reactivate it until Set Test is selected again or onOpenManual is clicked.
+  // Never auto-open over a running/pending analysis: the modal dialog would
+  // hide the result, and picking a file there discards the in-flight result.
+  const sessionInProgress = useRef(false);
   useEffect(() => {
     const dialog = uploadDialog.current;
     if (!dialog) return;
-    if (active && !dialog.open) {
+    if (active && !dialog.open && !sessionInProgress.current) {
       dialog.showModal();
       setUploadOpen(true);
     } else if (!active && dialog.open) {
@@ -229,6 +234,10 @@ export default function ManualInputPage({ sets, onSelectSet, active = false }) {
   0,
 );
 const completed = totalDuration > 0 && position >= totalDuration;
+  const hasSessionInProgress = autoBusy || Boolean(pendingResult) || Boolean(predictionModal)
+    || (playlist.length > 0 && !completed);
+  // Layout effects run before the passive auto-open effect above.
+  useLayoutEffect(() => { sessionInProgress.current = hasSessionInProgress; }, [hasSessionInProgress]);
 
 const { index, elapsed } = completed
   ? {
@@ -309,11 +318,18 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
   }, [autoResult, english]);
 
   async function predict(path, options) {
+    // Backend waits up to 180 s for Serving; never leave the UI hanging longer.
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), PREDICTION_TIMEOUT_MS);
     let response;
     try {
-      response = await fetch(new URL(path, API_BASE), { credentials: "same-origin", ...options });
+      response = await fetch(new URL(path, API_BASE), {
+        credentials: "same-origin", ...options, signal: controller.signal,
+      });
     } catch {
-      throw { status: 0, detail: null };
+      throw { status: controller.signal.aborted ? "timeout" : 0, detail: null };
+    } finally {
+      clearTimeout(timer);
     }
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) throw { status: response.status, detail: payload.detail };
@@ -328,7 +344,17 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
       409: tr("이미 처리 중이거나 완료된 요청입니다.", "Already processing or completed."),
       502: tr("AI 분석에 실패했습니다. 저장된 데이터로 재추론할 수 있습니다.", "Inference failed. Retry from saved files."),
       503: tr("AI 분석 서비스를 사용할 수 없습니다.", "Prediction service unavailable."),
+      504: tr("AI 분석 응답 시간이 초과되었습니다. 서버에서는 분석이 끝났을 수 있으니 잠시 후 다시 업로드해 주세요.", "Prediction timed out. The server may still have finished; upload again shortly."),
+      timeout: tr("AI 분석 응답 시간이 초과되었습니다. 서버에서는 분석이 끝났을 수 있으니 잠시 후 다시 업로드해 주세요.", "Prediction timed out. The server may still have finished; upload again shortly."),
+      0: tr("서버에 연결할 수 없습니다. 네트워크 상태를 확인해 주세요.", "Cannot reach the server. Check your network."),
     };
+    // 422: upload validation (string detail) or Serving rejection
+    // ({code: "INPUT_REJECTED", message}) — show the server's concrete reason.
+    const detail = failure?.detail;
+    const reason = failure?.status === 422
+      ? (typeof detail === "string" ? detail : detail?.message)
+      : null;
+    if (typeof reason === "string" && reason.trim()) messages[422] = reason;
     const id = Number(failure?.detail?.measurement_id);
     const eligible = failure?.status === 502 && Number.isSafeInteger(id) && id > 0;
     setRetryMeasurementId(eligible ? id : null);
@@ -607,21 +633,6 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
           {playbackText.clear}
         </button>
       </form>
-      {predictionModal && <div className="auto-inference-backdrop" role="presentation">
-        <section className="auto-inference-dialog" role="alertdialog" aria-modal="true" aria-label={predictionModal.title}>
-          <h3>{predictionModal.title}</h3>
-          <p>{predictionModal.message}</p>
-          {retryMeasurementId && <p className="auto-inference-record-id">Measurement ID: {retryMeasurementId}</p>}
-          <div className="auto-inference-dialog-actions">
-            {retryMeasurementId && <button type="button" onClick={retryPrediction} disabled={autoBusy}>
-              {autoBusy ? tr("재추론 중...", "Retrying...") : tr("재추론", "Retry inference")}
-            </button>}
-            <button type="button" disabled={autoBusy} onClick={() => setPredictionModal(null)}>
-              {tr("닫기", "Close")}
-            </button>
-          </div>
-        </section>
-      </div>}
 
       <div className="manual-upload-feedback">
         {error && <p role="alert">{error}</p>}
@@ -653,6 +664,23 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
       beforeContent={
         <>
           {!uploadOpen && uploadPanel}
+          {predictionModal && (
+            <div className="auto-inference-backdrop" role="presentation">
+            <section className="auto-inference-dialog" role="alertdialog" aria-modal="true" aria-label={predictionModal.title}>
+              <h3>{predictionModal.title}</h3>
+              <p>{predictionModal.message}</p>
+              {retryMeasurementId && <p className="auto-inference-record-id">Measurement ID: {retryMeasurementId}</p>}
+              <div className="auto-inference-dialog-actions">
+                {retryMeasurementId && <button type="button" onClick={retryPrediction} disabled={autoBusy}>
+                  {autoBusy ? tr("재추론 중...", "Retrying...") : tr("재추론", "Retry inference")}
+                </button>}
+                <button type="button" disabled={autoBusy} onClick={() => setPredictionModal(null)}>
+                  {tr("닫기", "Close")}
+                </button>
+              </div>
+            </section>
+            </div>
+          )}
           <dialog
             ref={uploadDialog}
             aria-label={t("manual.title")}

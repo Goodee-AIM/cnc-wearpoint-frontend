@@ -15,7 +15,16 @@ function parseProblem(status, detail, english, retryRequest = false) {
     409: ["이미 분석 중이거나 완료된 데이터입니다. 중복 추론을 실행하지 않습니다.", "Already processing or completed. Duplicate inference is blocked."],
     502: ["AI 분석에 실패했습니다. 저장된 파일로 다시 추론할 수 있습니다.", "AI inference failed. You can retry with saved files."],
     503: ["AI 분석 서비스를 일시적으로 이용할 수 없습니다. 관리자에게 문의해 주세요.", "AI inference is temporarily unavailable. Contact the administrator."],
+    504: ["AI 분석 응답 시간이 초과되었습니다. 서버에서는 분석이 끝났을 수 있으니 잠시 후 다시 시도해 주세요.", "Prediction timed out. The server may still have finished; try again shortly."],
+    timeout: ["AI 분석 응답 시간이 초과되었습니다. 서버에서는 분석이 끝났을 수 있으니 잠시 후 다시 시도해 주세요.", "Prediction timed out. The server may still have finished; try again shortly."],
+    0: ["서버에 연결할 수 없습니다. 네트워크 상태를 확인해 주세요.", "Cannot reach the server. Check your network."],
   };
+  // 422: upload validation (string detail) or Serving rejection
+  // ({code: "INPUT_REJECTED", message}) — show the server's concrete reason.
+  if (status === 422) {
+    const reason = typeof detail === "string" ? detail : detail?.message;
+    if (typeof reason === "string" && reason.trim()) return reason;
+  }
   return messages[status]?.[english ? 1 : 0] ||
     (typeof detail === "string" ? detail : (typeof detail?.message === "string" ? detail.message :
       (english ? "The request failed. Please try again." : "요청에 실패했습니다. 다시 시도해 주세요.")));
@@ -23,12 +32,19 @@ function parseProblem(status, detail, english, retryRequest = false) {
 
 const urlFor = (path) => new URL(path, API_BASE).href;
 
+// Backend waits up to 180 s for Serving; never leave the UI hanging longer.
+const PREDICTION_TIMEOUT_MS = 200_000;
+
 async function callPrediction(path, options) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), PREDICTION_TIMEOUT_MS);
   let response;
   try {
-    response = await fetch(urlFor(path), { credentials: "same-origin", ...options });
+    response = await fetch(urlFor(path), { credentials: "same-origin", ...options, signal: controller.signal });
   } catch {
-    throw { status: 0, detail: null };
+    throw { status: controller.signal.aborted ? "timeout" : 0, detail: null };
+  } finally {
+    clearTimeout(timer);
   }
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) throw { status: response.status, detail: payload.detail };

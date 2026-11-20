@@ -72,7 +72,7 @@ export default function App() {
       playbackPhase={playback?.playback_phase}
       inferenceState={monitoring.inferenceError ? 'unavailable'
         : (playback?.playback_phase === 'showing' && ['failed', 'cancelled'].includes(matchingRun?.status)
-          ? 'failed' : '')}
+          ? (matchingRun?.error_code === 'INPUT_REJECTED' ? 'input_rejected' : 'failed') : '')}
       alerts={alerts}
       latestAlerts={latestAlerts}
       toastSource={toastSource}

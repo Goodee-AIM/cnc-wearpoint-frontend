@@ -98,7 +98,9 @@ export default function DashboardPage({
               {!preview && selectedSet !== "manual" && (
   <p className="monitoring-playback-caption" role="status">
     {gatedPlayback
-      ? (inferenceState === "failed"
+      ? (inferenceState === "input_rejected"
+          ? (i18n.resolvedLanguage?.startsWith("en") ? "AI inference failed · input data rejected by the model" : "AI 추론 실패 · 모델이 입력 데이터를 처리할 수 없음")
+        : inferenceState === "failed"
           ? (i18n.resolvedLanguage?.startsWith("en") ? "AI inference failed" : "AI 추론 실패")
           : inferenceState
             ? (i18n.resolvedLanguage?.startsWith("en") ? "Prediction status unavailable" : "추론 상태 조회 실패")

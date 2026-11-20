@@ -29,6 +29,10 @@ export default function useSharedMonitoring(enabled, selectedSet) {
     let disposed = false;
     let pending = false;
     let inferenceSerial = 0;
+    // Highest request serial whose response has been applied. A response is
+    // dropped only if a NEWER one was already applied — a slow response is
+    // still shown instead of being discarded because another request started.
+    let appliedInferenceSerial = 0;
     let timer;
     let controller;
 
@@ -54,18 +58,23 @@ export default function useSharedMonitoring(enabled, selectedSet) {
         if (state.gated_playback) {
           void readMonitoringJson(API_BASE, "/api/monitoring/inference/current", controller.signal)
             .then((data) => {
-              if (!disposed && serial === inferenceSerial) {
+              if (!disposed && serial > appliedInferenceSerial) {
+                appliedInferenceSerial = serial;
                 setInferenceRuns(Array.isArray(data?.runs) ? data.runs : []);
                 setInferenceError("");
               }
             })
             .catch((error) => {
-              if (!disposed && serial === inferenceSerial) {
+              // Report a failure only if it is the latest request; an older
+              // failure must not wipe a newer successful result.
+              if (!disposed && serial === inferenceSerial && serial > appliedInferenceSerial) {
+                appliedInferenceSerial = serial;
                 setInferenceRuns([]);
                 setInferenceError(error.message);
               }
             });
         } else {
+          appliedInferenceSerial = serial;
           setInferenceRuns([]);
           setInferenceError("");
         }
