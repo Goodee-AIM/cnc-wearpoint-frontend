@@ -19,6 +19,8 @@ export default function useSharedMonitoring(enabled, selectedSet) {
   const [message, setMessage] = useState("공통 재생 상태 조회 중...");
   const [clock, setClock] = useState(0);
   const [sensors, setSensors] = useState(() => new Map());
+  const [inferenceRuns, setInferenceRuns] = useState([]);
+  const [inferenceError, setInferenceError] = useState("");
   const sensorCache = useRef(null);
 
   // 활성화 시 바로 조회하고, 비활성화·언마운트 시 요청/타이머/이벤트를 모두 정리합니다.
@@ -26,6 +28,7 @@ export default function useSharedMonitoring(enabled, selectedSet) {
     if (!enabled) return;
     let disposed = false;
     let pending = false;
+    let inferenceSerial = 0;
     let timer;
     let controller;
 
@@ -46,6 +49,26 @@ export default function useSharedMonitoring(enabled, selectedSet) {
         setClock(receivedAt);
         setConnected(true);
         setMessage("");
+        const serial = ++inferenceSerial;
+        // Never make images/sensor replay wait for the inference status GET.
+        if (state.gated_playback) {
+          void readMonitoringJson(API_BASE, "/api/monitoring/inference/current", controller.signal)
+            .then((data) => {
+              if (!disposed && serial === inferenceSerial) {
+                setInferenceRuns(Array.isArray(data?.runs) ? data.runs : []);
+                setInferenceError("");
+              }
+            })
+            .catch((error) => {
+              if (!disposed && serial === inferenceSerial) {
+                setInferenceRuns([]);
+                setInferenceError(error.message);
+              }
+            });
+        } else {
+          setInferenceRuns([]);
+          setInferenceError("");
+        }
       } catch (error) {
         if (!disposed) {
           setConnected(false);
@@ -67,6 +90,7 @@ export default function useSharedMonitoring(enabled, selectedSet) {
     document.addEventListener("visibilitychange", resumeVisibleTab);
     return () => {
       disposed = true;
+      inferenceSerial += 1;
       clearTimeout(timer);
       controller?.abort();
       document.removeEventListener("visibilitychange", resumeVisibleTab);
@@ -179,5 +203,7 @@ export default function useSharedMonitoring(enabled, selectedSet) {
     message,
     sets,
     entries,
+    inferenceRuns,
+    inferenceError,
   };
 }

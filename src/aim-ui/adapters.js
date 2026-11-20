@@ -61,6 +61,9 @@ export function toAlert(record) {
         record,
         record.image,
     ),
+    wearType: record.source === "예측 마모량"
+        ? (record.prediction?.type ?? record.label?.type ?? null)
+        : (record.label?.type ?? null),
 
     basis:
         record.source === "예측 마모량"

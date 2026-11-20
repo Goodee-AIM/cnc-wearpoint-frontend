@@ -26,9 +26,10 @@ export function createLiveAlertDetector() {
             !record.image?.name || !Number.isFinite(wear) || wear < 0 ||
             !["normal", "warning", "danger"].includes(level)) continue;
         const key = JSON.stringify([
-          record.sessionId ?? current?.session_id ?? "local", restartNumber,
+          record.sessionId ?? current?.session_id ?? "local",
+          record.playbackGeneration ?? restartNumber,
           record.cycleNumber ?? current?.cycle_number ?? 0,
-          record.set, record.image.name, record.source, level,
+          record.set, record.image.name, record.runId ?? null, record.source, level,
         ]);
         if (level === "normal" || seen.has(key)) continue;
         seen.set(key, true);
@@ -38,7 +39,8 @@ export function createLiveAlertDetector() {
           set_number: record.set,
           level,
           judged_wear_um: wear,
-          original_type: record.set >= 10 ? record.prediction?.type ?? null : record.label?.type ?? null,
+          original_type: (record.source === "예측 마모량" || record.set >= 10)
+            ? record.prediction?.type ?? null : record.label?.type ?? null,
           created_at: now.toISOString(),
           detail_confirmed_at: null,
         } });

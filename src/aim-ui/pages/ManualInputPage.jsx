@@ -5,27 +5,15 @@ import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { API_BASE } from "../../dashboardConfig.js";
 import { parseSensor } from "../../utils/csv.js";
-import { imageFiles, sensorFiles, filePath, planPairs, playlistPosition } from "../../utils/manualPlaylist.js";
+import { imageFiles, sensorFiles, playlistPosition } from "../../utils/manualPlaylist.js";
 import { toSensorChannels } from "../adapters.js";
 import ManualFilePicker from "../components/ManualFilePicker.jsx";
 import DashboardPage from "./DashboardPage.jsx";
 import ManualControlIcon from "../components/ManualControlIcon.jsx";
-import AutoPredictionButton from "../components/AutoPredictionButton.jsx";
+import { loadBrowserSession, saveBrowserSession, saveBrowserPrediction, clearBrowserSession } from "../../utils/manualBrowserStore.js";
+import { replayMeasurementId, matchesManualReplay } from "../../utils/manualReplayGuard.js";
+import "../styles/auto-prediction-dialog.css";
 
-const base64 = (file) => new Promise((resolve, reject) => {
-  const reader = new FileReader();
-  reader.onload = () => resolve(String(reader.result).split(",")[1]);
-  reader.onerror = () => reject(new Error(i18n.t("manual.readFailed")));
-  reader.readAsDataURL(file);
-});
-async function request(path, options = {}) {
-  const response = await fetch(new URL(path, API_BASE), options);
-  if (!response.ok) {
-    const data = await response.json().catch(() => ({}));
-    throw new Error(typeof data.detail === "string" ? data.detail : `${i18n.t("manual.requestFailed")} (${response.status})`);
-  }
-  return response.json();
-}
 const TEST_STORAGE_KEY = `aim-test-session:v1:${API_BASE}`;
 
 function readTestSession() {
@@ -43,6 +31,7 @@ function readTestSession() {
       !records.length ||
       records.length > 1000 ||
       records.some(item =>
+        item?.kind === "browser" ||
         !item ||
         typeof item.id !== "string" ||
         typeof item.image_url !== "string" ||
@@ -82,13 +71,12 @@ function readTestSession() {
     return empty;
   }
 }
-export default function ManualInputPage({ sets, onSelectSet }) {
+export default function ManualInputPage({ sets, onSelectSet, active = false }) {
   const { t } = useTranslation();
   const [restored] = useState(readTestSession);
 
   const [images, setImages] = useState([]);
   const [sensors, setSensors] = useState([]);
-  const [pairs, setPairs] = useState(null);
 
   const [items, setItems] = useState(restored.items);
   const [groups, setGroups] = useState(restored.groups);
@@ -97,24 +85,99 @@ export default function ManualInputPage({ sets, onSelectSet }) {
   const [loaded, setLoaded] = useState({ key: "", rows: [] });
   const [position, setPosition] = useState(restored.position);
   const [busy, setBusy] = useState(false);
+  const [uploadOpen, setUploadOpen] = useState(false);
   const [error, setError] = useState("");
   const [progress, setProgress] = useState("");
   const [autoBusy, setAutoBusy] = useState(false);
   const [autoResult, setAutoResult] = useState(null);
+  const [pendingResult, setPendingResult] = useState(null);
+  const [predictionModal, setPredictionModal] = useState(null);
+  const [retryMeasurementId, setRetryMeasurementId] = useState(null);
+  const currentRequest = useRef(0);
+  const currentMeasurementId = useRef(null);
+  const uploadDialog = useRef(null);
+  const blobUrls = useRef(new Set());
+  const english = i18n.resolvedLanguage?.startsWith("en") ?? false;
+  const tr = (ko, en) => english ? en : ko;
 
   const cache = useRef(new Map());
   const mounted = useRef(true);
   const sessionSnapshot = useRef(null);
   const storageWarningShown = useRef(false);
-  const inputAlertDialog = useRef(null);
-  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+  useEffect(() => {
+    mounted.current = true;
+    const urls = blobUrls.current;
+    return () => {
+      mounted.current = false;
+      currentRequest.current += 1;
+      for (const url of urls) URL.revokeObjectURL(url);
+      urls.clear();
+    };
+  }, []);
+  // Open only when Set Test becomes active. Closing the dialog does not
+  // reactivate it until Set Test is selected again or onOpenManual is clicked.
+  useEffect(() => {
+    const dialog = uploadDialog.current;
+    if (!dialog) return;
+    if (active && !dialog.open) {
+      dialog.showModal();
+      setUploadOpen(true);
+    } else if (!active && dialog.open) {
+      dialog.close();
+      setUploadOpen(false);
+    }
+  }, [active]);
+
+  // Legacy manual-input sessions keep using the original backend URLs.
+  // New single-upload sessions replay from an IndexedDB browser cache; the
+  // server stores the original pair only once through auto-predict.
+  useEffect(() => {
+    if (restored.selectedKey) return;
+    let stopped = false;
+    const generation = currentRequest.current;
+    (async () => {
+      const stored = await loadBrowserSession();
+      if (!stored || stopped || generation !== currentRequest.current) return;
+      const rows = parseSensor(await stored.sensor.text());
+      const imageUrl = URL.createObjectURL(stored.image);
+      const sensorUrl = URL.createObjectURL(stored.sensor);
+      if (stopped || generation !== currentRequest.current) {
+        URL.revokeObjectURL(imageUrl); URL.revokeObjectURL(sensorUrl); return;
+      }
+      blobUrls.current.add(imageUrl); blobUrls.current.add(sensorUrl);
+      const record = { ...stored.record, image_url: imageUrl, sensor_url: sensorUrl, kind: "browser" };
+      cache.current.set(sensorUrl, rows);
+      setLoaded({ key: sensorUrl, rows });
+      setItems([record]);
+      setSelectedKey(record.id);
+      const saved = JSON.parse(localStorage.getItem(TEST_STORAGE_KEY) || "null");
+      const position = saved?.records?.[0]?.id === record.id && Number.isFinite(Number(saved?.position))
+        ? Number(saved.position) : 0;
+      setPosition(Math.max(0, Math.min(record.duration_ms, position)));
+      if (stored.prediction) {
+        currentMeasurementId.current = replayMeasurementId(stored.prediction);
+        setPendingResult(stored.prediction);
+      }
+      else setProgress(i18n.resolvedLanguage?.startsWith("en")
+        ? "Previous prediction is unavailable. Re-upload if needed."
+        : "이전 분석 결과를 복구할 수 없습니다. 필요하면 파일을 다시 업로드하세요.");
+    })().catch(() => {
+      if (!stopped) setError(i18n.resolvedLanguage?.startsWith("en")
+        ? "Could not restore cached files."
+        : "브라우저에 저장된 이전 파일을 복구하지 못했습니다.");
+    });
+    return () => { stopped = true; };
+  }, [restored.selectedKey]);
   const choices = useMemo(() => {
     const grouped = new Set(groups.flatMap(group => group.item_ids));
     return [...groups.map(group => ({ key: "group:" + group.id, created: group.created_at, name: group.name, items: group.items })),
       ...items.filter(item => !grouped.has(item.id)).map(item => ({ key: item.id, created: item.created_at, name: item.image_name, items: [item] }))]
       .sort((a, b) => b.created.localeCompare(a.created));
   }, [groups, items]);
-  const playlist = choices.find(choice => choice.key === selectedKey)?.items || [];
+  const playlist = useMemo(
+    () => choices.find(choice => choice.key === selectedKey)?.items || [],
+    [choices, selectedKey]
+  );
     // 현재 테스트의 파일 정보와 재생 위치만 보관합니다.
   useEffect(() => {
     sessionSnapshot.current = playlist.length
@@ -179,7 +242,10 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
   : { replay: "다시 재생", clear: "초기화", done: "재생 완료" };
   const selected = playlist[index];
   const sensorKey = selected?.sensor_url || "";
-  const rows = loaded.key === sensorKey ? loaded.rows : [];
+  const rows = useMemo(
+    () => loaded.key === sensorKey ? loaded.rows : [],
+    [loaded.key, loaded.rows, sensorKey]
+  );
 
   useEffect(() => {
     if (!sensorKey) return;
@@ -217,80 +283,224 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
 
   const resetAutoPreview = () => {
     setAutoResult(null);
+    setPendingResult(null);
   };
-  // AI results update only the wear summary; playback keeps its original image,
-  // sensor channels and moving cursor.
-  const showAutoResult = (payload) => {
-    setAutoResult({
-      predictedWear: payload.prediction.predicted_wear_um,
-      wearType: payload.prediction.predicted_type,
-      wearTypeLabel: payload.prediction.predicted_type,
-      status: payload.prediction.status,
-      basis: "prediction",
+  const normalizePrediction = (payload) => ({
+    measurementId: Number(payload.measurement_id),
+    predictedWear: payload.prediction.predicted_wear_um,
+    wearType: payload.prediction.predicted_type,
+    wearTypeLabel: payload.prediction.predicted_type,
+    status: payload.prediction.status,
+    basis: "prediction",
+  });
+
+  // Results may arrive before playback finishes; never reveal them early.
+  useEffect(() => {
+    if (!completed || !pendingResult || autoResult) return;
+    setAutoResult(pendingResult);
+  }, [completed, pendingResult, autoResult]);
+  useEffect(() => {
+    if (!autoResult) return;
+    setProgress(english ? "Showing prediction (3 seconds)" : "AI 분석 결과 표시 중 (3초)");
+    const hold = setTimeout(() => {
+      if (mounted.current) setProgress(english ? "AI analysis complete" : "AI 분석 완료");
+    }, 3000);
+    return () => clearTimeout(hold);
+  }, [autoResult, english]);
+
+  async function predict(path, options) {
+    let response;
+    try {
+      response = await fetch(new URL(path, API_BASE), { credentials: "same-origin", ...options });
+    } catch {
+      throw { status: 0, detail: null };
+    }
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) throw { status: response.status, detail: payload.detail };
+    return payload;
+  }
+  function reportPredictionError(failure, retryRequest = false) {
+    const messages = {
+      413: tr("파일 용량 제한을 초과했습니다.", "File size limit exceeded."),
+      422: tr("이미지 또는 CSV 형식이 올바르지 않습니다.", "Invalid image or CSV."),
+      429: tr("다른 AI 분석이 진행 중입니다. 잠시 후 다시 시도해 주세요.", "Another analysis is running. Retry later."),
+      403: tr("추론 요청이 허용되지 않았거나 재추론 권한이 만료되었습니다.", "Prediction denied or retry access expired."),
+      409: tr("이미 처리 중이거나 완료된 요청입니다.", "Already processing or completed."),
+      502: tr("AI 분석에 실패했습니다. 저장된 데이터로 재추론할 수 있습니다.", "Inference failed. Retry from saved files."),
+      503: tr("AI 분석 서비스를 사용할 수 없습니다.", "Prediction service unavailable."),
+    };
+    const id = Number(failure?.detail?.measurement_id);
+    const eligible = failure?.status === 502 && Number.isSafeInteger(id) && id > 0;
+    setRetryMeasurementId(eligible ? id : null);
+    setPredictionModal({
+      title: tr("AI 분석 안내", "AI analysis"),
+      message: messages[failure?.status] ||
+        (typeof failure?.detail === "string" ? failure.detail :
+          (failure?.detail?.message || tr("추론 요청에 실패했습니다. 상태를 확인해 주세요.", "Prediction request failed."))),
+      retryRequest,
     });
+    setProgress(tr("AI 분석 실패", "AI analysis failed"));
+  }
+  async function applyPredictionResult(data, requestKey) {
+    if (!mounted.current || requestKey !== currentRequest.current) return;
+    const value = normalizePrediction(data);
+    currentMeasurementId.current = replayMeasurementId(value);
+    setProgress(tr("추론 완료 · 재생 종료 후 결과 표시", "Prediction ready · waiting for playback"));
+    setPendingResult(value);
+    setRetryMeasurementId(null);
+    setPredictionModal(null);
+    await saveBrowserPrediction(value).catch(() => {});
+  }
+  async function retryPrediction() {
+    const id = retryMeasurementId;
+    if (!id || autoBusy || busy) return;
+    const requestKey = currentRequest.current;
+    setAutoBusy(true);
+    setProgress(tr("재추론 중...", "Retrying inference..."));
+    try {
+      const path = predictionModal?.retryRequest
+        ? `/api/measurements/${id}/replay-predict`
+        : `/api/measurements/${id}/retry`;
+      const data = await predict(path, { method: "POST" });
+      if (predictionModal?.retryRequest && !matchesManualReplay(id, data))
+        throw { status: 409, detail: "응답 측정 ID가 현재 이미지와 일치하지 않습니다." };
+      await applyPredictionResult(data, requestKey);
+    } catch (err) {
+      if (mounted.current && requestKey === currentRequest.current) reportPredictionError(err, true);
+    } finally {
+      if (mounted.current && requestKey === currentRequest.current) setAutoBusy(false);
+    }
+  }
+  // Every replay requests a FRESH prediction from already stored input files.
+  // No duplicate POST /auto-predict and no duplicate measurements row.
+  const replaySavedMeasurement = async () => {
+    if (busy || autoBusy || !playlist.length) return;
+    if (playlist.length !== 1 || playlist[0].kind !== "browser") {
+      setPredictionModal({ title: tr("AI 분석 안내", "AI analysis"),
+        message: tr("이전 재생 기록은 파일을 다시 업로드해야 새 추론이 가능합니다.",
+                    "Re-upload files from this legacy session to run new inference."),
+        retryRequest: false });
+      return;
+    }
+    const id = currentMeasurementId.current ?? replayMeasurementId(pendingResult) ?? replayMeasurementId(autoResult);
+    const requestKey = ++currentRequest.current;
+    setPosition(0);  // Playback starts immediately, concurrent with Serving.
+    setAutoResult(null); setPendingResult(null);
+    setRetryMeasurementId(null); setPredictionModal(null);
+    // Clear cached old results before writing a new result (avoid IDB races).
+    if (!id) {
+      setProgress(tr("저장된 측정 ID를 찾을 수 없습니다.", "Saved measurement ID is unavailable."));
+      setPredictionModal({ title: tr("AI 분석 안내", "AI analysis"),
+        message: tr("이전에 업로드한 이미지·CSV를 한 번 다시 등록해 주세요.",
+                    "Re-upload the image and CSV once to enable replay inference."),
+        retryRequest: false });
+      return;
+    }
+    setAutoBusy(true);
+    setProgress(tr("재생 중 · 새 AI 추론 중", "Replaying · running fresh AI inference"));
+    try {
+      await saveBrowserPrediction(null).catch(() => {});
+      const data = await predict(`/api/measurements/${id}/replay-predict`, { method: "POST" });
+      if (!matchesManualReplay(id, data))
+        throw { status: 409, detail: "응답 측정 ID가 현재 이미지와 일치하지 않습니다." };
+      await applyPredictionResult(data, requestKey);
+    } catch (err) {
+      if (mounted.current && requestKey === currentRequest.current)
+        reportPredictionError(err, true);
+    } finally {
+      if (mounted.current && requestKey === currentRequest.current) setAutoBusy(false);
+    }
   };
   const select = (files, kind) => {
+    currentRequest.current += 1;
+    currentMeasurementId.current = null;
     resetAutoPreview();
     const supported = kind === "image" ? imageFiles(files) : sensorFiles(files);
-    (kind === "image" ? setImages : setSensors)(supported);
-    setPairs(null); setError(supported.length ? "" : t("manual.unsupported")); setProgress("");
+    (kind === "image" ? setImages : setSensors)(supported.length === 1 ? supported : []);
+    setError(supported.length === 1 ? "" : tr("파일을 한 개만 선택해 주세요.", "Select exactly one file."));
+    setProgress("");
   };
-  const savePairs = async (selection) => {
-    if (selection.some(pair => pair.sensorIndex < 0)) { setError(t("manual.unmatched")); return; }
-    setBusy(true); setError(""); setProgress("");
-    let savedCount = 0;
+  // A single Tool Image and a single Sensor CSV are required per upload.
+  // Use both the existing inline error area and a native alert: the alert
+  // remains visible even if browser-side file input validation prevents submit.
+  const validateSingleUploadPair = () => {
+    if (images.length === 1 && sensors.length === 1) return true;
+    const message = images.length === 0 && sensors.length === 0
+      ? tr("이미지 1개와 CSV 1개를 선택해 주세요.", "Select one image and one CSV.")
+      : images.length !== 1
+        ? tr("이미지 파일을 1개 선택해 주세요.", "Select exactly one image file.")
+        : tr("CSV 파일을 1개 선택해 주세요.", "Select exactly one CSV file.");
+    setError(message);
+    window.alert(message);
+    return false;
+  };
+  const upload = async (event) => {
+    event.preventDefault();
+    if (busy || autoBusy) return;
+    if (!validateSingleUploadPair()) return;
+    const image = images[0], sensor = sensors[0];
+    if (image.size > 8 * 1024 * 1024 || sensor.size > 20 * 1024 * 1024) {
+      setError(t("manual.sizeLimit")); return;
+    }
+    // The model Serving currently supports PNG/JPEG, not WebP.
+    if (!/\.(png|jpe?g)$/i.test(image.name)) {
+      setError(tr("PNG 또는 JPEG 이미지만 선택할 수 있습니다.", "Choose a PNG or JPEG image.")); return;
+    }
+    setBusy(true); setError(""); setProgress(tr("파일 검증 중...", "Validating files..."));
+    let record;
     try {
-      // Validate every pair before the first network write. Each CSV is parsed once.
-      const validated = new Set();
-      for (const pair of selection) {
-        const sensor = sensors[pair.sensorIndex];
-        if (pair.image.size > 8 * 1024 * 1024 || sensor.size > 20 * 1024 * 1024) throw new Error(t("manual.sizeLimit"));
-        const bitmap = await createImageBitmap(pair.image); bitmap.close();
-        if (!validated.has(sensor)) {
-          const data = parseSensor(await sensor.text());
-          if (data.length < 2 || data.at(-1).ms <= data[0].ms) throw new Error(t("manual.timeRows") + " " + sensor.name);
-          validated.add(sensor);
-        }
-      }
-      const saved = [];
-      for (const pair of selection) {
-        if (!mounted.current) return;
-        setProgress(t("manual.uploadProgress", { current: saved.length + 1, total: selection.length }));
-        const sensor = sensors[pair.sensorIndex];
-        const [imageData, sensorData] = await Promise.all([base64(pair.image), base64(sensor)]);
-        const record = await request("/api/manual-inputs", {
-          method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ image_name: pair.image.name, sensor_name: sensor.name, image_base64: imageData, sensor_base64: sensorData }),
-        });
-        saved.push(record); savedCount++;
-        if (mounted.current) setItems(previous => [record, ...previous]);
-      }
-      if (!mounted.current) return;
-      if (saved.length > 1) {
-        const group = await request("/api/manual-inputs/playlists", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ item_ids: saved.map(item => item.id), name: `${images[0]?.webkitRelativePath?.split("/")[0] || getSetName("manual")} (${saved.length})` }) });
-        if (!mounted.current) return;
-        setGroups(previous => [group, ...previous]); setSelectedKey("group:" + group.id);
-      } else setSelectedKey(saved[0].id);
-      setPosition(0); setPairs(null); setProgress(t("manual.uploadComplete", { count: saved.length }));
-    } catch(err) {
-      if (mounted.current) setError((err.message || t("manual.uploadFailed")) + (savedCount ? " " + t("manual.partialSaved", { count: savedCount }) : ""));
-    } finally { if (mounted.current) setBusy(false); }
-  };
-  const upload = (event) => {
-    event.preventDefault(); setError("");
-    if (!images.length || !sensors.length) {
-  const dialog = inputAlertDialog.current;
-
-  if (dialog && !dialog.open) {
-    dialog.showModal();
-  }
-
-  return;
-}
-    if (images.length > 1000) { setError(t("manual.tooMany")); return; }
-    const planned = planPairs(images, sensors);
-    if (images.length === 1 && sensors.length === 1) savePairs(planned);
-    else setPairs(planned);
+      const bitmap = await createImageBitmap(image); bitmap.close();
+      const parsed = parseSensor(await sensor.text());
+      if (parsed.length < 2 || parsed.at(-1).ms <= parsed[0].ms) throw new Error(t("manual.timeRows"));
+      const duration = Math.max(1, parsed.at(-1).ms - parsed[0].ms);
+      const imageUrl = URL.createObjectURL(image);
+      const sensorUrl = URL.createObjectURL(sensor);
+      blobUrls.current.add(imageUrl); blobUrls.current.add(sensorUrl);
+      record = {
+        id: `browser-${crypto.randomUUID()}`,
+        image_name: image.name,
+        sensor_name: sensor.name,
+        image_url: imageUrl,
+        sensor_url: sensorUrl,
+        duration_ms: duration,
+        created_at: new Date().toISOString(),
+        kind: "browser",
+      };
+      currentRequest.current += 1;
+      currentMeasurementId.current = null;
+      setPendingResult(null); setAutoResult(null); setPredictionModal(null); setRetryMeasurementId(null);
+      cache.current.clear(); cache.current.set(sensorUrl, parsed);
+      setLoaded({ key: sensorUrl, rows: parsed });
+      setGroups([]); setItems([record]); setSelectedKey(record.id); setPosition(0);
+      // Replace the old persisted record before the first 1s snapshot tick.
+      sessionSnapshot.current = { version: 1, records: [record], position: 0 };
+      try { localStorage.setItem(TEST_STORAGE_KEY, JSON.stringify(sessionSnapshot.current)); } catch { /* IndexedDB cache remains available. */ }
+      // IndexedDB is a browser-only replay cache. Backend upload happens only
+      // through /api/measurements/auto-predict (Object Storage + RDS).
+      try { await saveBrowserSession({ image, sensor, record: {
+        ...record, image_url: "", sensor_url: ""
+      } }); }
+      catch { setError(tr("브라우저 파일 복구 캐시를 저장할 수 없습니다. 새로고침 후 재생이 유지되지 않을 수 있습니다.", "Browser replay cache unavailable. Playback may not survive refresh.")); }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("manual.uploadFailed"));
+      setProgress(""); setBusy(false); return;
+    }
+    if (!mounted.current) return;
+    uploadDialog.current?.close();
+    setBusy(false);
+    setAutoBusy(true);
+    setProgress(tr("재생 중 · AI 추론 중", "Playing · running AI inference"));
+    const requestKey = currentRequest.current;
+    const form = new FormData();
+    form.append("image", image); form.append("sensor_csv", sensor);
+    try {
+      const data = await predict("/api/measurements/auto-predict", { method: "POST", body: form });
+      await applyPredictionResult(data, requestKey);
+    } catch (err) {
+      if (mounted.current && requestKey === currentRequest.current) reportPredictionError(err);
+    } finally {
+      if (mounted.current && requestKey === currentRequest.current) setAutoBusy(false);
+    }
   };
   const start = rows[0]?.ms ?? 0;
   const visible = rows.filter(row => row.ms >= start + elapsed - 5000 && row.ms <= start + elapsed);
@@ -315,54 +525,46 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
     return;
   }
 
+    currentRequest.current += 1;
+    currentMeasurementId.current = null;
     resetAutoPreview();
+    setPredictionModal(null);
+    setRetryMeasurementId(null);
+    clearBrowserSession().catch(() => {});
+    for (const url of blobUrls.current) URL.revokeObjectURL(url);
+    blobUrls.current.clear();
     setSelectedKey("");
     setItems([]);
     setGroups([]);
     setImages([]);
     setSensors([]);
-    setPairs(null);
     setLoaded({ key: "", rows: [] });
     setPosition(0);
     setError("");
     setProgress("");
     cache.current.clear();
   };
+  const openUploadDialog = () => {
+    if (busy || autoBusy) return;
+    const dialog = uploadDialog.current;
+    if (dialog && !dialog.open) {
+      dialog.showModal();
+      setUploadOpen(true);
+    }
+  };
+
     const uploadPanel = (
     <section
       className="manual-upload card"
       aria-label={t("manual.aria", { name: getSetName("manual") })}
     >
-      <dialog
-  ref={inputAlertDialog}
-  className="manual-input-alert"
-  aria-labelledby="manual-input-alert-title"
-  aria-describedby="manual-input-alert-message"
->
-  <h2 id="manual-input-alert-title">
-    {i18n.resolvedLanguage?.startsWith("en")
-      ? "Check your files"
-      : "입력 확인"}
-  </h2>
-
-  <p id="manual-input-alert-message">
-    {t("manual.selectBoth")}
-  </p>
-
-  <form method="dialog" className="manual-input-alert-actions">
-    <button type="submit" autoFocus>
-      {i18n.resolvedLanguage?.startsWith("en")
-        ? "OK"
-        : "확인"}
-    </button>
-  </form>
-</dialog>
       <h2>{t("manual.title")}</h2>
 
       <form onSubmit={upload}>
         <ManualFilePicker
           label={t("image.toolImage")}
-          accept="image/png,image/jpeg,image/webp"
+          accept="image/png,image/jpeg"
+          single
           files={images}
           disabled={busy || autoBusy}
           onChange={files => select(files, "image")}
@@ -371,6 +573,7 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
         <ManualFilePicker
           label={t("manual.sensorCsv")}
           accept=".csv,text/csv"
+          single
           files={sensors}
           disabled={busy || autoBusy}
           onChange={files => select(files, "sensor")}
@@ -388,8 +591,8 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
         <button
           className="manual-action manual-action-replay"
           type="button"
-          disabled={busy || !playlist.length}
-          onClick={() => setPosition(0)}
+          disabled={busy || autoBusy || !playlist.length}
+          onClick={replaySavedMeasurement}
         >
           <ManualControlIcon name="replay" />
           {playbackText.replay}
@@ -404,84 +607,26 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
           {playbackText.clear}
         </button>
       </form>
-      <AutoPredictionButton
-        images={images}
-        sensors={sensors}
-        disabled={busy}
-        onBusyChange={setAutoBusy}
-        onResult={showAutoResult}
-      />
+      {predictionModal && <div className="auto-inference-backdrop" role="presentation">
+        <section className="auto-inference-dialog" role="alertdialog" aria-modal="true" aria-label={predictionModal.title}>
+          <h3>{predictionModal.title}</h3>
+          <p>{predictionModal.message}</p>
+          {retryMeasurementId && <p className="auto-inference-record-id">Measurement ID: {retryMeasurementId}</p>}
+          <div className="auto-inference-dialog-actions">
+            {retryMeasurementId && <button type="button" onClick={retryPrediction} disabled={autoBusy}>
+              {autoBusy ? tr("재추론 중...", "Retrying...") : tr("재추론", "Retry inference")}
+            </button>}
+            <button type="button" disabled={autoBusy} onClick={() => setPredictionModal(null)}>
+              {tr("닫기", "Close")}
+            </button>
+          </div>
+        </section>
+      </div>}
 
       <div className="manual-upload-feedback">
         {error && <p role="alert">{error}</p>}
         {progress && <p role="status">{progress}</p>}
         {completed && <p role="status">{playbackText.done}</p>}
-
-        {pairs && (
-          <section
-            className="manual-pairing"
-            aria-label={t("manual.pairTitle")}
-          >
-            <h3>{t("manual.pairTitle")}</h3>
-            <p>{t("manual.pairHelp")}</p>
-
-            <div className="manual-pairing-list">
-              {pairs.map((pair, row) => (
-                <label key={filePath(pair.image)}>
-                  <span>
-                    {row + 1}. {filePath(pair.image)}
-                  </span>
-
-                  <select
-                    disabled={busy}
-                    aria-label={t("manual.pairFor", {
-                      name: filePath(pair.image),
-                    })}
-                    value={pair.sensorIndex}
-                    onChange={event =>
-                      setPairs(previous =>
-                        previous.map((item, i) =>
-                          i === row
-                            ? {
-                                ...item,
-                                sensorIndex: Number(event.target.value),
-                              }
-                            : item
-                        )
-                      )
-                    }
-                  >
-                    <option value={-1}>
-                      {t("manual.chooseSensor")}
-                    </option>
-
-                    {sensors.map((sensor, i) => (
-                      <option key={filePath(sensor)} value={i}>
-                        {filePath(sensor)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              ))}
-            </div>
-
-            <button
-              type="button"
-              disabled={busy || pairs.some(pair => pair.sensorIndex < 0)}
-              onClick={() => savePairs(pairs)}
-            >
-              {t("manual.confirmPairs")}
-            </button>
-
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => setPairs(null)}
-            >
-              {t("manual.cancel")}
-            </button>
-          </section>
-        )}
 
         {playlist.length > 1 && (
           <p role="status">
@@ -504,8 +649,93 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
       channels={toSensorChannels(visible, start)}
       cursorSeconds={elapsed / 1000}
       playbackStatus="manual"
-      onOpenManual={() => {}}
-      beforeContent={uploadPanel}
+      onOpenManual={openUploadDialog}
+      beforeContent={
+        <>
+          {!uploadOpen && uploadPanel}
+          <dialog
+            ref={uploadDialog}
+            aria-label={t("manual.title")}
+            onClose={() => setUploadOpen(false)}
+            onCancel={(event) => { if (busy || autoBusy) event.preventDefault(); }}
+            data-set-test-popup="true"
+            style={{
+              width: "min(90vw, 560px)",
+              boxSizing: "border-box",
+              maxHeight: "90vh",
+              overflowY: "auto",
+              border: "none",
+            }}
+          >
+            <style>{`
+              dialog[data-set-test-popup="true"] .manual-upload .manual-picker {
+                border-right: none;
+                padding-right: 0;
+                min-width: 0;
+                width: 100%;
+              }
+            `}</style>
+            {uploadOpen && (
+              <section
+                className="manual-upload card"
+                aria-label={t("manual.aria", { name: getSetName("manual") })}
+                style={{ border: "none", boxShadow: "none" }}
+              >
+                <h2>{t("manual.title")}</h2>
+                <form
+                  onSubmit={upload}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 218px), 1fr))",
+                    gap: "16px",
+                    alignItems: "start",
+                    margin: 0,
+                  }}
+                >
+                  <div style={{ minWidth: 0 }}>
+                    <ManualFilePicker
+                      label={t("image.toolImage")}
+                      accept="image/png,image/jpeg"
+                      single
+                      files={images}
+                      disabled={busy || autoBusy}
+                      onChange={files => select(files, "image")}
+                    />
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <ManualFilePicker
+                      label={t("manual.sensorCsv")}
+                      accept=".csv,text/csv"
+                      single
+                      files={sensors}
+                      disabled={busy || autoBusy}
+                      onChange={files => select(files, "sensor")}
+                    />
+                  </div>
+                  <button
+                    className="manual-action manual-action-upload"
+                    type="submit"
+                    disabled={busy || autoBusy}
+                    onClick={(event) => {
+                      // Click-level validation also covers native required inputs
+                      // that might otherwise prevent the form submit handler.
+                      if (!validateSingleUploadPair()) event.preventDefault();
+                    }}
+                    style={{ gridColumn: "1 / -1", justifySelf: "end" }}
+                  >
+                    <ManualControlIcon name="play" />
+                    {busy ? t("alerts.saving") : t("manual.upload")}
+                  </button>
+                </form>
+                <div className="manual-upload-feedback">
+                  {error && <p role="alert">{error}</p>}
+                  {progress && <p role="status">{progress}</p>}
+                </div>
+              </section>
+            )}
+          </dialog>
+        </>
+      }
     />
   );
 }
