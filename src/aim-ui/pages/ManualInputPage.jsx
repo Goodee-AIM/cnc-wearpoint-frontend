@@ -277,7 +277,9 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
     return () => controller.abort();
   }, [sensorKey]);
   useEffect(() => {
-  if (!rows.length || busy || completed || !totalDuration) return;
+  // Pause while the upload popup is open; closing it resumes from the same
+  // position (the timer only adds time elapsed while it is running).
+  if (!rows.length || busy || uploadOpen || completed || !totalDuration) return;
 
   let previous = performance.now();
 
@@ -290,7 +292,7 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
   }, 80);
 
   return () => clearInterval(timer);
-}, [rows, busy, completed, totalDuration]);
+}, [rows, busy, uploadOpen, completed, totalDuration]);
 
   const resetAutoPreview = () => {
     setAutoResult(null);
@@ -725,10 +727,6 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
               dialog[data-set-test-popup="true"] {
                 outline: none;
                 position: fixed;
-              }
-              dialog[data-set-test-popup="true"]::backdrop {
-                background: #ffffff;
-                backdrop-filter: none;
               }
               dialog[data-set-test-popup="true"] .set-test-popup-close {
                 position: absolute;
