@@ -1,0 +1,47 @@
+/* Reuse live card/graph styles while keeping history navigation full width. */
+.monitoring-layout.monitoring-layout-standard.monitoring-layout-preview {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto auto auto;
+  gap: 12px;
+}
+
+.monitoring-layout.monitoring-layout-standard.monitoring-layout-preview > .monitoring-content,
+.monitoring-layout.monitoring-layout-standard.monitoring-layout-preview > .monitoring-content > main {
+  display: contents;
+}
+
+.monitoring-layout.monitoring-layout-standard.monitoring-layout-preview .page-heading {
+  grid-column: 1;
+  grid-row: 1;
+  margin: 0 0 8px;
+  min-width: 0;
+  align-self: start;
+  gap: 16px;
+}
+
+.monitoring-layout.monitoring-layout-standard.monitoring-layout-preview .summary {
+  grid-column: 1;
+  grid-row: 2;
+  margin: 0;
+  min-width: 0;
+}
+
+.monitoring-layout.monitoring-layout-standard.monitoring-layout-preview .workspace {
+  grid-column: 1;
+  grid-row: 3;
+  margin: 0;
+  min-width: 0;
+}
+
+.monitoring-layout.monitoring-layout-standard.monitoring-layout-preview footer {
+  grid-column: 1;
+  grid-row: 4;
+}
+
+@media (max-width: 720px) {
+  .monitoring-layout.monitoring-layout-standard.monitoring-layout-preview .page-heading {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+}

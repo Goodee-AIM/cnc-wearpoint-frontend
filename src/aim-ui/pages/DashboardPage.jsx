@@ -1,4 +1,5 @@
 import { wearAdviceKey } from "../../utils/wearAdvice.js";
+import "../styles/history-monitoring.css";
 import { getSetName } from "../../utils/setDisplay.js";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -53,7 +54,7 @@ export default function DashboardPage({
         <div
   className={
   preview
-    ? "monitoring-layout monitoring-layout-preview"
+    ? "monitoring-layout monitoring-layout-standard monitoring-layout-preview"
     : "monitoring-layout monitoring-layout-standard" +
       (selectedSet === "manual" ? " monitoring-layout-manual" : "")
 }

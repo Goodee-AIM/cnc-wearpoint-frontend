@@ -1,4 +1,5 @@
 // 서버 상태를 브라우저 화면으로 투영하고 초기 DB·이미지 정보를 조회합니다.
+import { monitoringPlaybackRate } from "./playbackRate.js";
 export async function readMonitoringJson(apiBase, path, signal) {
   if (!apiBase) throw new Error("VITE_API_BASE_URL을 설정해주세요.");
   const response = await fetch(new URL(path, apiBase), {
@@ -46,7 +47,7 @@ export function projectMonitoringSets(state, receivedAt, now) {
       ...item,
       // 다음 측정으로 이동할 때는 반드시 서버가 지정한 측정을 사용합니다.
       elapsed_ms: Math.min(item.duration_ms, item.elapsed_ms +
-        (item.status === "running" ? delta : 0)),
+        (item.status === "running" ? delta * monitoringPlaybackRate(state, item) : 0)),
     },
   ]));
 }

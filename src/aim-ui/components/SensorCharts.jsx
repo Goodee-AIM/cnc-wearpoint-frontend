@@ -6,7 +6,7 @@ export function SensorChart({
                                 channel,
                                 cursorSeconds,
                             }) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [cuttingHovered, setCuttingHovered] = useState(false);
 
     const end = Number.isFinite(cursorSeconds)
@@ -169,8 +169,10 @@ const cuttingWidth =
 </svg>
 {showCuttingArea && cuttingHovered && (
     <div className="cutting-area-tooltip" role="tooltip">
-        실제 절삭 구간
-    </div>
+  {i18n.resolvedLanguage?.startsWith("en")
+    ? "Actual cutting interval"
+    : "실제 절삭 구간"}
+</div>
 )}
 
             {!points.length && (

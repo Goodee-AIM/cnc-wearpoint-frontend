@@ -7,6 +7,8 @@ import useAlerts from "./useAlerts.js";
 import usePageLocation from "./usePageLocation.js";
 import useSharedMonitoring from "./useSharedMonitoring.js";
 import { loadDashboardData } from "../utils/sharedMonitoring.js";
+import { loadHistorySensor } from "../utils/historySensor.js";
+import { PLAYBACK_RATE } from "../utils/playbackRate.js";
 
 // 자동 공통 모드와 수동 확인 모드의 상태를 조합합니다. 서버 시간 동기화는 useSharedMonitoring에 위임합니다.
 export default function useDashboard() {
@@ -791,24 +793,8 @@ export default function useDashboard() {
       setSensorMessage(`센서 CSV 조회 중: ${expectedSensor}`);
 
       try {
-        const response = await fetch(
-          `${API_BASE}/api/sensors/set${selectedSet}/${encodeURIComponent(expectedSensor)}`,
-          { signal: controller.signal },
-        );
-
-        if (!response.ok) {
-          throw new Error(
-            response.status === 404
-              ? "서버에 대응하는 센서 CSV 파일이 없습니다."
-              : `센서 조회 실패: HTTP ${response.status}`,
-          );
-        }
-
-        const text = await response.text();
-
-        if (controller.signal.aborted) return;
-
-        const rows = parseSensor(text);
+        const sensorUrl = `${API_BASE}/api/sensors/set${selectedSet}/${encodeURIComponent(expectedSensor)}`;
+        const rows = await loadHistorySensor(sensorUrl, API_BASE, controller.signal);
 
         if (controller.signal.aborted) return;
 
@@ -887,7 +873,7 @@ export default function useDashboard() {
     const initial = elapsedRef.current;
 
     const timer = window.setInterval(() => {
-      const next = Math.min(duration, initial + performance.now() - began);
+      const next = Math.min(duration, initial + (performance.now() - began) * PLAYBACK_RATE);
 
       elapsedRef.current = next;
       setElapsed(next);

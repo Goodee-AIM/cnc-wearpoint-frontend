@@ -4,9 +4,11 @@ import i18n from "../../i18n/index.js";
 import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useRef, useState, useLayoutEffect } from "react";
 import { API_BASE } from "../../dashboardConfig.js";
+import { PLAYBACK_RATE } from "../../utils/playbackRate.js";
 import { parseSensor } from "../../utils/csv.js";
 import { imageFiles, sensorFiles, playlistPosition } from "../../utils/manualPlaylist.js";
 import { toSensorChannels } from "../adapters.js";
+import { loadManualCuttingMarkers } from "../../utils/manualCuttingSegment.js";
 import ManualFilePicker from "../components/ManualFilePicker.jsx";
 import DashboardPage from "./DashboardPage.jsx";
 import ManualControlIcon from "../components/ManualControlIcon.jsx";
@@ -276,6 +278,25 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
     load();
     return () => controller.abort();
   }, [sensorKey]);
+
+  // Use the same Python boundaries and full-file ranges as Set 1..8.
+  // This request only describes the CSV; prediction and playback stay independent.
+  useEffect(() => {
+    if (!rows.length || !sensorKey) return;
+    const controller = new AbortController();
+    loadManualCuttingMarkers(rows, sensorKey, API_BASE, controller.signal)
+      .then(() => {
+        if (controller.signal.aborted) return;
+        // Metadata lives in the shared WeakMap; refresh the current graph only.
+        setLoaded(current => current.key === sensorKey && current.rows === rows
+          ? { ...current } : current);
+      })
+      .catch(error => {
+        if (!controller.signal.aborted) console.warn("Set test 절삭 구간 조회 실패:", error);
+      });
+    return () => controller.abort();
+  }, [rows, sensorKey]);
+
   useEffect(() => {
   // Pause while the upload popup is open; closing it resumes from the same
   // position (the timer only adds time elapsed while it is running).
@@ -288,7 +309,8 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
     const delta = now - previous;
     previous = now;
 
-    setPosition(value => Math.min(totalDuration, value + delta));
+    // 2배속: 그래프 속도 2배속
+setPosition(value => Math.min(totalDuration, value + delta * PLAYBACK_RATE));
   }, 80);
 
   return () => clearInterval(timer);
@@ -615,7 +637,7 @@ const playbackText = i18n.resolvedLanguage?.startsWith("en")
       selectedSet="manual"
       onSelectSet={onSelectSet}
       measurement={measurement}
-      channels={toSensorChannels(visible, start)}
+      channels={toSensorChannels(visible, start, rows)}
       cursorSeconds={elapsed / 1000}
       playbackStatus="manual"
       onOpenManual={openUploadDialog}

@@ -1,6 +1,13 @@
 // Python에서 확정한 같은 시작·종료 지점을 네 채널에서 공유합니다.
 const markersByRows = new WeakMap();
 
+export function setCuttingMarkers(rows, result) {
+  const valid = result?.status === "ok" &&
+    Number.isFinite(result.start_seconds) && result.start_seconds >= 0 &&
+    Number.isFinite(result.end_seconds) && result.end_seconds > result.start_seconds;
+  markersByRows.set(rows, valid ? [result.start_seconds, result.end_seconds] : []);
+}
+
 export function getCuttingMarkers(rows) {
   return markersByRows.get(rows) ?? [];
 }
