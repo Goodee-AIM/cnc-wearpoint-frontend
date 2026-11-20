@@ -463,10 +463,10 @@ setPosition(value => Math.min(totalDuration, value + delta * PLAYBACK_RATE));
       if (mounted.current && requestKey === currentRequest.current) setAutoBusy(false);
     }
   };
+  // Picking files only stages the next upload. The running analysis keeps
+  // going (and its result still shows) until the new upload is submitted;
+  // upload() is what discards the previous request (currentRequest += 1).
   const select = (files, kind) => {
-    currentRequest.current += 1;
-    currentMeasurementId.current = null;
-    resetAutoPreview();
     const supported = kind === "image" ? imageFiles(files) : sensorFiles(files);
     (kind === "image" ? setImages : setSensors)(supported.length === 1 ? supported : []);
     setError(supported.length === 1 ? "" : tr("파일을 한 개만 선택해 주세요.", "Select exactly one file."));
@@ -488,7 +488,7 @@ setPosition(value => Math.min(totalDuration, value + delta * PLAYBACK_RATE));
   };
   const upload = async (event) => {
     event.preventDefault();
-    if (busy || autoBusy) return;
+    if (busy) return;
     if (!validateSingleUploadPair()) return;
     const image = images[0], sensor = sensors[0];
     if (image.size > 8 * 1024 * 1024 || sensor.size > 20 * 1024 * 1024) {
@@ -621,7 +621,7 @@ setPosition(value => Math.min(totalDuration, value + delta * PLAYBACK_RATE));
     wasActive.current = active;
   }, [active]);
   const openUploadDialog = () => {
-    if (busy || autoBusy) return;
+    if (busy) return;
     const dialog = uploadDialog.current;
     if (dialog && !dialog.open) {
       dialog.showModal();
@@ -686,7 +686,7 @@ setPosition(value => Math.min(totalDuration, value + delta * PLAYBACK_RATE));
             ref={uploadDialog}
             aria-label={t("manual.title")}
             onClose={() => setUploadOpen(false)}
-            onCancel={(event) => { if (busy || autoBusy) event.preventDefault(); }}
+            onCancel={(event) => { if (busy) event.preventDefault(); }}
             data-set-test-popup="true"
             style={{
               width: "min(90vw, 560px)",
@@ -739,7 +739,7 @@ setPosition(value => Math.min(totalDuration, value + delta * PLAYBACK_RATE));
               className="set-test-popup-close"
               aria-label={tr("닫기", "Close")}
               title={tr("닫기", "Close")}
-              disabled={busy || autoBusy}
+              disabled={busy}
               onClick={() => uploadDialog.current?.close()}
             >
               ×
@@ -767,7 +767,7 @@ setPosition(value => Math.min(totalDuration, value + delta * PLAYBACK_RATE));
                       accept="image/png,image/jpeg"
                       single
                       files={images}
-                      disabled={busy || autoBusy}
+                      disabled={busy}
                       onChange={files => select(files, "image")}
                     />
                   </div>
@@ -777,14 +777,14 @@ setPosition(value => Math.min(totalDuration, value + delta * PLAYBACK_RATE));
                       accept=".csv,text/csv"
                       single
                       files={sensors}
-                      disabled={busy || autoBusy}
+                      disabled={busy}
                       onChange={files => select(files, "sensor")}
                     />
                   </div>
                   <button
                     className="manual-action manual-action-upload"
                     type="submit"
-                    disabled={busy || autoBusy}
+                    disabled={busy}
                     onClick={(event) => {
                       // Click-level validation also covers native required inputs
                       // that might otherwise prevent the form submit handler.
