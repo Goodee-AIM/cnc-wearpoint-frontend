@@ -69,8 +69,9 @@ export default function App() {
     sensorPlaying: historySensor.sensorPlaying,
     elapsedMs: historySensor.elapsed,
     durationMs: historySensor.duration,
-    inferenceStatus: historicalReinfer?.alertId === historySnapshot?.alertId
-      ? historicalReinfer.status : "loading",
+    inferenceStatus: historicalReinfer?.alertId != null &&
+      historicalReinfer.alertId === historySnapshot?.alertId
+        ? historicalReinfer.status : "loading",
     holdFinished: finishedHistoryHold === historySnapshot,
   });
   useEffect(() => {
