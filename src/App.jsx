@@ -5,6 +5,7 @@ import { SETS } from "./dashboardConfig.js";
 import { toAlert, toMeasurement, toSensorChannels } from "./aim-ui/adapters.js";
 import { matchingReplayPrediction, sameReplayOccurrence } from "./utils/monitoringRunIdentity.js";
 import { gatedAlertRecords } from "./utils/gatedAlertFeed.js";
+import { applyAlertPreview } from "./utils/alertPreview.js";
 import "./aim-ui/styles/global.css";
 import "./aim-ui/styles/alerts.css";
 import "./aim-ui/styles/integration.css";
@@ -42,7 +43,7 @@ export default function App() {
     wearTypeLabel: prediction?.wearTypeLabel ?? null,
     status: prediction?.status ?? 'pending',
     basis: 'prediction',
-  } : originalMeasurement;
+  } : applyAlertPreview(originalMeasurement, dashboard.diagnosis.alertSnapshot, dashboard.selectedSet);
   const liveInferenceAlerts = monitoring.gatedPlayback
     ? gatedAlertRecords(monitoring.sessionId, monitoring.allSetPlayback, monitoring.inferenceRuns)
     : [];

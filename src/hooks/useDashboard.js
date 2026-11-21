@@ -9,6 +9,7 @@ import useSharedMonitoring from "./useSharedMonitoring.js";
 import { loadDashboardData } from "../utils/sharedMonitoring.js";
 import { loadHistorySensor } from "../utils/historySensor.js";
 import { PLAYBACK_RATE } from "../utils/playbackRate.js";
+import { alertPreviewSnapshot } from "../utils/alertPreview.js";
 
 // 자동 공통 모드와 수동 확인 모드의 상태를 조합합니다. 서버 시간 동기화는 useSharedMonitoring에 위임합니다.
 export default function useDashboard() {
@@ -31,6 +32,8 @@ export default function useDashboard() {
   const unifiedPlaying = unifiedMode && shared.connected && shared.state?.status === "running";
   const alertPreview = useRef(null);
   const [alertPreviewRequest, setAlertPreviewRequest] = useState(0);
+  // 과거 알림 화면에 표시할, 알림 발생 당시 저장된 판정값입니다.
+  const [alertSnapshot, setAlertSnapshot] = useState(null);
   const [imagesBySet, setImagesBySet] = useState({});
   const [indices, setIndices] = useState({});
   const [photoPlayingBySet, setPhotoPlayingBySet] = useState({});
@@ -441,6 +444,8 @@ export default function useDashboard() {
   // 과거 알림 이동은 이 브라우저만 수동 미리보기로 전환합니다. 다른 접속자의 공통 재생은 계속됩니다.
   function showAlertSet(record) {
     alertPreview.current = { set: record.set, name: record.image?.name };
+    // 측정 기록을 다시 조회하지 않고, 알림에 저장된 판정값을 화면에 그대로 씁니다.
+    setAlertSnapshot(alertPreviewSnapshot(record));
     setAlertPreviewRequest((value) => value + 1);
     // 자동 화면이 직접 URL로 표시되는 동안 수동 조회용 데이터 출처는 아직 준비되지 않았을 수 있습니다.
     // 알림 이동 시 서버 이미지·DB·센서 조회를 켜고, 이미 수동 모드여도 대상 사진을 다시 찾습니다.
@@ -465,6 +470,7 @@ export default function useDashboard() {
   // 과거 알림 조회는 이 브라우저에만 적용하고, 복귀 시 서버의 현재 위치를 다시 따릅니다.
   function returnToMonitoring(setNumber) {
     alertPreview.current = null;
+    setAlertSnapshot(null);
     stopAllPhotos();
     setSensorPlaying(false);
     setUnifiedMode(true);
@@ -1001,7 +1007,8 @@ export default function useDashboard() {
       inferenceRuns: shared.inferenceRuns ?? [],
       inferenceError: shared.inferenceError ?? "",
     },
-    diagnosis: { current, selectedSet },
+    // 자동 모니터링으로 돌아가면 알림 판정값은 쓰지 않습니다.
+    diagnosis: { current, selectedSet, alertSnapshot: unifiedMode ? null : alertSnapshot },
     notifications: {
       liveToastSource: {
         records: SETS.map(getRecord),
