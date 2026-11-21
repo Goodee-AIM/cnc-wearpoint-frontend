@@ -9,7 +9,7 @@ import HistoryPopover from "./HistoryPopover";
 
 export default function AimUI({
   page, sets, selectedSet, onSelectSet, measurement, channels, cursorSeconds,
-  preview, onReturnLive, playbackStatus, dataMessage, gatedPlayback, playbackPhase, inferenceState, alerts, latestAlerts,
+  preview, onReturnLive, playbackStatus, dataMessage, gatedPlayback, playbackPhase, inferenceState, historyPlaybackPhase, alerts, latestAlerts,
   selectedAlertId, onSelectAlert, onNavigate, onGoMonitoring, onCurrentSet,
   onAcknowledge, onDismissAlert, onRestoreAlerts, acknowledgingId, history, toastSource,
 }) {
@@ -50,7 +50,7 @@ export default function AimUI({
                 sets, selectedSet, onSelectSet, measurement,
                 channels, cursorSeconds, preview, onReturnLive,
                 playbackStatus, dataMessage,
-                gatedPlayback, playbackPhase, inferenceState,
+                gatedPlayback, playbackPhase, inferenceState, historyPlaybackPhase,
               }}
             />
           )}

@@ -25,6 +25,7 @@ function historyRecord(row, imagesBySet) {
   return {
     id: row.id,
     dbAlertId: row.id,
+    inferenceRunId: row.inference_run_id ?? null,
     cycleNumber: row.cycle_number,
     canAcknowledge: row.can_acknowledge,
     set,

@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { alertPreviewSnapshot, applyAlertPreview } from "../src/utils/alertPreview.js";
+import {
+  alertPreviewSnapshot, applyAlertPreview, historicalReplayPhase,
+  historyReplayShowsResult, hideHistoricalResult,
+} from "../src/utils/alertPreview.js";
 import { toMeasurement } from "../src/aim-ui/adapters.js";
 
 // useAlerts historyRecord 형태: 모니터링 추론(source=prediction)으로 생긴 Set5(화면 Set 2) 위험 알림
@@ -69,4 +72,48 @@ test("prediction alert without predicted_wear_um falls back to its judged wear",
 test("records without set or image produce no snapshot", () => {
   assert.equal(alertPreviewSnapshot({ ...inferenceAlert, image: null }), null);
   assert.equal(alertPreviewSnapshot(null), null);
+});
+
+
+test("historical alert conceals saved prediction and old ground truth until the graph ends", () => {
+  const snapshot = alertPreviewSnapshot(inferenceAlert);
+  const oldDb = dbMeasurement();
+  const saved = applyAlertPreview(oldDb, snapshot, 5);
+  const pending = hideHistoricalResult(saved);
+  assert.equal(pending.predictedWear, null);
+  assert.equal(pending.judgedWear, null);
+  assert.equal(pending.wearType, null);
+  assert.equal(pending.status, "pending");
+  assert.equal(pending.basis, "prediction");
+
+  const base = {hasSnapshot: true, imageMatched: true,
+    sensorReady: true, durationMs: 10000, sensorPlaying: true, elapsedMs: 9999,
+    holdFinished: false};
+  assert.equal(historicalReplayPhase({...base, imageMatched: false}), "loading");
+  assert.equal(historicalReplayPhase({...base, sensorReady: false}), "loading");
+  assert.equal(historicalReplayPhase(base), "playing");
+  assert.equal(historyReplayShowsResult(historicalReplayPhase(base)), false);
+
+  // At completion the stored AI result appears for the three-second hold.
+  const showing = historicalReplayPhase({...base, sensorPlaying: false, elapsedMs: 10000});
+  assert.equal(showing, "showing");
+  assert.equal(historyReplayShowsResult(showing), true);
+  assert.equal(saved.predictedWear, 231.4);
+  assert.equal(saved.status, "danger");
+  assert.equal(saved.wearType, "flank_wear");
+  // After the three seconds, history retains the result for inspection.
+  assert.equal(historicalReplayPhase({...base, sensorPlaying: false,
+    elapsedMs: 10000, holdFinished: true}), "finished");
+});
+
+test("history replay cannot show a stale image, and unavailable sensor is explicit", () => {
+  const base = {hasSnapshot: true, imageMatched: false, sensorReady: true,
+    sensorPlaying: false, elapsedMs: 10000, durationMs: 10000, holdFinished: false};
+  assert.equal(historicalReplayPhase(base), "loading");
+  assert.equal(historyReplayShowsResult(historicalReplayPhase(base)), false);
+  assert.equal(historicalReplayPhase({...base, hasSnapshot: false}), null);
+  assert.equal(historicalReplayPhase({...base, imageMatched: true, unavailable: true}), "unavailable");
+  assert.equal(historyReplayShowsResult("unavailable"), true);
+  assert.equal(historicalReplayPhase({...base, imageMatched: true,
+    sensorReady: false, unavailable: false}), "loading");
 });
