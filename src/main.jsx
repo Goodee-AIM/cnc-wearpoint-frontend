@@ -1,12 +1,16 @@
-// React 진입점. 전역 CSS와 App을 연결하고 개발 중 StrictMode로 effect 정리 누락을 점검합니다.
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.jsx'
+// The landing page is mounted independently so it never starts dashboard polling.
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
 import "./i18n";
+import App from "./App.jsx";
+import LandingPage from "./aim-ui/pages/LandingPage.jsx";
+import { shouldRenderDashboard } from "./utils/entryRoute.js";
 
-createRoot(document.getElementById('root')).render(
+const showDashboard = shouldRenderDashboard(window.location.pathname, window.location.hash);
+
+createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <App />
+    {showDashboard ? <App /> : <LandingPage />}
   </StrictMode>,
-)
+);
