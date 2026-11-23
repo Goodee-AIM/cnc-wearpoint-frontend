@@ -59,7 +59,7 @@
     "predictedWear": "Predicted Wear",
     "wearType": "Wear Type",
     "noResult": "No Prediction",
-    "noType": "other wear",
+    "noType": "no wear type informations",
     "pending": "Pending"
   },
   "wearType": {
