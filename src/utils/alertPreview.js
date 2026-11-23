@@ -53,36 +53,3 @@ export function applyAlertPreview(measurement, snapshot, selectedSet) {
     basis: "prediction",
   };
 }
-
-// The history screen replays recorded sensor data; it never re-runs Serving.
-// Keep the saved result hidden until graph playback ends. Missing/broken CSVs
-// are an explicit exception: show the saved result with an unavailable notice.
-export function historicalReplayPhase({
-  hasSnapshot, imageMatched, sensorReady, sensorPlaying,
-  elapsedMs, durationMs, holdFinished, unavailable = false,
-}) {
-  if (!hasSnapshot) return null;
-  if (!imageMatched) return "loading";
-  if (unavailable) return "unavailable";
-  if (!sensorReady || !Number.isFinite(durationMs) || durationMs <= 0) return "loading";
-  if (sensorPlaying || !Number.isFinite(elapsedMs) || elapsedMs < durationMs) return "playing";
-  return holdFinished ? "finished" : "showing";
-}
-
-export function historyReplayShowsResult(phase) {
-  return phase === "showing" || phase === "finished" || phase === "unavailable";
-}
-
-// Current DB label and old prediction values must NEVER appear prematurely.
-export function hideHistoricalResult(measurement) {
-  if (!measurement) return measurement;
-  return {
-    ...measurement,
-    judgedWear: null,
-    predictedWear: null,
-    wearType: null,
-    wearTypeLabel: null,
-    status: "pending",
-    basis: "prediction",
-  };
-}

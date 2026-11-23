@@ -10,7 +10,6 @@ import { loadDashboardData } from "../utils/sharedMonitoring.js";
 import { loadHistorySensor } from "../utils/historySensor.js";
 import { PLAYBACK_RATE } from "../utils/playbackRate.js";
 import { alertPreviewSnapshot } from "../utils/alertPreview.js";
-const HISTORICAL_REINFER_UI_ENABLED = import.meta.env.VITE_HISTORICAL_REINFER_ENABLED === "1";
 
 // 자동 공통 모드와 수동 확인 모드의 상태를 조합합니다. 서버 시간 동기화는 useSharedMonitoring에 위임합니다.
 export default function useDashboard() {
@@ -35,54 +34,6 @@ export default function useDashboard() {
   const [alertPreviewRequest, setAlertPreviewRequest] = useState(0);
   // 과거 알림 화면에 표시할, 알림 발생 당시 저장된 판정값입니다.
   const [alertSnapshot, setAlertSnapshot] = useState(null);
-  const [historicalReinfer, setHistoricalReinfer] = useState(null);
-  // A separate browser-only replay. No monitoring restart, DB writes, or new
-  // inference worker: it uses the existing Set test capacity in the backend.
-  useEffect(() => {
-    const alertId = alertSnapshot?.alertId;
-    if (!HISTORICAL_REINFER_UI_ENABLED || unifiedMode || !alertId) return;
-    const controller = new AbortController();
-    setHistoricalReinfer({ alertId, status: "loading", result: null, error: "" });
-    const timeout = window.setTimeout(() => {
-      controller.abort();
-      setHistoricalReinfer((old) => old?.alertId === alertId
-        ? { alertId, status: "error", result: null, error: "AI 재추론 시간 초과" }
-        : old);
-    }, 200000);
-    async function requestHistoricalInference() {
-      try {
-        const response = await fetch(
-          `${API_BASE}/api/monitoring/alerts/${encodeURIComponent(alertId)}/re-infer`,
-          { method: "POST", signal: controller.signal, cache: "no-store" },
-        );
-        const body = await response.json().catch(() => null);
-        if (!response.ok) {
-          const reason = response.status === 429
-            ? "수동 업로드 AI 추론이 진행 중입니다. 잠시 후 다시 선택하세요."
-            : response.status === 503
-              ? "과거 알림 재추론 기능이 아직 활성화되지 않았습니다."
-              : typeof body?.detail === "string" ? body.detail : `HTTP ${response.status}`;
-          throw new Error(reason);
-        }
-        if (body?.alert_id !== alertId || !body?.prediction ||
-            !Number.isFinite(Number(body.prediction.predicted_wear_um)) ||
-            !["normal", "warning", "danger"].includes(body.prediction.wear_status)) {
-          throw new Error("AI 재추론 응답의 측정/판정 정보가 올바르지 않습니다.");
-        }
-        if (!controller.signal.aborted) {
-          setHistoricalReinfer({ alertId, status: "completed", result: body, error: "" });
-        }
-      } catch (error) {
-        if (!controller.signal.aborted) {
-          setHistoricalReinfer({ alertId, status: "error", result: null, error: error.message });
-        }
-      } finally {
-        window.clearTimeout(timeout);
-      }
-    }
-    void requestHistoricalInference();
-    return () => { controller.abort(); window.clearTimeout(timeout); };
-  }, [unifiedMode, alertSnapshot]);
   const [imagesBySet, setImagesBySet] = useState({});
   const [indices, setIndices] = useState({});
   const [photoPlayingBySet, setPhotoPlayingBySet] = useState({});
@@ -1058,7 +1009,7 @@ export default function useDashboard() {
       inferenceError: shared.inferenceError ?? "",
     },
     // 자동 모니터링으로 돌아가면 알림 판정값은 쓰지 않습니다.
-    diagnosis: { current, selectedSet, alertSnapshot: unifiedMode ? null : alertSnapshot, historicalReinfer },
+    diagnosis: { current, selectedSet, alertSnapshot: unifiedMode ? null : alertSnapshot },
     notifications: {
       liveToastSource: {
         records: SETS.map(getRecord),

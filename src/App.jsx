@@ -1,14 +1,11 @@
 // 화면만 새 UI로 교체합니다. 서버 조회·재생·알림 확인은 기존 hook이 담당합니다.
-import { useEffect, useState } from "react";
 import useDashboard from "./hooks/useDashboard.js";
 import AimUI from "./aim-ui/components/AimUI.jsx";
 import { SETS } from "./dashboardConfig.js";
 import { toAlert, toMeasurement, toSensorChannels } from "./aim-ui/adapters.js";
 import { matchingReplayPrediction, sameReplayOccurrence } from "./utils/monitoringRunIdentity.js";
 import { gatedAlertRecords } from "./utils/gatedAlertFeed.js";
-import { applyAlertPreview, hideHistoricalResult } from "./utils/alertPreview.js";
-import { historicalReinferPhase, canRevealFreshInference, freshAlertSnapshot } from "./utils/historicalReinferPhase.js";
-const HISTORICAL_REINFER_UI_ENABLED = import.meta.env.VITE_HISTORICAL_REINFER_ENABLED === "1";
+import { applyAlertPreview } from "./utils/alertPreview.js";
 import "./aim-ui/styles/global.css";
 import "./aim-ui/styles/alerts.css";
 import "./aim-ui/styles/integration.css";
@@ -37,55 +34,12 @@ export default function App() {
   const prediction = monitoring.gatedPlayback
     ? matchingReplayPrediction(visible, matchingRun)
     : null;
-  // The historical alert is re-inferred by Serving while its saved waveform
-  // replays independently. Never show the stored alert value or a DB label as
-  // the NEW result; require a completed response for this exact alert ID.
+  // Historical review displays the prediction saved with the alert.
+  // Unlike live monitoring, it never starts a new Serving inference.
   const historySnapshot = dashboard.diagnosis.alertSnapshot;
-  const needsFreshInference = HISTORICAL_REINFER_UI_ENABLED && Boolean(historySnapshot?.alertId);
-  const historicalReinfer = dashboard.diagnosis.historicalReinfer;
-  const freshResult = needsFreshInference && historicalReinfer?.alertId === historySnapshot.alertId
-    && historicalReinfer.status === "completed"
-    ? freshAlertSnapshot(historySnapshot, historicalReinfer.result)
-    : null;
-  const historyImageMatched = Boolean(historySnapshot &&
-    applyAlertPreview(originalMeasurement, historySnapshot, dashboard.selectedSet) !== originalMeasurement);
-  const historySensor = dashboard.sensorSettings;
-  const currentHistorySource = Boolean(historySensor.sensor?.sourceKey &&
-    historySensor.sensor.sourceKey === historySensor.sensorSourceKey);
-  const historySensorReady = Boolean(historyImageMatched && currentHistorySource &&
-    historySensor.sensorRows.length >= 2 && historySensor.duration > 0);
-  const historySensorUnavailable = Boolean(historyImageMatched && currentHistorySource &&
-    !historySensorReady && (/(?:실패|오류|없습니다)/.test(historySensor.sensorMessage) ||
-      /·\s*[01]행\s*·\s*자동 연결/.test(historySensor.sensorMessage)));
-  const historyImageUnavailable = Boolean(historySnapshot && !historyImageMatched &&
-    /서버 이미지 (?:목록 조회 완료|조회 실패)/.test(dashboard.sources.serverImageMessage));
-  const [finishedHistoryHold, setFinishedHistoryHold] = useState(null);
-  const historyPlaybackPhase = historicalReinferPhase({
-    active: needsFreshInference,
-    imageMatched: historyImageMatched,
-    imageUnavailable: historyImageUnavailable,
-    sensorReady: historySensorReady,
-    sensorUnavailable: historySensorUnavailable,
-    sensorPlaying: historySensor.sensorPlaying,
-    elapsedMs: historySensor.elapsed,
-    durationMs: historySensor.duration,
-    inferenceStatus: historicalReinfer?.alertId != null &&
-      historicalReinfer.alertId === historySnapshot?.alertId
-        ? historicalReinfer.status : "loading",
-    holdFinished: finishedHistoryHold === historySnapshot,
-  });
-  useEffect(() => {
-    if (historyPlaybackPhase !== "showing" || !historySnapshot) return;
-    const timer = window.setTimeout(() => setFinishedHistoryHold(historySnapshot), 3000);
-    return () => window.clearTimeout(timer);
-  }, [historyPlaybackPhase, historySnapshot]);
-  // Never show a stale DB label as an inference, including on Serving failure.
-  // Non-occurrence legacy records retain their old preview behavior.
-  const historicalMeasurement = needsFreshInference
-    ? canRevealFreshInference(historyPlaybackPhase) && freshResult
-      ? applyAlertPreview(originalMeasurement, freshResult, dashboard.selectedSet)
-      : hideHistoricalResult(originalMeasurement)
-    : applyAlertPreview(originalMeasurement, historySnapshot, dashboard.selectedSet);
+  const historicalMeasurement = applyAlertPreview(
+    originalMeasurement, historySnapshot, dashboard.selectedSet,
+  );
   // Live gated monitoring remains server-authoritative and unchanged.
   const measurement = monitoring.gatedPlayback ? {
     ...originalMeasurement,
@@ -118,7 +72,6 @@ export default function App() {
 )}
       cursorSeconds={monitoring.elapsedMs / 1000}
       preview={!dashboard.unifiedMode}
-      historyPlaybackPhase={historyPlaybackPhase}
       onReturnLive={(setNumber) => dashboard.returnToMonitoring(setNumber)}
       playbackStatus={monitoring.setStatus}
       dataMessage={monitoring.dataMessage}

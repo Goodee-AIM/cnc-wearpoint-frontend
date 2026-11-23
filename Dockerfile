@@ -7,7 +7,6 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 COPY . .
-ARG VITE_HISTORICAL_REINFER_ENABLED=0
 RUN npm run build
 
 

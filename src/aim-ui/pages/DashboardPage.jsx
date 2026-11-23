@@ -27,7 +27,6 @@ export default function DashboardPage({
                                         gatedPlayback = false,
                                         playbackPhase,
                                         inferenceState = "",
-                                        historyPlaybackPhase = null,
                                         onOpenManual,
                                         beforeContent,
                                       }) {
@@ -103,21 +102,6 @@ export default function DashboardPage({
                 </span>
                 )}
               </h1>
-              {preview && historyPlaybackPhase && (
-                <p className="monitoring-playback-caption" role="status">
-                  {historyPlaybackPhase === "loading"
-                    ? (english ? "Loading historical image and sensor" : "과거 이미지·센서 준비 중")
-                    : historyPlaybackPhase === "playing"
-                      ? (english ? "Replaying sensor · AI re-inference in progress" : "센서 그래프 재생 중 · AI 재추론 진행")
-                      : historyPlaybackPhase === "waiting"
-                        ? (english ? "Waiting for new AI inference" : "그래프 재생 완료 · 새 AI 추론 대기 중")
-                        : historyPlaybackPhase === "error"
-                          ? (english ? "AI re-inference failed · select alert again" : "AI 재추론 실패 · 알림을 다시 선택해주세요")
-                          : historyPlaybackPhase === "showing"
-                            ? (english ? "Showing new AI result · 3 seconds" : "새 AI 추론 결과 표시 중 · 3초")
-                            : (english ? "Fresh AI result available" : "새 AI 추론 결과 확인 가능")}
-                </p>
-              )}
               {!preview && selectedSet !== "manual" && (
   <p className="monitoring-playback-caption" role="status">
     {gatedPlayback
