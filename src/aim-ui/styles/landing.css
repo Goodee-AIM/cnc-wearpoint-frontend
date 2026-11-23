@@ -39,8 +39,8 @@
   width: min(calc(100% - 48px), 1470px); max-width: none;
   margin: 0 auto; padding: 10px 0; flex: 1; min-height: 0;
   display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  grid-template-areas: "topic topic" "team team" "purpose features" "github github";
-  grid-template-rows: minmax(0, 1.12fr) minmax(0, .77fr) minmax(0, 1.95fr) minmax(0, 1.19fr);
+  grid-template-areas: "topic topic" "purpose features" "github github" "team team";
+  grid-template-rows: minmax(0, 1.12fr) minmax(0, 1.95fr) minmax(0, 1.19fr) minmax(0, .77fr);
   gap: 9px; align-content: stretch;
 }
 .wp-landing .wp-landing-main > section { min-width: 0; min-height: 0; overflow: hidden; border: 1px solid var(--wp-line); border-radius: 6px; background: #fff; }
@@ -64,7 +64,7 @@
 }
 .wp-landing .wp-landing-hero-index { grid-column: 1; grid-row: 1; align-self: end; }
 .wp-landing .wp-landing-hero h1 { grid-column: 1; grid-row: 2 / span 2; display: block; align-self: center; margin: 0; color: #1e2b43; font-size: clamp(24px, 2.6vw, 38px); line-height: 1.13; font-weight: 850; letter-spacing: -1.2px; word-break: keep-all; }
-.wp-landing .wp-landing-hero h1 span { color: var(--wp-blue); display: block; }
+
 .wp-landing .wp-landing-hero-lead { grid-column: 2; grid-row: 1 / span 2; align-self: end; color: #586b88; font-size: clamp(11px, 1.05vw, 14px); margin: 0 0 10px; line-height: 1.5; word-break: keep-all; }
 .wp-landing .wp-landing-primary { grid-column: 2; grid-row: 3; justify-self: start; display: inline-flex; justify-content: center; align-items: center; font-size: 12px; font-weight: 750; min-height: 34px; background: #3267e8; color: #fff; border-radius: 4px; padding: 7px 15px; border: 1px solid #3267e8; }
 .wp-landing .wp-landing-primary:hover { background: #2758ce; }
@@ -121,7 +121,7 @@
   .wp-landing { height: 100dvh; overflow: hidden; }
 }
 @media (max-height: 799px) and (min-width: 981px) {
-  .wp-landing .wp-landing-main { grid-template-rows: minmax(0,1.02fr) minmax(0,.73fr) minmax(0,1.98fr) minmax(0,1.13fr); gap:7px; padding:8px 0; }
+  .wp-landing .wp-landing-main { grid-template-rows: minmax(0,1.02fr) minmax(0,1.98fr) minmax(0,1.13fr) minmax(0,.73fr); gap:7px; padding:8px 0; }
   .wp-landing .wp-landing-purpose > .wp-landing-container, .wp-landing .wp-landing-features > .wp-landing-container { padding-top:9px; padding-bottom:9px; }
 }
 @media (max-width: 980px), (max-height: 699px) {
@@ -156,4 +156,100 @@
   .wp-landing .wp-landing-repo { min-height:88px; }
   .wp-landing .wp-landing-footer { height:auto; min-height:34px; padding:8px 16px; }
   .wp-landing .wp-landing-footer > .wp-landing-container { flex-wrap:wrap; }
+}
+
+/* Readable AIM landing-only typography. Never target the global dashboard. */
+.wp-landing { font-size: 15px; }
+.wp-landing .wp-landing-brand { align-items: center; gap: 25px; }
+.wp-landing .wp-landing-brand strong { font-size: 31px; letter-spacing: 4px; font-weight: 800; line-height: 1; }
+.wp-landing .wp-landing-brand span { font-size: 14px; font-weight: 600; border-left: 1px solid var(--wp-line); padding-left: 24px; }
+.wp-landing .wp-landing-language { font-size: 13px; }
+.wp-landing .wp-landing-section-index,
+.wp-landing .wp-landing-hero-index { font-size: 13px; }
+.wp-landing .wp-landing-section h2 { font-size: 20px; }
+.wp-landing .wp-landing-hero-lead { font-size: clamp(15px, 1.2vw, 16.5px); }
+.wp-landing .wp-landing-primary { font-size: 14px; min-height: 38px; }
+.wp-landing .wp-landing-member-role { font-size: 13px; }
+.wp-landing .wp-landing-member strong { font-size: clamp(16px, 1.45vw, 19px); }
+.wp-landing .wp-landing-purpose-list li > span { font-size: 12px; }
+.wp-landing .wp-landing-purpose-list strong { font-size: 14px; }
+.wp-landing .wp-landing-purpose-list p { font-size: 14.5px; line-height: 1.35; }
+.wp-landing .wp-landing-feature-number { display: none; }
+.wp-landing .wp-landing-feature h3 { font-size: 15px; }
+.wp-landing .wp-landing-feature p { font-size: 14.5px; line-height: 1.32; }
+.wp-landing .wp-landing-repo-grid { grid-template-columns: minmax(0,1fr); }
+.wp-landing .wp-landing-repo { flex-direction: row; align-items: center; gap: 16px; padding: 10px 17px; }
+.wp-landing .wp-landing-repo-type { font-size: 14px; }
+.wp-landing .wp-landing-repo strong { font-size: 17px; }
+.wp-landing .wp-landing-repo p { font-size: 14px; }
+.wp-landing .wp-landing-repo-action { font-size: 14px; white-space: nowrap; }
+.wp-landing .wp-landing-footer { font-size: 12px; height: 29px; min-height: 29px; }
+@media (max-width: 650px) {
+  .wp-landing .wp-landing-brand { gap: 7px; flex-direction: row; flex-wrap: wrap; }
+  .wp-landing .wp-landing-brand strong { font-size: 25px; }
+  .wp-landing .wp-landing-brand span { font-size: 12px; padding-left: 10px; }
+  .wp-landing .wp-landing-repo { align-items: flex-start; flex-direction: column; }
+  .wp-landing .wp-landing-footer { height: auto; }
+}
+
+/* v8: landing-only visual cleanup. The dashboard CSS and other pages remain unchanged. */
+.wp-landing .wp-landing-main { grid-template-rows: minmax(0, 1.2fr) minmax(0, 2.15fr) minmax(0, .9fr) minmax(0, .75fr); }
+.wp-landing .wp-landing-hero h1 {
+  color: #1e2b43;
+  font-size: clamp(25px, 2.15vw, 32px);
+  line-height: 1.25;
+  letter-spacing: -0.7px;
+  white-space: nowrap;
+}
+.wp-landing[lang="en"] .wp-landing-hero h1 { font-size: clamp(21px, 1.9vw, 27px); }
+.wp-landing .wp-landing-hero-lead span { display:block; white-space:nowrap; }
+.wp-landing .wp-landing-purpose-list li { display:flex; align-items:center; }
+.wp-landing .wp-landing-purpose-list li > div { width:100%; }
+.wp-landing .wp-landing-purpose-list p,
+.wp-landing .wp-landing-feature p { white-space:nowrap; }
+.wp-landing .wp-landing-section-index,
+.wp-landing .wp-landing-hero-index { letter-spacing:0; }
+.wp-landing .wp-landing-feature h3 { margin-bottom:6px; }
+@media (max-width: 980px), (max-height: 699px) {
+  .wp-landing .wp-landing-hero h1 { white-space:normal; }
+  .wp-landing .wp-landing-hero-lead span,
+  .wp-landing .wp-landing-purpose-list p,
+  .wp-landing .wp-landing-feature p { white-space:normal; }
+}
+@media (min-width: 981px) and (max-width: 1199px) {
+  .wp-landing .wp-landing-hero-lead span,
+  .wp-landing .wp-landing-purpose-list p,
+  .wp-landing .wp-landing-feature p { white-space:normal; }
+}
+
+/* v9: readable typography and team credits at the very end of the landing content.
+   Every selector is limited to .wp-landing. Do not alter dashboard styles. */
+.wp-landing { font-size: 16px; }
+.wp-landing .wp-landing-brand span { font-size: 16px; }
+.wp-landing .wp-landing-language { font-size: 15px; }
+.wp-landing .wp-landing-section-index,
+.wp-landing .wp-landing-hero-index { font-size: 15px; }
+.wp-landing .wp-landing-section h2 { font-size: 22px; }
+.wp-landing .wp-landing-hero h1 { font-size: clamp(27px, 2.35vw, 34px); }
+.wp-landing[lang="en"] .wp-landing-hero h1 { font-size: clamp(23px, 2vw, 29px); }
+.wp-landing .wp-landing-hero-lead { font-size: 16.5px; line-height: 1.5; }
+.wp-landing .wp-landing-primary { font-size: 16px; min-height: 40px; }
+.wp-landing .wp-landing-purpose-list strong { font-size: 16px; }
+.wp-landing .wp-landing-purpose-list p { font-size: 16px; line-height: 1.35; }
+.wp-landing .wp-landing-feature h3 { font-size: 16.5px; }
+.wp-landing .wp-landing-feature p { font-size: 16px; line-height: 1.35; }
+.wp-landing .wp-landing-member-role { font-size: 15px; }
+.wp-landing .wp-landing-member strong { font-size: clamp(18px, 1.5vw, 21px); }
+.wp-landing .wp-landing-repo-type { font-size: 15px; }
+.wp-landing .wp-landing-repo strong { font-size: 18px; }
+.wp-landing .wp-landing-repo p { font-size: 15.5px; }
+.wp-landing .wp-landing-repo-action { font-size: 15px; }
+.wp-landing .wp-landing-footer { font-size: 14px; }
+@media (max-width: 650px) {
+  .wp-landing .wp-landing-brand span { font-size: 14px; }
+  .wp-landing .wp-landing-section h2 { font-size: 21px; }
+  .wp-landing .wp-landing-hero h1 { font-size: clamp(24px, 6.5vw, 30px); }
+  .wp-landing .wp-landing-hero-lead span,
+  .wp-landing .wp-landing-purpose-list p,
+  .wp-landing .wp-landing-feature p { white-space: normal; }
 }

@@ -5,124 +5,103 @@ import "../styles/landing.css";
 const text = {
   ko: {
     languageAction: "English",
-    brandSubtitle: "CNC WearPoint · 공구 마모 예측 및 모니터링",
-    topicNumber: "01 / 주제",
-    topicLineOne: "CNC 공구 마모 예측",
-    topicLineTwo: "및 모니터링",
-    topicLead: "CNC 가공 이미지와 센서 데이터를 사용해 공구의 마모량과 유형을 예측합니다. 분석 결과와 경고 이력을 한 화면에서 확인할 수 있습니다.",
+    topicNumber: "주제",
+    topicTitle: "CNC 공구 마모 예측 및 모니터링",
+    topicLeadLines: [
+      "공구 이미지와 센서 데이터로 마모 상태를 예측합니다.",
+      "예측 결과와 알림 이력을 한 화면에서 확인합니다.",
+    ],
     dashboardAction: "모니터링 화면 보기",
-    teamNumber: "02 / 팀원",
+    teamNumber: "팀원",
     teamTitle: "AIM 팀원",
     teamDescription: "AIM 팀의 프로젝트 참여 인원입니다.",
+    footerTeam: "AIM 팀",
     leader: "팀장",
     member: "팀원",
-    purposeNumber: "03 / 서비스 목적",
+    purposeNumber: "서비스 목적",
     purposeTitle: "공구 상태와 예측 결과를 한 화면에서",
     purposeLead: "공구 이미지, 센서 신호, 마모 예측 결과를 연결해 상태를 확인하기 쉽도록 구성했습니다.",
     purposeOneTitle: "데이터 확인",
-    purposeOneDescription: "공구 이미지와 음향·진동·절삭력 센서 신호를 같은 화면에서 확인합니다.",
+    purposeOneDescription: "이미지와 센서 신호를 함께 확인합니다.",
     purposeTwoTitle: "마모 상태 파악",
-    purposeTwoDescription: "모델이 예측한 마모량, 마모 유형, 정상·경고·위험 상태를 표시합니다.",
+    purposeTwoDescription: "마모량과 마모 유형을 표시합니다.",
     purposeThreeTitle: "기록 조회",
-    purposeThreeDescription: "발생한 알림과 당시 저장된 예측 결과를 다시 확인할 수 있습니다.",
-    featuresNumber: "04 / 주요 기능",
+    purposeThreeDescription: "알림과 저장된 분석 결과를 조회합니다.",
+    featuresNumber: "주요 기능",
     featuresTitle: "주요 기능",
     featuresDescription: "자동 모니터링, 직접 업로드, 결과 및 알림 조회를 지원합니다.",
     featureOne: "자동 모니터링",
-    featureOneDescription: "서버가 관리하는 Set별 데이터 재생과 추론 결과를 화면에 표시합니다.",
+    featureOneDescription: "Set별 분석 결과를 표시합니다.",
     featureTwo: "수동 파일 분석",
-    featureTwoDescription: "공구 이미지와 센서 CSV를 업로드해 마모 예측을 요청할 수 있습니다.",
+    featureTwoDescription: "이미지·센서 CSV를 분석합니다.",
     featureThree: "마모 예측 결과",
-    featureThreeDescription: "예측 마모량과 유형, 정상·경고·위험 상태를 함께 보여줍니다.",
+    featureThreeDescription: "마모량·유형·상태를 보여줍니다.",
     featureFour: "알림 및 이력 조회",
-    featureFourDescription: "경고와 위험 알림을 확인하고 과거 알림의 저장된 예측 결과를 조회합니다.",
-    githubNumber: "05 / GitHub 링크",
+    featureFourDescription: "알림과 이전 결과를 확인합니다.",
+    githubNumber: "GitHub",
     githubTitle: "소스 코드",
-    githubDescription: "프론트엔드·백엔드·모델팀의 소스 코드를 확인할 수 있습니다.",
-    frontend: "Frontend",
-    frontendDescription: "React · 화면 구성 · 모니터링 · 알림 조회",
-    backend: "Backend",
-    backendDescription: "FastAPI · 측정 데이터 · 예측 API · 모니터링 상태",
-    ai: "AI 모델",
-    aiDescription: "데이터 전처리 · 마모 예측 모델",
+    githubDescription: "AIM 팀의 프로젝트 저장소를 한곳에서 확인할 수 있습니다.",
+    orgLabel: "AIM 팀 GitHub",
+    orgDescription: "프론트엔드 · 백엔드 · 모델 저장소",
     repoAction: "GitHub에서 보기",
     footer: "AIM | CNC WearPoint · 공구 마모 예측 및 모니터링",
   },
   en: {
     languageAction: "한국어",
-    brandSubtitle: "CNC WearPoint · Tool Wear Monitoring",
-    topicNumber: "01 / TOPIC",
-    topicLineOne: "CNC tool wear prediction",
-    topicLineTwo: "and monitoring",
-    topicLead: "Predict tool wear amount and type using machining images and sensor data. Review predictions and alert history on one screen.",
+    topicNumber: "TOPIC",
+    topicTitle: "CNC tool wear prediction and monitoring",
+    topicLeadLines: [
+      "Estimate tool wear from images and sensor data.",
+      "View predictions and alert history together.",
+    ],
     dashboardAction: "Open monitoring dashboard",
-    teamNumber: "02 / TEAM",
+    teamNumber: "TEAM",
     teamTitle: "Team AIM",
     teamDescription: "The five members who built the project.",
+    footerTeam: "Team AIM",
     leader: "Team lead",
     member: "Team member",
-    purposeNumber: "03 / PURPOSE",
+    purposeNumber: "PURPOSE",
     purposeTitle: "Tool condition and predictions in one place",
     purposeLead: "The service presents tool images, sensor signals, and prediction results together for easier review.",
     purposeOneTitle: "View the data",
-    purposeOneDescription: "Review tool images and acoustic, vibration, and cutting-force sensor signals together.",
+    purposeOneDescription: "View tool images and sensor signals.",
     purposeTwoTitle: "Understand wear",
-    purposeTwoDescription: "Display predicted wear amount and type, along with normal, warning, and danger statuses.",
+    purposeTwoDescription: "Show predicted wear amount and type.",
     purposeThreeTitle: "Review history",
-    purposeThreeDescription: "Look up alerts and the prediction results saved at the time they occurred.",
-    featuresNumber: "04 / FEATURES",
+    purposeThreeDescription: "Review alerts and saved results.",
+    featuresNumber: "FEATURES",
     featuresTitle: "Main features",
     featuresDescription: "Automated monitoring, file uploads, predictions, and alerts.",
     featureOne: "Automated monitoring",
-    featureOneDescription: "Display server-coordinated playback of tool sets and their inference results.",
+    featureOneDescription: "See results for each tool set.",
     featureTwo: "Manual file analysis",
-    featureTwoDescription: "Upload a tool image and sensor CSV to request a wear prediction.",
+    featureTwoDescription: "Analyze an image and sensor CSV.",
     featureThree: "Wear prediction results",
-    featureThreeDescription: "View predicted wear amount, wear type, and normal, warning, or danger status.",
+    featureThreeDescription: "View wear amount, type, and status.",
     featureFour: "Alerts and history",
-    featureFourDescription: "Review warnings, danger alerts, and saved historical prediction results.",
-    githubNumber: "05 / GITHUB",
+    featureFourDescription: "Review alerts and past results.",
+    githubNumber: "GITHUB",
     githubTitle: "Source code",
-    githubDescription: "Explore the frontend, backend, and AI model repositories.",
-    frontend: "Frontend",
-    frontendDescription: "React · User interface · Monitoring · Alerts",
-    backend: "Backend",
-    backendDescription: "FastAPI · Measurements · Prediction API · Monitoring state",
-    ai: "AI Model",
-    aiDescription: "Data preprocessing · Wear prediction models",
+    githubDescription: "Browse the AIM team repositories in one place.",
+    orgLabel: "AIM Team GitHub",
+    orgDescription: "Frontend · Backend · Model repositories",
     repoAction: "View on GitHub",
     footer: "AIM | CNC WearPoint · Tool wear prediction and monitoring",
   },
 };
 
+// English names are display romanizations; confirm preferred spellings with each member.
 const members = [
-  { name: "구민석", lead: true },
-  { name: "강지인" },
-  { name: "김정훈" },
-  { name: "신상석" },
-  { name: "오성일" },
-];
-
-const repositories = [
-  {
-    key: "frontend",
-    name: "cnc-wearpoint-frontend",
-    href: "https://github.com/Goodee-AIM/cnc-wearpoint-frontend",
-  },
-  {
-    key: "backend",
-    name: "cnc-wearpoint-backend",
-    href: "https://github.com/Goodee-AIM/cnc-wearpoint-backend",
-  },
-  {
-    key: "ai",
-    name: "cnc-wearpoint-AI",
-    href: "https://github.com/Goodee-AIM/cnc-wearpoint-AI",
-  },
+  { ko: "구민석", en: "Gu Min-seok", lead: true },
+  { ko: "강지인", en: "Kang Ji-in" },
+  { ko: "김정훈", en: "Kim Jeong-hun" },
+  { ko: "신상석", en: "Shin Sang-seok" },
+  { ko: "오성일", en: "Oh Seong-il" },
 ];
 
 export default function LandingPage() {
-  const { i18n } = useTranslation();
+  const { i18n, t: translate } = useTranslation();
   const language = i18n.resolvedLanguage?.startsWith("en") ? "en" : "ko";
   const t = text[language];
 
@@ -133,7 +112,7 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="wp-landing">
+    <div className="wp-landing" lang={language}>
       <a className="wp-landing-skip" href="#wp-landing-main">
         {language === "ko" ? "본문으로 이동" : "Skip to content"}
       </a>
@@ -141,7 +120,7 @@ export default function LandingPage() {
         <div className="wp-landing-header-inner">
           <a href="/" className="wp-landing-brand" aria-label="AIM">
             <strong>AIM</strong>
-            <span>{t.brandSubtitle}</span>
+            <span>{translate("app.title")}</span>
           </a>
           <button type="button" className="wp-landing-language" onClick={changeLanguage}>
             {t.languageAction}
@@ -154,28 +133,11 @@ export default function LandingPage() {
           <div className="wp-landing-container wp-landing-hero-grid">
             <div>
               <p className="wp-landing-hero-index">{t.topicNumber}</p>
-              <h1 id="wp-landing-title">
-                {t.topicLineOne}
-                <span>{t.topicLineTwo}</span>
-              </h1>
-              <p className="wp-landing-hero-lead">{t.topicLead}</p>
+              <h1 id="wp-landing-title">{t.topicTitle}</h1>
+              <p className="wp-landing-hero-lead">
+                {t.topicLeadLines.map((sentence) => <span key={sentence}>{sentence}</span>)}
+              </p>
               <a href="/dashboard" className="wp-landing-primary">{t.dashboardAction}</a>
-            </div>
-          </div>
-        </section>
-
-        <section className="wp-landing-section wp-landing-team" id="team" aria-labelledby="wp-landing-team-title">
-          <div className="wp-landing-container">
-            <p className="wp-landing-section-index">{t.teamNumber}</p>
-            <h2 id="wp-landing-team-title">{t.teamTitle}</h2>
-            <p className="wp-landing-section-lead">{t.teamDescription}</p>
-            <div className="wp-landing-team-grid">
-              {members.map((person) => (
-                <div className="wp-landing-member" key={person.name}>
-                  <span className="wp-landing-member-role">{person.lead ? t.leader : t.member}</span>
-                  <strong>{person.name}</strong>
-                </div>
-              ))}
             </div>
           </div>
         </section>
@@ -192,9 +154,8 @@ export default function LandingPage() {
                 [t.purposeOneTitle, t.purposeOneDescription],
                 [t.purposeTwoTitle, t.purposeTwoDescription],
                 [t.purposeThreeTitle, t.purposeThreeDescription],
-              ].map(([title, description], index) => (
+              ].map(([title, description]) => (
                 <li key={title}>
-                  <span>{String(index + 1).padStart(2, "0")}</span>
                   <div><strong>{title}</strong><p>{description}</p></div>
                 </li>
               ))}
@@ -213,9 +174,8 @@ export default function LandingPage() {
                 [t.featureTwo, t.featureTwoDescription],
                 [t.featureThree, t.featureThreeDescription],
                 [t.featureFour, t.featureFourDescription],
-              ].map(([title, description], index) => (
+              ].map(([title, description]) => (
                 <article key={title} className="wp-landing-feature">
-                  <span className="wp-landing-feature-number">{String(index + 1).padStart(2, "0")}</span>
                   <h3>{title}</h3>
                   <p>{description}</p>
                 </article>
@@ -230,25 +190,44 @@ export default function LandingPage() {
             <h2 id="wp-landing-github-title">{t.githubTitle}</h2>
             <p className="wp-landing-section-lead">{t.githubDescription}</p>
             <div className="wp-landing-repo-grid">
-              {repositories.map((repo) => (
-                <a className="wp-landing-repo" key={repo.key} href={repo.href} target="_blank" rel="noopener noreferrer">
-                  <div>
-                    <span className="wp-landing-repo-type">{t[repo.key]}</span>
-                    <strong>Goodee-AIM / {repo.name}</strong>
-                    <p>{t[`${repo.key}Description`]}</p>
-                  </div>
-                  <span className="wp-landing-repo-action">{t.repoAction}</span>
-                </a>
+              <a
+                className="wp-landing-repo"
+                href="https://github.com/Goodee-AIM/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <div>
+                  <span className="wp-landing-repo-type">{t.orgLabel}</span>
+                  <strong>github.com/Goodee-AIM</strong>
+                  <p>{t.orgDescription}</p>
+                </div>
+                <span className="wp-landing-repo-action">{t.repoAction}</span>
+              </a>
+            </div>
+          </div>
+        </section>
+        <section className="wp-landing-section wp-landing-team" id="team" aria-labelledby="wp-landing-team-title">
+          <div className="wp-landing-container">
+            <p className="wp-landing-section-index">{t.teamNumber}</p>
+            <h2 id="wp-landing-team-title">{t.teamTitle}</h2>
+            <p className="wp-landing-section-lead">{t.teamDescription}</p>
+            <div className="wp-landing-team-grid">
+              {members.map((person) => (
+                <div className="wp-landing-member" key={person.ko}>
+                  <span className="wp-landing-member-role">{person.lead ? t.leader : t.member}</span>
+                  <strong>{person[language]}</strong>
+                </div>
               ))}
             </div>
           </div>
         </section>
+
       </main>
 
       <footer className="wp-landing-footer">
         <div className="wp-landing-container">
           <span>{t.footer}</span>
-          <span>Team AIM</span>
+          <span>{t.footerTeam}</span>
         </div>
       </footer>
     </div>
