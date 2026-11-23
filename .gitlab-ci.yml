@@ -27,6 +27,7 @@ lint_frontend:
   script:
     - npm ci --cache .npm --prefer-offline
     - npm run lint
+    - node --test tests/*.test.js
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 

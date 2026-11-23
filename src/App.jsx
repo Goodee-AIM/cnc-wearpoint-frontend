@@ -5,6 +5,7 @@ import { SETS } from "./dashboardConfig.js";
 import { toAlert, toMeasurement, toSensorChannels } from "./aim-ui/adapters.js";
 import { matchingReplayPrediction, sameReplayOccurrence } from "./utils/monitoringRunIdentity.js";
 import { gatedAlertRecords } from "./utils/gatedAlertFeed.js";
+import { applyAlertPreview } from "./utils/alertPreview.js";
 import "./aim-ui/styles/global.css";
 import "./aim-ui/styles/alerts.css";
 import "./aim-ui/styles/integration.css";
@@ -33,7 +34,13 @@ export default function App() {
   const prediction = monitoring.gatedPlayback
     ? matchingReplayPrediction(visible, matchingRun)
     : null;
-  // Never show ground-truth labels as AI predictions in gated replay mode.
+  // Historical review displays the prediction saved with the alert.
+  // Unlike live monitoring, it never starts a new Serving inference.
+  const historySnapshot = dashboard.diagnosis.alertSnapshot;
+  const historicalMeasurement = applyAlertPreview(
+    originalMeasurement, historySnapshot, dashboard.selectedSet,
+  );
+  // Live gated monitoring remains server-authoritative and unchanged.
   const measurement = monitoring.gatedPlayback ? {
     ...originalMeasurement,
     judgedWear: null,
@@ -42,7 +49,7 @@ export default function App() {
     wearTypeLabel: prediction?.wearTypeLabel ?? null,
     status: prediction?.status ?? 'pending',
     basis: 'prediction',
-  } : originalMeasurement;
+  } : historicalMeasurement;
   const liveInferenceAlerts = monitoring.gatedPlayback
     ? gatedAlertRecords(monitoring.sessionId, monitoring.allSetPlayback, monitoring.inferenceRuns)
     : [];
