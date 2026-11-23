@@ -82,20 +82,20 @@ test("dashboard AIM logo leads to the project introduction", () => {
 test("desktop landing uses one viewport and preserves all five sections", () => {
   const styles = read("src/aim-ui/styles/landing.css");
   assert.match(styles, /grid-template-areas:\s*"topic topic"\s*"purpose features"\s*"github github"\s*"team team"/);
-  assert.match(styles, /height:\s*100dvh;\s*overflow:\s*hidden/);
-  assert.match(styles, /min-width:\s*981px/);
-  assert.match(styles, /min-height:\s*700px/);
+  assert.match(styles, /height:100dvh; overflow:hidden/);
+  assert.match(styles, /min-width:1181px/);
+  assert.match(styles, /min-height:720px/);
   // When space is genuinely insufficient, content remains readable rather than being clipped.
-  assert.match(styles, /max-width:\s*980px/);
-  assert.match(styles, /overflow:\s*visible/);
+  assert.match(styles, /max-width:1180px/);
+  assert.match(styles, /overflow:visible/);
 });
 
 test("landing uses readable scoped text and does not change dashboard CSS", () => {
   const styles = read("src/aim-ui/styles/landing.css");
   const landing = read("src/aim-ui/pages/LandingPage.jsx");
-  assert.match(styles, /Readable AIM landing-only typography/);
-  assert.match(styles, /\.wp-landing \.wp-landing-feature p \{ font-size: 14\.5px/);
-  assert.match(styles, /\.wp-landing \.wp-landing-section h2 \{ font-size: 20px/);
+  assert.match(styles, /AIM landing only/);
+  assert.match(styles, /font-size:clamp\(18px,1\.35vw,22px\)/);
+  assert.match(styles, /font-size:clamp\(23px,1\.7vw,28px\)/);
   assert.match(landing, /href="https:\/\/github\.com\/Goodee-AIM\/"/);
 });
 
@@ -106,7 +106,7 @@ test("landing has a single-color complete title and one sentence per line", () =
   assert.match(landing, /<h1 id="wp-landing-title">\{t\.topicTitle\}<\/h1>/);
   assert.doesNotMatch(landing, /topicLineOne|topicLineTwo/);
   assert.match(landing, /topicLeadLines\.map/);
-  assert.match(styles, /\.wp-landing \.wp-landing-hero h1 \{[\s\S]*?color: #1e2b43/);
+  assert.match(styles, /\.wp-landing \.wp-landing-hero h1 \{[\s\S]*?color:#1e2b43/);
   assert.doesNotMatch(landing, /wp-landing-feature-number/);
   assert.match(landing, /href="https:\/\/github\.com\/Goodee-AIM\/"/);
 });
@@ -115,10 +115,10 @@ test("team listing is last, uses readable fonts, and dashboard files are outside
   const landing = read("src/aim-ui/pages/LandingPage.jsx");
   const styles = read("src/aim-ui/styles/landing.css");
   assert.ok(landing.lastIndexOf('id="team"') > landing.lastIndexOf('id="github"'));
-  assert.match(styles, /\.wp-landing \.wp-landing-section h2 \{ font-size: 22px; \}/);
-  assert.match(styles, /\.wp-landing \.wp-landing-feature p \{ font-size: 16px;/);
-  assert.match(styles, /\.wp-landing \.wp-landing-purpose-list p \{ font-size: 16px;/);
-  assert.match(styles, /\.wp-landing \.wp-landing-member strong \{ font-size: clamp\(18px,/);
+  assert.match(styles, /font-size:clamp\(23px,1\.7vw,28px\)/);
+  assert.match(styles, /font-size:clamp\(18px,1\.35vw,22px\)/);
+  assert.match(styles, /font-size:clamp\(18px,1\.35vw,22px\)/);
+  assert.match(styles, /\.wp-landing \.wp-landing-member strong \{ font-size:clamp\(20px,/);
 });
 
 
@@ -144,11 +144,11 @@ test("Korean and English landing dictionaries have matching keys and every visib
 test("all five team names switch to English romanizations and original Korean names remain", () => {
   const landing = read("src/aim-ui/pages/LandingPage.jsx");
   const members = [
-    ["구민석", "Gu Min-seok"],
+    ["구민석", "Koo Min-seok"],
     ["강지인", "Kang Ji-in"],
-    ["김정훈", "Kim Jeong-hun"],
+    ["김정훈", "Kim Jeong-hoon"],
     ["신상석", "Shin Sang-seok"],
-    ["오성일", "Oh Seong-il"],
+    ["오성일", "Oh-sung-il"],
   ];
   for (const [ko, en] of members) {
     assert.ok(landing.includes(`ko: "${ko}", en: "${en}"`), `bilingual name missing: ${ko}`);
@@ -157,4 +157,25 @@ test("all five team names switch to English romanizations and original Korean na
   assert.match(landing, /lang=\{language\}/);
   assert.match(landing, /person\.lead \? t\.leader : t\.member/);
   assert.doesNotMatch(landing, /<strong>\{person\.name\}<\/strong>/);
+});
+
+
+test("the hero has no topic label and four purpose cards match four feature cards", () => {
+  const landing = read("src/aim-ui/pages/LandingPage.jsx");
+  const styles = read("src/aim-ui/styles/landing.css");
+  assert.doesNotMatch(landing, /topicNumber|wp-landing-hero-index/);
+  assert.match(landing, /purposeFourTitle: "상태 구분"/);
+  assert.match(landing, /purposeFourTitle: "Status levels"/);
+  assert.match(landing, /\[t\.purposeFourTitle, t\.purposeFourDescription\]/);
+  assert.match(styles, /\.wp-landing \.wp-landing-purpose-list li,\s*\.wp-landing \.wp-landing-feature\s*\{/);
+  assert.match(styles, /grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+});
+
+test("large readable landing type remains strictly scoped and never changes dashboard CSS", () => {
+  const styles = read("src/aim-ui/styles/landing.css");
+  assert.match(styles, /\.wp-landing \{[\s\S]*?font-size: 18px/);
+  assert.match(styles, /font-size:clamp\(29px,2\.6vw,43px\)/);
+  assert.match(styles, /font-size:clamp\(20px,1\.55vw,25px\)/);
+  assert.match(styles, /font-size:clamp\(18px,1\.35vw,22px\)/);
+  assert.doesNotMatch(styles, /^\s*(?:body|header|main|footer|nav|\.logo|\.brand|:root)\s*\{/m);
 });

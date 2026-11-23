@@ -1,255 +1,177 @@
-/* AIM landing colors match the monitoring dashboard; all selectors remain scoped. */
+/* AIM landing only. No selectors target dashboard, App, or other pages. */
 .wp-landing {
-  --wp-navy: #3267e8;
-  --wp-ink: #1e2b43;
   --wp-blue: #3267e8;
-  --wp-muted: #75849b;
+  --wp-ink: #1e2b43;
+  --wp-muted: #52647b;
   --wp-line: #e2e7ef;
-  --wp-paper: #ffffff;
-  min-height: 100dvh;
   background: #f5f7fb;
   color: var(--wp-ink);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
-  font-size: 13px;
-  line-height: 1.45;
+  font-size: 18px;
+  line-height: 1.35;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }
 .wp-landing *, .wp-landing *::before, .wp-landing *::after { box-sizing: border-box; }
-.wp-landing a { color: inherit; text-decoration: none; }
-.wp-landing .wp-landing-container { width: 100%; max-width: none; margin: 0; }
-.wp-landing .wp-landing-skip { position: absolute; top: -80px; left: 12px; z-index: 1100; padding: 9px 12px; background: var(--wp-navy); color: #fff; }
-.wp-landing .wp-landing-skip:focus { top: 8px; }
+.wp-landing a { text-decoration: none; }
+.wp-landing .wp-landing-container { width: 100%; height: 100%; min-height: 0; }
+.wp-landing .wp-landing-skip { position:absolute; top:-80px; left:12px; z-index:100; padding:10px 14px; background:#3267e8; color:white; }
+.wp-landing .wp-landing-skip:focus { top:8px; }
 
+/* Match the dashboard logo font and palette, without editing the dashboard. */
 .wp-landing .wp-landing-header {
-  height: 55px; min-height: 55px; padding: 0 2.4%;
-  background: #fff; border: 0; border-bottom: 1px solid var(--wp-line);
-  position: relative; z-index: 1; overflow: visible;
-  display: flex; align-items: center; flex: none;
+  flex: none; height: 58px; padding: 0 2.5%; background: white;
+  border-bottom: 1px solid var(--wp-line); display: flex; align-items: center;
 }
-.wp-landing .wp-landing-header-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; }
-.wp-landing .wp-landing-brand { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 12px; }
-.wp-landing .wp-landing-brand strong { font-size: 23px; letter-spacing: 2.4px; font-weight: 850; color: var(--wp-navy); }
-.wp-landing .wp-landing-brand span { font-size: 12px; color: #69788d; }
-.wp-landing .wp-landing-language { padding: 6px 12px; min-height: 32px; border: 1px solid #e1e7ef; border-radius: 4px; background: #fff; color: #526581; font: inherit; font-weight: 650; font-size: 12px; }
-.wp-landing .wp-landing-language:hover { background: #f1f5ff; border-color: #b2c7ff; }
+.wp-landing .wp-landing-header-inner { display:flex; width:100%; align-items:center; justify-content:space-between; gap:14px; }
+.wp-landing .wp-landing-brand { display:inline-flex; align-items:center; flex-wrap:wrap; gap:22px; color:var(--wp-ink); }
+.wp-landing .wp-landing-brand strong { font-size:31px; letter-spacing:4px; font-weight:800; line-height:1; color:var(--wp-blue); }
+.wp-landing .wp-landing-brand span { font-size:18px; font-weight:600; border-left:1px solid var(--wp-line); padding-left:22px; color:#69788d; }
+.wp-landing .wp-landing-language {
+  font:inherit; font-size:16px; font-weight:700; color:#3a527c;
+  padding:7px 14px; min-height:36px; border:1px solid var(--wp-line);
+  border-radius:5px; background:white; cursor:pointer;
+}
+.wp-landing .wp-landing-language:hover { background:#eff4ff; border-color:#bdd0ff; }
 
-/* Desktop: five topics, in reading order, within a single viewport. */
 .wp-landing .wp-landing-main {
-  width: min(calc(100% - 48px), 1470px); max-width: none;
-  margin: 0 auto; padding: 10px 0; flex: 1; min-height: 0;
-  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  grid-template-areas: "topic topic" "purpose features" "github github" "team team";
-  grid-template-rows: minmax(0, 1.12fr) minmax(0, 1.95fr) minmax(0, 1.19fr) minmax(0, .77fr);
-  gap: 9px; align-content: stretch;
+  width: min(calc(100% - 28px), 1510px);
+  max-width: none; margin:0 auto; padding: 9px 0;
+  flex:1; min-height:0; display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  grid-template-areas:"topic topic" "purpose features" "github github" "team team";
+  grid-template-rows:minmax(0,1.12fr) minmax(0,3.12fr) minmax(0,.82fr) minmax(0,.97fr);
+  gap:9px;
 }
-.wp-landing .wp-landing-main > section { min-width: 0; min-height: 0; overflow: hidden; border: 1px solid var(--wp-line); border-radius: 6px; background: #fff; }
-.wp-landing .wp-landing-main > section.wp-landing-hero { grid-area: topic; }
-.wp-landing .wp-landing-main > section.wp-landing-team { grid-area: team; }
-.wp-landing .wp-landing-main > section.wp-landing-purpose { grid-area: purpose; }
-.wp-landing .wp-landing-main > section.wp-landing-features { grid-area: features; }
-.wp-landing .wp-landing-main > section.wp-landing-github { grid-area: github; }
-.wp-landing .wp-landing-main > section > .wp-landing-container { height: 100%; min-height: 0; }
-.wp-landing .wp-landing-section-index, .wp-landing .wp-landing-hero-index { display: block; color: #3267e8; font-size: 10px; font-weight: 800; line-height: 1.2; letter-spacing: .6px; margin: 0 0 5px; }
-.wp-landing .wp-landing-section h2 { display: block; font-size: 17px; line-height: 1.28; letter-spacing: -.45px; font-weight: 800; margin: 0; color: var(--wp-ink); }
-.wp-landing .wp-landing-section-lead { color: var(--wp-muted); margin: 4px 0 0; font-size: 11px; line-height: 1.4; }
+.wp-landing .wp-landing-main > section {
+  min-width:0; min-height:0; border:1px solid var(--wp-line);
+  border-radius:6px; background:white; overflow:visible;
+}
+.wp-landing .wp-landing-hero { grid-area:topic; background:#eff4ff !important; border-color:#dce6ff !important; }
+.wp-landing .wp-landing-purpose { grid-area:purpose; }
+.wp-landing .wp-landing-features { grid-area:features; }
+.wp-landing .wp-landing-github { grid-area:github; }
+.wp-landing .wp-landing-team { grid-area:team; }
+.wp-landing .wp-landing-section-index { display:none; }
+.wp-landing .wp-landing-section h2 { font-size:clamp(23px,1.7vw,28px); line-height:1.18; font-weight:800; letter-spacing:-.5px; margin:0; color:#1e2b43; }
+.wp-landing .wp-landing-section-lead { display:none; }
 
-/* 01 / Topic: headline left, explanation + working entry link right. */
-.wp-landing .wp-landing-hero { background: #eff4ff !important; border-color: #dce6ff !important; }
-.wp-landing .wp-landing-hero-grid { display: block; padding: 16px 24px; }
+/* Hero: one title, one color, each sentence gets its own line. */
+.wp-landing .wp-landing-hero-grid { padding:13px 23px; }
 .wp-landing .wp-landing-hero-grid > div {
-  height: 100%; display: grid; column-gap: 28px; align-content: center;
-  grid-template-columns: minmax(0,1.07fr) minmax(0,.93fr);
-  grid-template-rows: auto auto auto;
+  display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);
+  grid-template-rows:auto auto; gap:4px 22px; align-content:center; height:100%;
 }
-.wp-landing .wp-landing-hero-index { grid-column: 1; grid-row: 1; align-self: end; }
-.wp-landing .wp-landing-hero h1 { grid-column: 1; grid-row: 2 / span 2; display: block; align-self: center; margin: 0; color: #1e2b43; font-size: clamp(24px, 2.6vw, 38px); line-height: 1.13; font-weight: 850; letter-spacing: -1.2px; word-break: keep-all; }
-
-.wp-landing .wp-landing-hero-lead { grid-column: 2; grid-row: 1 / span 2; align-self: end; color: #586b88; font-size: clamp(11px, 1.05vw, 14px); margin: 0 0 10px; line-height: 1.5; word-break: keep-all; }
-.wp-landing .wp-landing-primary { grid-column: 2; grid-row: 3; justify-self: start; display: inline-flex; justify-content: center; align-items: center; font-size: 12px; font-weight: 750; min-height: 34px; background: #3267e8; color: #fff; border-radius: 4px; padding: 7px 15px; border: 1px solid #3267e8; }
-.wp-landing .wp-landing-primary:hover { background: #2758ce; }
-
-/* 02 / Team: compact, single row rather than tall profile cards. */
-.wp-landing .wp-landing-team > .wp-landing-container { padding: 11px 17px; display: grid; grid-template-columns: 150px minmax(0,1fr); grid-template-rows: auto 1fr; column-gap: 14px; align-items: center; }
-.wp-landing .wp-landing-team .wp-landing-section-index { grid-column:1; grid-row:1; }
-.wp-landing .wp-landing-team h2 { grid-column:1; grid-row:2; align-self: start; }
-.wp-landing .wp-landing-team .wp-landing-section-lead { display: none; }
-.wp-landing .wp-landing-team-grid { grid-column:2; grid-row:1 / span 2; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:7px; align-items:stretch; height:100%; min-height:0; margin:0; }
-.wp-landing .wp-landing-member { min-height:0; padding:6px 10px; border:1px solid var(--wp-line); border-radius:4px; display:flex; flex-direction:column; justify-content:center; background:#fafbff; gap:2px; }
-.wp-landing .wp-landing-member-role { color:#7a879b; font-size:11px; }
-.wp-landing .wp-landing-member strong { color:var(--wp-ink); font-size:clamp(13px,1.16vw,17px); font-weight:800; overflow-wrap:anywhere; }
-
-/* 03 / Purpose */
-.wp-landing .wp-landing-purpose > .wp-landing-container { padding: 12px 19px; display:flex; flex-direction:column; }
-.wp-landing .wp-landing-purpose-grid > div:first-child { flex:none; }
-.wp-landing .wp-landing-purpose .wp-landing-section-lead { display:none; }
-.wp-landing .wp-landing-purpose-list { list-style:none; margin:9px 0 0; padding:0; display:grid; grid-template-rows:repeat(3, minmax(0, 1fr)); flex:1; min-height:0; }
-.wp-landing .wp-landing-purpose-list li { min-height:0; display:grid; grid-template-columns:23px minmax(0,1fr); column-gap:9px; align-content:center; border-top:1px solid #edf0f5; padding:3px 0; }
-.wp-landing .wp-landing-purpose-list li > span { color:#3267e8; font-size:10px; font-weight:800; padding-top:1px; }
-.wp-landing .wp-landing-purpose-list strong { display:block; font-size:12px; line-height:1.35; color:#24344f; }
-.wp-landing .wp-landing-purpose-list p { color:#75849b; font-size:12px; line-height:1.35; margin:2px 0 0; word-break:keep-all; }
-
-/* 04 / Features */
-.wp-landing .wp-landing-features > .wp-landing-container { padding:12px 19px; display:flex; flex-direction:column; }
-.wp-landing .wp-landing-features .wp-landing-section-lead { display:none; }
-.wp-landing .wp-landing-feature-grid { display:grid; flex:1; min-height:0; grid-template-columns:repeat(2,minmax(0,1fr)); grid-template-rows:repeat(2,minmax(0,1fr)); gap:7px; margin-top:9px; }
-.wp-landing .wp-landing-feature { padding:7px 11px; min-height:0; border-radius:4px; border:1px solid #e2e7ef; background:#f9fbff; overflow:hidden; }
-.wp-landing .wp-landing-feature-number { display:block; color:#3267e8; font-size:9px; font-weight:750; line-height:1; margin-bottom:2px; }
-.wp-landing .wp-landing-feature h3 { display:block; margin:0; color:#24344f; font-size:13px; line-height:1.2; font-weight:800; }
-.wp-landing .wp-landing-feature p { color:#718096; font-size:11.5px; line-height:1.32; margin:3px 0 0; word-break:keep-all; }
-
-/* 05 / GitHub */
-.wp-landing .wp-landing-github { background:#f2f5fc !important; }
-.wp-landing .wp-landing-github > .wp-landing-container { padding: 13px 16px; display:grid; grid-template-columns: 134px minmax(0,1fr); grid-template-rows: auto 1fr; column-gap: 16px; align-items:center; }
-.wp-landing .wp-landing-github .wp-landing-section-index { grid-column:1; grid-row:1; }
-.wp-landing .wp-landing-github h2 { grid-column:1; grid-row:2; align-self:start; }
-.wp-landing .wp-landing-github .wp-landing-section-lead { display:none; }
-.wp-landing .wp-landing-repo-grid { grid-column:2; grid-row:1 / span 2; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:0; height:100%; min-height:0; }
-.wp-landing .wp-landing-repo { display:flex; flex-direction:column; justify-content:space-between; min-width:0; min-height:0; padding:7px 11px; border-radius:4px; background:#fff; border:1px solid #dce4f2; gap:3px; }
-.wp-landing .wp-landing-repo:hover { border-color:#3267e8; background:#fff; }
-.wp-landing .wp-landing-repo-type { display:block; font-size:10px; font-weight:800; color:#3267e8; margin:0; }
-.wp-landing .wp-landing-repo strong { display:block; font-size:12px; line-height:1.25; color:#24344f; font-weight:750; overflow-wrap:anywhere; }
-.wp-landing .wp-landing-repo p { font-size:11px; line-height:1.3; margin:3px 0 0; color:#75849b; word-break:keep-all; }
-.wp-landing .wp-landing-repo-action { font-size:11px; font-weight:750; color:#3267e8; }
-
-.wp-landing .wp-landing-footer { display:flex; flex:none; align-items:center; padding:0 2.4%; height:27px; min-height:27px; background:#fff; border-top:1px solid #e2e7ef; font-size:10px; color:#8894a8; }
-.wp-landing .wp-landing-footer > .wp-landing-container { display:flex; justify-content:space-between; gap:12px; }
-
-/* Scrolling is disabled only when there is actually enough room for the full desktop layout.
-   Smaller viewports, browser zoom, and phones must remain accessible without clipping. */
-@media (min-width: 981px) and (min-height: 700px) {
-  .wp-landing { height: 100dvh; overflow: hidden; }
-}
-@media (max-height: 799px) and (min-width: 981px) {
-  .wp-landing .wp-landing-main { grid-template-rows: minmax(0,1.02fr) minmax(0,1.98fr) minmax(0,1.13fr) minmax(0,.73fr); gap:7px; padding:8px 0; }
-  .wp-landing .wp-landing-purpose > .wp-landing-container, .wp-landing .wp-landing-features > .wp-landing-container { padding-top:9px; padding-bottom:9px; }
-}
-@media (max-width: 980px), (max-height: 699px) {
-  .wp-landing { height:auto; min-height:100dvh; overflow:visible; }
-  .wp-landing .wp-landing-main { width:min(calc(100% - 30px),900px); display:flex; flex-direction:column; gap:10px; padding:14px 0; }
-  .wp-landing .wp-landing-main > section { overflow:visible; }
-  .wp-landing .wp-landing-hero-grid { padding:20px; }
-  .wp-landing .wp-landing-team > .wp-landing-container,
-  .wp-landing .wp-landing-purpose > .wp-landing-container,
-  .wp-landing .wp-landing-features > .wp-landing-container,
-  .wp-landing .wp-landing-github > .wp-landing-container { padding:18px; }
-  .wp-landing .wp-landing-team-grid { min-height:57px; }
-  .wp-landing .wp-landing-purpose-list { min-height:145px; }
-  .wp-landing .wp-landing-feature-grid { min-height:185px; }
-  .wp-landing .wp-landing-repo-grid { min-height:125px; }
-}
-@media (max-width: 650px) {
-  .wp-landing .wp-landing-header { min-height:56px; height:auto; padding:8px 16px; }
-  .wp-landing .wp-landing-brand { gap:0; display:flex; flex-direction:column; line-height:1.2; }
-  .wp-landing .wp-landing-brand strong { font-size:19px; }
-  .wp-landing .wp-landing-brand span { font-size:10px; }
-  .wp-landing .wp-landing-hero-grid > div { display:block; }
-  .wp-landing .wp-landing-hero h1 { font-size:29px; }
-  .wp-landing .wp-landing-hero-lead { margin:13px 0; font-size:12px; }
-  .wp-landing .wp-landing-team > .wp-landing-container,
-  .wp-landing .wp-landing-github > .wp-landing-container { display:block; }
-  .wp-landing .wp-landing-team-grid { grid-template-columns:repeat(2,minmax(0,1fr)); margin-top:12px; }
-  .wp-landing .wp-landing-member { min-height:52px; }
-  .wp-landing .wp-landing-repo-grid { grid-template-columns:1fr; margin-top:11px; }
-  .wp-landing .wp-landing-feature-grid { grid-template-columns:1fr; grid-template-rows:none; }
-  .wp-landing .wp-landing-feature { padding:12px; }
-  .wp-landing .wp-landing-repo { min-height:88px; }
-  .wp-landing .wp-landing-footer { height:auto; min-height:34px; padding:8px 16px; }
-  .wp-landing .wp-landing-footer > .wp-landing-container { flex-wrap:wrap; }
-}
-
-/* Readable AIM landing-only typography. Never target the global dashboard. */
-.wp-landing { font-size: 15px; }
-.wp-landing .wp-landing-brand { align-items: center; gap: 25px; }
-.wp-landing .wp-landing-brand strong { font-size: 31px; letter-spacing: 4px; font-weight: 800; line-height: 1; }
-.wp-landing .wp-landing-brand span { font-size: 14px; font-weight: 600; border-left: 1px solid var(--wp-line); padding-left: 24px; }
-.wp-landing .wp-landing-language { font-size: 13px; }
-.wp-landing .wp-landing-section-index,
-.wp-landing .wp-landing-hero-index { font-size: 13px; }
-.wp-landing .wp-landing-section h2 { font-size: 20px; }
-.wp-landing .wp-landing-hero-lead { font-size: clamp(15px, 1.2vw, 16.5px); }
-.wp-landing .wp-landing-primary { font-size: 14px; min-height: 38px; }
-.wp-landing .wp-landing-member-role { font-size: 13px; }
-.wp-landing .wp-landing-member strong { font-size: clamp(16px, 1.45vw, 19px); }
-.wp-landing .wp-landing-purpose-list li > span { font-size: 12px; }
-.wp-landing .wp-landing-purpose-list strong { font-size: 14px; }
-.wp-landing .wp-landing-purpose-list p { font-size: 14.5px; line-height: 1.35; }
-.wp-landing .wp-landing-feature-number { display: none; }
-.wp-landing .wp-landing-feature h3 { font-size: 15px; }
-.wp-landing .wp-landing-feature p { font-size: 14.5px; line-height: 1.32; }
-.wp-landing .wp-landing-repo-grid { grid-template-columns: minmax(0,1fr); }
-.wp-landing .wp-landing-repo { flex-direction: row; align-items: center; gap: 16px; padding: 10px 17px; }
-.wp-landing .wp-landing-repo-type { font-size: 14px; }
-.wp-landing .wp-landing-repo strong { font-size: 17px; }
-.wp-landing .wp-landing-repo p { font-size: 14px; }
-.wp-landing .wp-landing-repo-action { font-size: 14px; white-space: nowrap; }
-.wp-landing .wp-landing-footer { font-size: 12px; height: 29px; min-height: 29px; }
-@media (max-width: 650px) {
-  .wp-landing .wp-landing-brand { gap: 7px; flex-direction: row; flex-wrap: wrap; }
-  .wp-landing .wp-landing-brand strong { font-size: 25px; }
-  .wp-landing .wp-landing-brand span { font-size: 12px; padding-left: 10px; }
-  .wp-landing .wp-landing-repo { align-items: flex-start; flex-direction: column; }
-  .wp-landing .wp-landing-footer { height: auto; }
-}
-
-/* v8: landing-only visual cleanup. The dashboard CSS and other pages remain unchanged. */
-.wp-landing .wp-landing-main { grid-template-rows: minmax(0, 1.2fr) minmax(0, 2.15fr) minmax(0, .9fr) minmax(0, .75fr); }
 .wp-landing .wp-landing-hero h1 {
-  color: #1e2b43;
-  font-size: clamp(25px, 2.15vw, 32px);
-  line-height: 1.25;
-  letter-spacing: -0.7px;
-  white-space: nowrap;
+  grid-column:1; grid-row:1 / span 2; align-self:center; margin:0;
+  color:#1e2b43; font-size:clamp(29px,2.6vw,43px);
+  font-weight:850; line-height:1.13; letter-spacing:-.9px; word-break:keep-all;
 }
-.wp-landing[lang="en"] .wp-landing-hero h1 { font-size: clamp(21px, 1.9vw, 27px); }
-.wp-landing .wp-landing-hero-lead span { display:block; white-space:nowrap; }
-.wp-landing .wp-landing-purpose-list li { display:flex; align-items:center; }
-.wp-landing .wp-landing-purpose-list li > div { width:100%; }
+.wp-landing[lang="en"] .wp-landing-hero h1 { font-size:clamp(25px,2.18vw,36px); }
+.wp-landing .wp-landing-hero-lead { grid-column:2; grid-row:1; align-self:end; margin:0; color:#384c65; font-size:clamp(18.5px,1.30vw,22px); line-height:1.38; }
+.wp-landing .wp-landing-hero-lead span { display:block; }
+.wp-landing .wp-landing-primary {
+  grid-column:2; grid-row:2; justify-self:start; align-self:start;
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:7px 17px; background:var(--wp-blue); color:white;
+  border-radius:5px; min-height:36px; font-size:17px; font-weight:750;
+}
+.wp-landing .wp-landing-primary:hover { background:#2758ce; }
+
+/* Same 2x2 card treatment for four purposes and four features. */
+.wp-landing .wp-landing-purpose > .wp-landing-container,
+.wp-landing .wp-landing-features > .wp-landing-container {
+  padding:12px 14px; display:flex; flex-direction:column; gap:9px;
+}
+.wp-landing .wp-landing-purpose-grid > div:first-child { flex:none; }
+.wp-landing .wp-landing-purpose-list,
+.wp-landing .wp-landing-feature-grid {
+  margin:0; padding:0; list-style:none; flex:1; min-height:0;
+  display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); grid-template-rows:repeat(2,minmax(0,1fr)); gap:9px;
+}
+.wp-landing .wp-landing-purpose-list li,
+.wp-landing .wp-landing-feature {
+  min-width:0; min-height:0; border:1px solid #dce4f2; background:#f8faff;
+  border-radius:5px; padding:10px 12px;
+  display:flex; flex-direction:column; justify-content:center; gap:5px;
+}
+.wp-landing .wp-landing-purpose-list li > div { min-width:0; }
+.wp-landing .wp-landing-purpose-list strong,
+.wp-landing .wp-landing-feature h3 {
+  display:block; font-size:clamp(20px,1.55vw,25px); line-height:1.22;
+  color:#203452; margin:0; font-weight:800; word-break:keep-all;
+}
 .wp-landing .wp-landing-purpose-list p,
-.wp-landing .wp-landing-feature p { white-space:nowrap; }
-.wp-landing .wp-landing-section-index,
-.wp-landing .wp-landing-hero-index { letter-spacing:0; }
-.wp-landing .wp-landing-feature h3 { margin-bottom:6px; }
-@media (max-width: 980px), (max-height: 699px) {
-  .wp-landing .wp-landing-hero h1 { white-space:normal; }
-  .wp-landing .wp-landing-hero-lead span,
-  .wp-landing .wp-landing-purpose-list p,
-  .wp-landing .wp-landing-feature p { white-space:normal; }
-}
-@media (min-width: 981px) and (max-width: 1199px) {
-  .wp-landing .wp-landing-hero-lead span,
-  .wp-landing .wp-landing-purpose-list p,
-  .wp-landing .wp-landing-feature p { white-space:normal; }
+.wp-landing .wp-landing-feature p {
+  color:#475b74; font-size:clamp(18px,1.35vw,22px);
+  line-height:1.32; margin:4px 0 0; word-break:keep-all;
 }
 
-/* v9: readable typography and team credits at the very end of the landing content.
-   Every selector is limited to .wp-landing. Do not alter dashboard styles. */
-.wp-landing { font-size: 16px; }
-.wp-landing .wp-landing-brand span { font-size: 16px; }
-.wp-landing .wp-landing-language { font-size: 15px; }
-.wp-landing .wp-landing-section-index,
-.wp-landing .wp-landing-hero-index { font-size: 15px; }
-.wp-landing .wp-landing-section h2 { font-size: 22px; }
-.wp-landing .wp-landing-hero h1 { font-size: clamp(27px, 2.35vw, 34px); }
-.wp-landing[lang="en"] .wp-landing-hero h1 { font-size: clamp(23px, 2vw, 29px); }
-.wp-landing .wp-landing-hero-lead { font-size: 16.5px; line-height: 1.5; }
-.wp-landing .wp-landing-primary { font-size: 16px; min-height: 40px; }
-.wp-landing .wp-landing-purpose-list strong { font-size: 16px; }
-.wp-landing .wp-landing-purpose-list p { font-size: 16px; line-height: 1.35; }
-.wp-landing .wp-landing-feature h3 { font-size: 16.5px; }
-.wp-landing .wp-landing-feature p { font-size: 16px; line-height: 1.35; }
-.wp-landing .wp-landing-member-role { font-size: 15px; }
-.wp-landing .wp-landing-member strong { font-size: clamp(18px, 1.5vw, 21px); }
-.wp-landing .wp-landing-repo-type { font-size: 15px; }
-.wp-landing .wp-landing-repo strong { font-size: 18px; }
-.wp-landing .wp-landing-repo p { font-size: 15.5px; }
-.wp-landing .wp-landing-repo-action { font-size: 15px; }
-.wp-landing .wp-landing-footer { font-size: 14px; }
-@media (max-width: 650px) {
-  .wp-landing .wp-landing-brand span { font-size: 14px; }
-  .wp-landing .wp-landing-section h2 { font-size: 21px; }
-  .wp-landing .wp-landing-hero h1 { font-size: clamp(24px, 6.5vw, 30px); }
-  .wp-landing .wp-landing-hero-lead span,
-  .wp-landing .wp-landing-purpose-list p,
-  .wp-landing .wp-landing-feature p { white-space: normal; }
+/* Organization link, then member credits at the end. */
+.wp-landing .wp-landing-github > .wp-landing-container,
+.wp-landing .wp-landing-team > .wp-landing-container {
+  padding:8px 14px; display:grid; grid-template-columns:160px minmax(0,1fr); gap:13px; align-items:center;
+}
+.wp-landing .wp-landing-repo-grid { min-width:0; height:100%; }
+.wp-landing .wp-landing-repo {
+  height:100%; min-width:0; border:1px solid #dce4f2; border-radius:5px;
+  padding:7px 13px; background:#f8faff; display:flex;
+  justify-content:space-between; align-items:center; gap:15px; color:var(--wp-ink);
+}
+.wp-landing .wp-landing-repo-type { display:none; }
+.wp-landing .wp-landing-repo strong { font-size:clamp(18px,1.53vw,23px); line-height:1.2; font-weight:800; color:#203452; }
+.wp-landing .wp-landing-repo p { font-size:16px; line-height:1.25; margin:3px 0 0; color:#536780; }
+.wp-landing .wp-landing-repo-action { flex:none; font-size:17px; font-weight:750; color:var(--wp-blue); white-space:nowrap; }
+.wp-landing .wp-landing-team-grid { width:100%; height:100%; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; }
+.wp-landing .wp-landing-member {
+  border:1px solid #dce4f2; background:#f8faff; border-radius:5px; padding:5px 10px;
+  min-width:0; display:flex; flex-direction:column; justify-content:center; gap:1px;
+}
+.wp-landing .wp-landing-member-role { font-size:15px; color:#536780; }
+.wp-landing .wp-landing-member strong { font-size:clamp(20px,1.62vw,25px); line-height:1.2; font-weight:800; color:#1e2b43; overflow-wrap:anywhere; }
+.wp-landing .wp-landing-footer {
+  flex:none; height:27px; background:white; border-top:1px solid var(--wp-line);
+  padding:0 2.5%; color:#64748b; font-size:14px; display:flex; align-items:center;
+}
+.wp-landing .wp-landing-footer > .wp-landing-container { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+
+/* Keep the no-scroll presentation at normal desktop sizes only when it fits.
+   Small displays, large browser zoom and mobile scroll rather than clip. */
+@media (min-width:1181px) and (min-height:720px) {
+  .wp-landing { height:100dvh; overflow:hidden; }
+}
+@media (max-width:1180px), (max-height:719px) {
+  .wp-landing { min-height:100dvh; height:auto; overflow:visible; }
+  .wp-landing .wp-landing-main { display:flex; flex-direction:column; width:min(calc(100% - 28px),980px); gap:11px; padding:12px 0; }
+  .wp-landing .wp-landing-main > section { flex:none; }
+  .wp-landing .wp-landing-hero-grid { padding:22px; }
+  .wp-landing .wp-landing-purpose > .wp-landing-container,
+  .wp-landing .wp-landing-features > .wp-landing-container { padding:18px; gap:13px; }
+  .wp-landing .wp-landing-purpose-list,
+  .wp-landing .wp-landing-feature-grid { min-height:255px; }
+  .wp-landing .wp-landing-github > .wp-landing-container,
+  .wp-landing .wp-landing-team > .wp-landing-container { padding:16px; }
+  .wp-landing .wp-landing-team-grid { min-height:70px; }
+}
+@media (max-width:740px) {
+  .wp-landing .wp-landing-header { height:auto; min-height:59px; padding:8px 14px; }
+  .wp-landing .wp-landing-brand { gap:8px; }
+  .wp-landing .wp-landing-brand strong { font-size:26px; }
+  .wp-landing .wp-landing-brand span { font-size:14px; padding-left:10px; }
+  .wp-landing .wp-landing-hero-grid > div { display:block; }
+  .wp-landing .wp-landing-hero h1,
+  .wp-landing[lang="en"] .wp-landing-hero h1 { font-size:clamp(27px,5.3vw,37px); }
+  .wp-landing .wp-landing-hero-lead { font-size:18px; margin:12px 0; }
+  .wp-landing .wp-landing-purpose-list,
+  .wp-landing .wp-landing-feature-grid { grid-template-columns:1fr; grid-template-rows:none; }
+  .wp-landing .wp-landing-purpose-list li,
+  .wp-landing .wp-landing-feature { padding:15px; }
+  .wp-landing .wp-landing-github > .wp-landing-container,
+  .wp-landing .wp-landing-team > .wp-landing-container { display:flex; flex-direction:column; align-items:stretch; }
+  .wp-landing .wp-landing-repo { flex-wrap:wrap; }
+  .wp-landing .wp-landing-team-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .wp-landing .wp-landing-member { min-height:62px; }
+  .wp-landing .wp-landing-footer { height:auto; min-height:34px; padding:7px 14px; }
+  .wp-landing .wp-landing-footer > .wp-landing-container { flex-wrap:wrap; }
 }

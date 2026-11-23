@@ -5,7 +5,6 @@ import "../styles/landing.css";
 const text = {
   ko: {
     languageAction: "English",
-    topicNumber: "주제",
     topicTitle: "CNC 공구 마모 예측 및 모니터링",
     topicLeadLines: [
       "공구 이미지와 센서 데이터로 마모 상태를 예측합니다.",
@@ -27,6 +26,8 @@ const text = {
     purposeTwoDescription: "마모량과 마모 유형을 표시합니다.",
     purposeThreeTitle: "기록 조회",
     purposeThreeDescription: "알림과 저장된 분석 결과를 조회합니다.",
+    purposeFourTitle: "상태 구분",
+    purposeFourDescription: "정상·경고·위험 상태를 구분해 확인합니다.",
     featuresNumber: "주요 기능",
     featuresTitle: "주요 기능",
     featuresDescription: "자동 모니터링, 직접 업로드, 결과 및 알림 조회를 지원합니다.",
@@ -48,7 +49,6 @@ const text = {
   },
   en: {
     languageAction: "한국어",
-    topicNumber: "TOPIC",
     topicTitle: "CNC tool wear prediction and monitoring",
     topicLeadLines: [
       "Estimate tool wear from images and sensor data.",
@@ -70,6 +70,8 @@ const text = {
     purposeTwoDescription: "Show predicted wear amount and type.",
     purposeThreeTitle: "Review history",
     purposeThreeDescription: "Review alerts and saved results.",
+    purposeFourTitle: "Status levels",
+    purposeFourDescription: "Distinguish normal, warning, and danger.",
     featuresNumber: "FEATURES",
     featuresTitle: "Main features",
     featuresDescription: "Automated monitoring, file uploads, predictions, and alerts.",
@@ -93,11 +95,11 @@ const text = {
 
 // English names are display romanizations; confirm preferred spellings with each member.
 const members = [
-  { ko: "구민석", en: "Gu Min-seok", lead: true },
+  { ko: "구민석", en: "Koo Min-seok", lead: true },
   { ko: "강지인", en: "Kang Ji-in" },
-  { ko: "김정훈", en: "Kim Jeong-hun" },
+  { ko: "김정훈", en: "Kim Jeong-hoon" },
   { ko: "신상석", en: "Shin Sang-seok" },
-  { ko: "오성일", en: "Oh Seong-il" },
+  { ko: "오성일", en: "Oh-sung-il" },
 ];
 
 export default function LandingPage() {
@@ -132,7 +134,6 @@ export default function LandingPage() {
         <section className="wp-landing-hero" id="topic" aria-labelledby="wp-landing-title">
           <div className="wp-landing-container wp-landing-hero-grid">
             <div>
-              <p className="wp-landing-hero-index">{t.topicNumber}</p>
               <h1 id="wp-landing-title">{t.topicTitle}</h1>
               <p className="wp-landing-hero-lead">
                 {t.topicLeadLines.map((sentence) => <span key={sentence}>{sentence}</span>)}
@@ -154,6 +155,7 @@ export default function LandingPage() {
                 [t.purposeOneTitle, t.purposeOneDescription],
                 [t.purposeTwoTitle, t.purposeTwoDescription],
                 [t.purposeThreeTitle, t.purposeThreeDescription],
+                [t.purposeFourTitle, t.purposeFourDescription],
               ].map(([title, description]) => (
                 <li key={title}>
                   <div><strong>{title}</strong><p>{description}</p></div>
