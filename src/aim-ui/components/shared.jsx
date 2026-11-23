@@ -23,7 +23,6 @@ export function Header({
   page = "dashboard",
   alertCount = 0,
   onDashboard,
-  onHome,
   onAlerts,
   onHistory,
   historyOpen = false,
@@ -43,11 +42,8 @@ export function Header({
     <header>
       <a
         className="brand"
-        href="#monitoring"
-        onClick={(event) => {
-          event.preventDefault();
-          (onHome ?? onDashboard)?.();
-        }}
+        href="/"
+        aria-label={currentLanguage === "ko" ? "AIM 프로젝트 소개로 이동" : "Go to AIM project introduction"}
       >
         <span className="logo" translate="no">
           AIM
