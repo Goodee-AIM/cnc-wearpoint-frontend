@@ -59,14 +59,14 @@
     "predictedWear": "예측 마모량",
     "wearType": "마모 유형",
     "noResult": "예측 결과 없음",
-    "noType": "유형 정보 없음",
+    "noType": "기타 마모",
     "pending": "판정 대기"
   },
   "wearType": {
     "adhesion_flank": "응착 + 플랭크 마모",
     "flank_wear": "플랭크 마모",
     "adhesion": "응착",
-    "other": "기타"
+    "other_wear": "기타 마모"
   },
   "sensor": {
     "channels": {

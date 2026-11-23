@@ -59,14 +59,14 @@
     "predictedWear": "Predicted Wear",
     "wearType": "Wear Type",
     "noResult": "No Prediction",
-    "noType": "No Type Information",
+    "noType": "other wear",
     "pending": "Pending"
   },
   "wearType": {
     "adhesion_flank": "Adhesion + Flank Wear",
     "flank_wear": "Flank Wear",
     "adhesion": "Adhesion",
-    "other": "Other"
+    "other_wear": "Other wear"
   },
   "sensor": {
     "channels": {
