@@ -5,11 +5,7 @@ import "../styles/landing.css";
 const text = {
   ko: {
     languageAction: "English",
-    topicTitle: "CNC 공구 마모 예측 및 모니터링",
-    topicLeadLines: [
-      "공구 이미지와 센서 데이터로 마모 상태를 예측합니다.",
-      "예측 결과와 알림 이력을 한 화면에서 확인합니다.",
-    ],
+    topicTitle: "공구 마모 예측과 모니터링을 하나로",
     dashboardAction: "모니터링 화면 보기",
     teamNumber: "팀원",
     teamTitle: "AIM 팀원",
@@ -18,7 +14,7 @@ const text = {
     leader: "팀장",
     member: "팀원",
     purposeNumber: "서비스 목적",
-    purposeTitle: "공구 상태와 예측 결과를 한 화면에서",
+    purposeTitle: "이미지와 센서 데이터로 공구 상태를 분석하다",
     purposeLead: "공구 이미지, 센서 신호, 마모 예측 결과를 연결해 상태를 확인하기 쉽도록 구성했습니다.",
     purposeOneTitle: "데이터 확인",
     purposeOneDescription: "이미지와 센서 신호를 함께 확인합니다.",
@@ -50,10 +46,6 @@ const text = {
   en: {
     languageAction: "한국어",
     topicTitle: "CNC tool wear prediction and monitoring",
-    topicLeadLines: [
-      "Estimate tool wear from images and sensor data.",
-      "View predictions and alert history together.",
-    ],
     dashboardAction: "Open monitoring dashboard",
     teamNumber: "TEAM",
     teamTitle: "Team AIM",
@@ -120,9 +112,14 @@ export default function LandingPage() {
       </a>
       <header className="wp-landing-header">
         <div className="wp-landing-header-inner">
-          <a href="/" className="wp-landing-brand" aria-label="AIM">
-            <strong>AIM</strong>
-            <span>{translate("app.title")}</span>
+          <a
+            className="brand"
+            href="/"
+            aria-label={language === "ko" ? "AIM 프로젝트 소개로 이동" : "Go to AIM project introduction"}
+          >
+            <span className="logo" translate="no">AIM</span>
+            <span className="brand-separator" aria-hidden="true">|</span>
+            <span className="brand-name">{translate("app.title")}</span>
           </a>
           <button type="button" className="wp-landing-language" onClick={changeLanguage}>
             {t.languageAction}
@@ -135,9 +132,6 @@ export default function LandingPage() {
           <div className="wp-landing-container wp-landing-hero-grid">
             <div>
               <h1 id="wp-landing-title">{t.topicTitle}</h1>
-              <p className="wp-landing-hero-lead">
-                {t.topicLeadLines.map((sentence) => <span key={sentence}>{sentence}</span>)}
-              </p>
               <a href="/dashboard" className="wp-landing-primary">{t.dashboardAction}</a>
             </div>
           </div>

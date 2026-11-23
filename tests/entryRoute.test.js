@@ -58,7 +58,9 @@ test("team member names and the single team GitHub link are present", () => {
 test("AIM is the landing brand and generated-looking hero decoration was removed", () => {
   const landing = read("src/aim-ui/pages/LandingPage.jsx");
   const styles = read("src/aim-ui/styles/landing.css");
-  assert.match(landing, /<strong>AIM<\/strong>/);
+  assert.match(landing, /<span className="logo" translate="no">AIM<\/span>/);
+  assert.match(landing, /className="brand-separator"/);
+  assert.match(landing, /className="brand-name"/);
   assert.match(landing, /teamTitle: "AIM 팀원"/);
   assert.doesNotMatch(landing, /wp-landing-hero-aside|01 — 05|CNC WEARPOINT \/ PROJECT/);
   assert.doesNotMatch(styles, /wp-landing-hero-aside/);
@@ -99,13 +101,18 @@ test("landing uses readable scoped text and does not change dashboard CSS", () =
   assert.match(landing, /href="https:\/\/github\.com\/Goodee-AIM\/"/);
 });
 
-test("landing has a single-color complete title and one sentence per line", () => {
+test("landing has the approved title without the removed hero description", () => {
   const landing = read("src/aim-ui/pages/LandingPage.jsx");
   const styles = read("src/aim-ui/styles/landing.css");
-  assert.match(landing, /topicTitle: "CNC 공구 마모 예측 및 모니터링"/);
+  assert.match(landing, /topicTitle: "공구 마모 예측과 모니터링을 하나로"/);
+  assert.match(landing, /purposeTitle: "이미지와 센서 데이터로 공구 상태를 분석하다"/);
   assert.match(landing, /<h1 id="wp-landing-title">\{t\.topicTitle\}<\/h1>/);
   assert.doesNotMatch(landing, /topicLineOne|topicLineTwo/);
-  assert.match(landing, /topicLeadLines\.map/);
+  assert.doesNotMatch(landing, /topicLeadLines|wp-landing-hero-lead/);
+  assert.doesNotMatch(landing, /공구 이미지와 센서 데이터로 마모 상태를 예측합니다/);
+  assert.doesNotMatch(landing, /예측 결과와 알림 이력을 한 화면에서 확인합니다/);
+  assert.match(landing, /href="\/dashboard" className="wp-landing-primary"/);
+  assert.doesNotMatch(landing, /wp-landing-primary-arrow/);
   assert.match(styles, /\.wp-landing \.wp-landing-hero h1 \{[\s\S]*?color:#1e2b43/);
   assert.doesNotMatch(landing, /wp-landing-feature-number/);
   assert.match(landing, /href="https:\/\/github\.com\/Goodee-AIM\/"/);
@@ -178,4 +185,16 @@ test("large readable landing type remains strictly scoped and never changes dash
   assert.match(styles, /font-size:clamp\(20px,1\.55vw,25px\)/);
   assert.match(styles, /font-size:clamp\(18px,1\.35vw,22px\)/);
   assert.doesNotMatch(styles, /^\s*(?:body|header|main|footer|nav|\.logo|\.brand|:root)\s*\{/m);
+});
+
+test("approved preview shares the dashboard AIM typography and enlarged no-arrow CTA", () => {
+  const landing = read("src/aim-ui/pages/LandingPage.jsx");
+  const styles = read("src/aim-ui/styles/landing.css");
+  const dashboardStyles = read("src/aim-ui/styles/global.css");
+  assert.match(landing, /<span className="logo" translate="no">AIM<\/span>/);
+  assert.match(styles, /font-family:AIMMono,monospace/);
+  assert.match(dashboardStyles, /aim-bold\.ttf/);
+  assert.match(styles, /min-height: 64px/);
+  assert.match(styles, /min-width: 290px/);
+  assert.doesNotMatch(landing, /topicLeadLines|wp-landing-primary-arrow/);
 });
