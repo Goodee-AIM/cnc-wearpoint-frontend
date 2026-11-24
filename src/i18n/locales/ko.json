@@ -33,7 +33,7 @@
     "normal": "정상",
     "warning": "경고",
     "danger": "위험",
-    "pending": "판정 대기"
+    "pending": "분석중"
   },
   "statusCaption": {
     "slowDown": "감속 필요",
@@ -41,7 +41,7 @@
     "normal": "마모 상태 양호",
     "warning": "마모 상태 확인",
     "danger": "공구 교체 필요",
-    "pending": "판정 정보를 기다리는 중"
+    "pending": ""
   },
   "image": {
     "toolImage": "공구 이미지",

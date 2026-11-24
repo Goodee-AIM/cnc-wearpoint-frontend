@@ -35,9 +35,11 @@ test("missing or unsupported type never invents a replacement or speed action", 
 test("all advice and mixed wear labels exist in Korean and English", () => {
   for (const language of ["ko", "en"]) {
     const dictionary = JSON.parse(readFileSync(new URL(`../src/i18n/locales/${language}.json`, import.meta.url), "utf8"));
-    for (const key of ["normal", "warning", "danger", "pending", "slowDown", "inspect"]) {
+    for (const key of ["normal", "warning", "danger", "slowDown", "inspect"]) {
       assert.ok(dictionary.statusCaption[key]);
     }
+    assert.equal(dictionary.statusCaption.pending, "");
+    assert.equal(dictionary.status.pending, language === "ko" ? "\uBD84\uC11D\uC911" : "Analyzing");
     assert.ok(dictionary.wearType.adhesion_flank);
   }
 });
