@@ -176,30 +176,15 @@ export default function useSharedMonitoring(enabled, selectedSet) {
     return () => { disposed = true; clearTimeout(timer); };
   }, [enabled, sensorKey, sensorUrl, selectedMissing]);
 
-  // 다른 Set의 현재 파일은 한 번에 하나씩 미리 읽어 API/브라우저 부하를 제한합니다.
-  // 재생 위치는 캐시와 별도로 서버 elapsed_ms를 따릅니다.
-  const currentSensors = JSON.stringify(Object.entries(sets)
-    .filter(([, item]) => item.playback_mode === "sensor" && item.sensor_url)
-    .map(([set, item]) => [JSON.stringify([sessionId, Number(set), item.sensor_url]), item.sensor_url]));
+    // 선택한 Set의 센서만 요청하고 현재 파일을 캐시에 유지합니다.
   useEffect(() => {
     if (!enabled) return;
+
     const cache = sensorCache.current;
     if (!cache) return;
-    cache.pin([...JSON.parse(currentSensors).map(([key]) => key), sensorKey]);
-  }, [enabled, currentSensors, sensorKey]);
-  useEffect(() => {
-    if (!enabled) return;
-    const cache = sensorCache.current;
-    let disposed = false;
-    async function prepareOthers() {
-      for (const [key, url] of JSON.parse(currentSensors)) {
-        if (disposed) break;
-        await cache.read(key, url);
-      }
-    }
-    void prepareOthers();
-    return () => { disposed = true; };
-  }, [enabled, currentSensors]);
+
+    cache.pin([sensorKey]);
+  }, [enabled, sensorKey]);
 
   const sensor = enabled ? sensors.get(sensorKey) : null;
 
