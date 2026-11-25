@@ -58,7 +58,9 @@ export default function AlertsPage({
 
   const pendingPageScroll = useRef(null);
   const pendingFilterScroll = useRef(null);
-
+  const pendingSelectionScroll = useRef(null);
+  const selectedDetailHeading = useRef(null);
+  
   const [
     reservedPageHeight,
     setReservedPageHeight,
@@ -97,22 +99,39 @@ export default function AlertsPage({
     pendingPageScroll.current = null;
   }, [current, loading]);
 
-  const selectAlertAndScrollToTop = (
-      id,
-  ) => {
+  const selectAlert = (id) => {
     pendingPageScroll.current = null;
     pendingFilterScroll.current = null;
+    pendingSelectionScroll.current = id;
 
     setReservedPageHeight(null);
-
     onSelectAlert(id);
 
-    window.scrollTo({
-      top: 0,
-      left: 0,
-      behavior: "smooth",
-    });
+    if (selected?.id === id) {
+      requestAnimationFrame(() => {
+        selectedDetailHeading.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      });
+      pendingSelectionScroll.current = null;
+    }
   };
+
+useLayoutEffect(() => {
+  const pendingId = pendingSelectionScroll.current;
+
+  if (!pendingId || selected?.id !== pendingId) {
+    return;
+  }
+
+  selectedDetailHeading.current?.scrollIntoView({
+    behavior: "smooth",
+    block: "start",
+  });
+
+  pendingSelectionScroll.current = null;
+}, [selected?.id]);
 
   const change = (key, value) => {
     if (filters[key] === value) {
@@ -311,15 +330,291 @@ export default function AlertsPage({
             </p>
         )}
 
+        <section className="card alerts-list">
+          <div className="list-heading">
+            <h2>
+              {t("alerts.allSetAlerts")}{" "}
+
+              <span>
+              {total?.toLocaleString(
+                      locale,
+                  ) ??
+                  t("common.loading")}
+            </span>
+            </h2>
+
+            <button
+                onClick={() => {
+                  change("set", "all");
+                  change("level", "all");
+                  change("state", "all");
+
+                  history.changeHistoryPage(
+                      0,
+                  );
+
+                  history.reloadHistory();
+                }}
+            >
+              {t("alerts.latestAlerts")}
+            </button>
+          </div>
+
+          <div className="filters">
+            <label>
+              {t("alerts.filterSet")}{" "}
+
+              <select
+                  value={filters.set}
+                  onChange={(e) =>
+                      change(
+                          "set",
+                          e.target.value,
+                      )
+                  }
+              >
+                <option value="all">
+                  {t("alerts.allSets")}
+                </option>
+
+                {sets.map((set) => (
+                    <option
+                        value={set.number}
+                        key={set.number}
+                    >
+                      {getSetName(set.number)}
+                    </option>
+                ))}
+              </select>
+            </label>
+
+            <label>
+              {t("alerts.filterLevel")}{" "}
+
+              <select
+                  value={filters.level}
+                  onChange={(e) =>
+                      change(
+                          "level",
+                          e.target.value,
+                      )
+                  }
+              >
+                <option value="all">
+                  {t(
+                      "alerts.allLevels",
+                  )}
+                </option>
+
+                <option value="danger">
+                  {t("status.danger")}
+                </option>
+
+                <option value="warning">
+                  {t("status.warning")}
+                </option>
+              </select>
+            </label>
+
+            <label>
+              {t("alerts.filterState")}{" "}
+
+              <select
+                  value={filters.state}
+                  onChange={(e) =>
+                      change(
+                          "state",
+                          e.target.value,
+                      )
+                  }
+              >
+                <option value="all">
+                  {t(
+                      "alerts.allStates",
+                  )}
+                </option>
+
+                <option value="unread">
+                  {t("alerts.unread")}
+                </option>
+
+                <option value="read">
+                  {t(
+                      "alerts.acknowledged",
+                  )}
+                </option>
+              </select>
+            </label>
+
+            <span className="filter-result">
+            {total == null
+                ? t(
+                    "alerts.filterResultLoading",
+                )
+                : t(
+                    "alerts.filterResult",
+                    {
+                      count:
+                          total.toLocaleString(
+                              locale,
+                          ),
+                    },
+                )}
+          </span>
+          </div>
+
+          <div className="table-scroll">
+            <table>
+              <thead>
+              <tr>
+                {tableHeaders.map(
+                    (header) => (
+                        <th key={header.key}>
+                          {header.label}
+                        </th>
+                    ),
+                )}
+              </tr>
+              </thead>
+
+              <tbody>
+  {rows.map((row) => (
+    <tr
+      key={row.id}
+      className={`alert-selectable-row ${
+        row.id === selected?.id ? "selected" : ""
+      }`}
+      onClick={() => selectAlert(row.id)}
+    >
+      <td className="row-time">
+        {date(row.occurredAt)}{" "}
+        <b>{time(row.occurredAt)}</b>
+      </td>
+
+      <td className="table-set">
+        {getSetName(row.setNumber)}
+      </td>
+
+      <td>
+        <span className={`level-badge ${row.level}`}>
+          {t(`status.${row.level}`)}
+        </span>
+      </td>
+
+      <td className="alert-message-cell">
+        {t(wearAdviceKey(row.level, row.wearType))}
+      </td>
+
+      <td className="value-cell">
+        <b>{formatWear(row.judgedWear)}</b>
+        <small>μm</small>
+        <span>{wearBasis(row.basis)}</span>
+      </td>
+
+      <td>
+        <span
+          className={`read-state ${
+            row.acknowledgedAt ? "read" : ""
+          }`}
+        >
+          {row.acknowledgedAt
+            ? t("alerts.acknowledged")
+            : t("alerts.unread")}
+        </span>
+      </td>
+    </tr>
+  ))}
+</tbody>
+            </table>
+
+            {!rows.length && (
+                <div className="empty-results">
+                  {loading
+                      ? t(
+                          "alerts.loadingListShort",
+                      )
+                      : t(
+                          "alerts.noAlerts",
+                      )}
+                </div>
+            )}
+          </div>
+
+          <div className="pagination">
+          <span>
+            {loading
+                ? t("common.loading")
+                : total
+                    ? t("alerts.range", {
+                      start:
+                          (current - 1) *
+                          pageSize +
+                          1,
+
+                      end:
+                          (current - 1) *
+                          pageSize +
+                          rows.length,
+
+                      total:
+                          total.toLocaleString(
+                              locale,
+                          ),
+                    })
+                    : t("alerts.zero")}
+          </span>
+
+            <div>
+              <button
+                  disabled={
+                      loading ||
+                      current === 1
+                  }
+                  onClick={() =>
+                      changePageKeepingScroll(
+                          current - 2,
+                      )
+                  }
+              >
+                {t("alerts.previous")}
+              </button>
+
+              <span>
+              {t("alerts.page", {
+                current,
+                max,
+              })}
+            </span>
+
+              <button
+                  disabled={
+                      loading ||
+                      total == null ||
+                      current >= max
+                  }
+                  onClick={() =>
+                      changePageKeepingScroll(
+                          current,
+                      )
+                  }
+              >
+                {t("alerts.next")}
+              </button>
+            </div>
+          </div>
+        </section>
+
         {selected && (
             <h2
+                ref={selectedDetailHeading}
                 className={
                     "selected-alert-heading " +
                     selected.level
                 }
             >
               [{getSetName(selected.setNumber)}]{" "}
-              {t(`status.${selected.level}`)} · {t(wearAdviceKey(selected.level, selected.wearType))}
+              {t(`status.${selected.level}`)} ·{" "}
+              {t(wearAdviceKey(selected.level, selected.wearType))}
             </h2>
         )}
 
@@ -515,280 +810,6 @@ export default function AlertsPage({
                   : t("alerts.noAlerts")}
             </div>
         )}
-
-        <section className="card alerts-list">
-          <div className="list-heading">
-            <h2>
-              {t("alerts.allSetAlerts")}{" "}
-
-              <span>
-              {total?.toLocaleString(
-                      locale,
-                  ) ??
-                  t("common.loading")}
-            </span>
-            </h2>
-
-            <button
-                onClick={() => {
-                  change("set", "all");
-                  change("level", "all");
-                  change("state", "all");
-
-                  history.changeHistoryPage(
-                      0,
-                  );
-
-                  history.reloadHistory();
-                }}
-            >
-              {t("alerts.latestAlerts")}
-            </button>
-          </div>
-
-          <div className="filters">
-            <label>
-              {t("alerts.filterSet")}{" "}
-
-              <select
-                  value={filters.set}
-                  onChange={(e) =>
-                      change(
-                          "set",
-                          e.target.value,
-                      )
-                  }
-              >
-                <option value="all">
-                  {t("alerts.allSets")}
-                </option>
-
-                {sets.map((set) => (
-                    <option
-                        value={set.number}
-                        key={set.number}
-                    >
-                      {getSetName(set.number)}
-                    </option>
-                ))}
-              </select>
-            </label>
-
-            <label>
-              {t("alerts.filterLevel")}{" "}
-
-              <select
-                  value={filters.level}
-                  onChange={(e) =>
-                      change(
-                          "level",
-                          e.target.value,
-                      )
-                  }
-              >
-                <option value="all">
-                  {t(
-                      "alerts.allLevels",
-                  )}
-                </option>
-
-                <option value="danger">
-                  {t("status.danger")}
-                </option>
-
-                <option value="warning">
-                  {t("status.warning")}
-                </option>
-              </select>
-            </label>
-
-            <label>
-              {t("alerts.filterState")}{" "}
-
-              <select
-                  value={filters.state}
-                  onChange={(e) =>
-                      change(
-                          "state",
-                          e.target.value,
-                      )
-                  }
-              >
-                <option value="all">
-                  {t(
-                      "alerts.allStates",
-                  )}
-                </option>
-
-                <option value="unread">
-                  {t("alerts.unread")}
-                </option>
-
-                <option value="read">
-                  {t(
-                      "alerts.acknowledged",
-                  )}
-                </option>
-              </select>
-            </label>
-
-            <span className="filter-result">
-            {total == null
-                ? t(
-                    "alerts.filterResultLoading",
-                )
-                : t(
-                    "alerts.filterResult",
-                    {
-                      count:
-                          total.toLocaleString(
-                              locale,
-                          ),
-                    },
-                )}
-          </span>
-          </div>
-
-          <div className="table-scroll">
-            <table>
-              <thead>
-              <tr>
-                {tableHeaders.map(
-                    (header) => (
-                        <th key={header.key}>
-                          {header.label}
-                        </th>
-                    ),
-                )}
-              </tr>
-              </thead>
-
-              <tbody>
-  {rows.map((row) => (
-    <tr
-      key={row.id}
-      className={`alert-selectable-row ${
-        row.id === selected?.id ? "selected" : ""
-      }`}
-      onClick={() => selectAlertAndScrollToTop(row.id)}
-    >
-      <td className="row-time">
-        {date(row.occurredAt)}{" "}
-        <b>{time(row.occurredAt)}</b>
-      </td>
-
-      <td className="table-set">
-        {getSetName(row.setNumber)}
-      </td>
-
-      <td>
-        <span className={`level-badge ${row.level}`}>
-          {t(`status.${row.level}`)}
-        </span>
-      </td>
-
-      <td className="alert-message-cell">
-        {t(wearAdviceKey(row.level, row.wearType))}
-      </td>
-
-      <td className="value-cell">
-        <b>{formatWear(row.judgedWear)}</b>
-        <small>μm</small>
-        <span>{wearBasis(row.basis)}</span>
-      </td>
-
-      <td>
-        <span
-          className={`read-state ${
-            row.acknowledgedAt ? "read" : ""
-          }`}
-        >
-          {row.acknowledgedAt
-            ? t("alerts.acknowledged")
-            : t("alerts.unread")}
-        </span>
-      </td>
-    </tr>
-  ))}
-</tbody>
-            </table>
-
-            {!rows.length && (
-                <div className="empty-results">
-                  {loading
-                      ? t(
-                          "alerts.loadingListShort",
-                      )
-                      : t(
-                          "alerts.noAlerts",
-                      )}
-                </div>
-            )}
-          </div>
-
-          <div className="pagination">
-          <span>
-            {loading
-                ? t("common.loading")
-                : total
-                    ? t("alerts.range", {
-                      start:
-                          (current - 1) *
-                          pageSize +
-                          1,
-
-                      end:
-                          (current - 1) *
-                          pageSize +
-                          rows.length,
-
-                      total:
-                          total.toLocaleString(
-                              locale,
-                          ),
-                    })
-                    : t("alerts.zero")}
-          </span>
-
-            <div>
-              <button
-                  disabled={
-                      loading ||
-                      current === 1
-                  }
-                  onClick={() =>
-                      changePageKeepingScroll(
-                          current - 2,
-                      )
-                  }
-              >
-                {t("alerts.previous")}
-              </button>
-
-              <span>
-              {t("alerts.page", {
-                current,
-                max,
-              })}
-            </span>
-
-              <button
-                  disabled={
-                      loading ||
-                      total == null ||
-                      current >= max
-                  }
-                  onClick={() =>
-                      changePageKeepingScroll(
-                          current,
-                      )
-                  }
-              >
-                {t("alerts.next")}
-              </button>
-            </div>
-          </div>
-        </section>
 
         <Footer page="alerts" />
 

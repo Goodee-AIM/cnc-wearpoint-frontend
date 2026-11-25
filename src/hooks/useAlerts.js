@@ -7,7 +7,7 @@ import { loadSharedAlertPage, retainKnownAcknowledgments } from "../utils/alertH
 
 // 알림 이력 조회 시 5초마다 새로고침
 const HISTORY_REFRESH_MS = 5000;
-const HISTORY_PAGE_SIZE = 10;
+const HISTORY_PAGE_SIZE = 8;
 
 // DB 응답의 필드명·숫자·이미지 URL을 화면 레코드로 변환합니다. 회차와 확인 시각은 서버 값을 유지합니다.
 function historyRecord(row, imagesBySet) {
