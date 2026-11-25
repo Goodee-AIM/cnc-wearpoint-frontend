@@ -9,9 +9,9 @@ const state = (extra = {}, item = {}) => ({
   ...extra,
 });
 
-test("Set test advances 40 seconds of source data in 20 real seconds", () => {
-  assert.equal(PLAYBACK_RATE, 2);
-  assert.equal(Math.min(40000, 20000 * PLAYBACK_RATE), 40000);
+test("Set test advances 40 seconds of source data in 10 real seconds", () => {
+  assert.equal(PLAYBACK_RATE, 4);
+  assert.equal(Math.min(40000, 10000 * PLAYBACK_RATE), 40000);
 });
 test("all eight shared Sets interpolate at the server's 2x rate", () => {
   const s = state();
