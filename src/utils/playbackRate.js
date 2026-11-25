@@ -1,5 +1,5 @@
 // Manual playback is local; shared playback follows the server-advertised rate.
-export const PLAYBACK_RATE = 2;
+export const PLAYBACK_RATE = 4;
 
 export function monitoringPlaybackRate(state, item) {
   if (state?.gated_playback && item?.playback_phase !== "playing") return 0;
