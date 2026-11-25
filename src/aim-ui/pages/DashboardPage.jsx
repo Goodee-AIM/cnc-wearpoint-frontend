@@ -193,7 +193,7 @@ export default function DashboardPage({
                     </h2>
 
                     <p className="status-caption">
-                      {t(wearAdviceKey(status, measurement?.wearType))}
+                      {wearAdviceKey(status, measurement?.wearType) === "statusCaption.pending" ? "" : t(wearAdviceKey(status, measurement?.wearType))}
                     </p>
                   </div>
                 </div>

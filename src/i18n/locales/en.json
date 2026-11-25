@@ -33,7 +33,7 @@
     "normal": "Normal",
     "warning": "Warning",
     "danger": "Danger",
-    "pending": "Pending"
+    "pending": "Analyzing"
   },
   "statusCaption": {
     "slowDown": "Reduce cutting speed",
@@ -41,7 +41,7 @@
     "normal": "Tool condition is normal",
     "warning": "Check tool wear condition",
     "danger": "Tool replacement required",
-    "pending": "Waiting for diagnosis"
+    "pending": ""
   },
   "image": {
     "toolImage": "Tool Image",
