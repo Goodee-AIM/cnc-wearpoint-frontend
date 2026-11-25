@@ -611,10 +611,9 @@ useLayoutEffect(() => {
                     "selected-alert-heading " +
                     selected.level
                 }
+                aria-hidden="true"
             >
-              [{getSetName(selected.setNumber)}]{" "}
-              {t(`status.${selected.level}`)} ·{" "}
-              {t(wearAdviceKey(selected.level, selected.wearType))}
+              {"\u00a0"}
             </h2>
         )}
 
